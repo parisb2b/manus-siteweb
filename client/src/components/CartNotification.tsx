@@ -11,7 +11,7 @@ export const showCartNotification = (productName: string) => {
           <CheckCircle2 className="h-6 w-6 text-green-600" />
         </div>
         <div>
-          <h3 className="font-bold text-[#1a1a5e] text-lg">Produit ajouté !</h3>
+          <h3 className="font-bold text-[#4A90D9] text-lg">Produit ajouté !</h3>
           <p className="text-gray-600 text-sm mt-1">
             <span className="font-semibold">{productName}</span> a été ajouté à votre panier avec succès.
           </p>
@@ -28,7 +28,7 @@ export const showCartNotification = (productName: string) => {
         <Link href="/cart">
           <button 
             onClick={() => toast.dismiss(t)}
-            className="flex-1 px-4 py-2.5 bg-[#1a1a5e] hover:bg-[#2a2a8e] text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart className="h-4 w-4" />
             Voir mon panier

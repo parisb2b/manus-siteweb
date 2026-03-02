@@ -32,7 +32,7 @@ export default function ProductCard({ id, name, price, image, isSoldOut, link }:
       {/* Content */}
       <div className="flex flex-col flex-grow p-6 text-center">
         <Link href={link}>
-          <h3 className="text-2xl font-serif font-bold text-[#1a1a5e] mb-2 cursor-pointer hover:text-primary/80 transition-colors">
+          <h3 className="text-2xl font-serif font-bold text-[#4A90D9] mb-2 cursor-pointer hover:text-primary/80 transition-colors">
             {name}
           </h3>
         </Link>
@@ -42,7 +42,7 @@ export default function ProductCard({ id, name, price, image, isSoldOut, link }:
         
         <div className="mt-auto">
           <Link href={link}>
-            <Button className="w-full btn-rippa group-hover:bg-[#1a1a5e] group-hover:text-white">
+            <Button className="w-full btn-rippa group-hover:bg-[#4A90D9] group-hover:text-white">
               Voir le produit
             </Button>
           </Link>

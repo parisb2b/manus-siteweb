@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
 import Header from "@/components/Header";
+import DeliveryEstimator from "@/components/DeliveryEstimator";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -11,19 +12,22 @@ const SIZES = [
     id: "20ft",
     name: "20 Pieds (37m²)",
     price: 9920,
-    shipping: { martinique: 11000, guadeloupe: 11000 } // Double shipping (2x20ft or 2x40ft)
+    approxM2: 40,
+    shipping: { martinique: 11000, guadeloupe: 11000 }
   },
   {
     id: "30ft",
     name: "30 Pieds (57m²)",
     price: 10700,
-    shipping: { martinique: 19000, guadeloupe: 17300 } // Double shipping (2x40ft)
+    approxM2: 60,
+    shipping: { martinique: 19000, guadeloupe: 17300 }
   },
   {
     id: "40ft",
     name: "40 Pieds (74m²)",
     price: 13300,
-    shipping: { martinique: 19000, guadeloupe: 17300 } // Double shipping (2x40ft)
+    approxM2: 80,
+    shipping: { martinique: 19000, guadeloupe: 17300 }
   }
 ];
 
@@ -84,10 +88,8 @@ const IMAGES = [
 export default function ModularPremium() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedDestination, setSelectedDestination] = useState(DESTINATIONS[0]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [shippingPrice, setShippingPrice] = useState<number | null>(null);
-  
+
   // Carousel State
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -96,7 +98,7 @@ export default function ModularPremium() {
 
   useEffect(() => {
     let price = selectedSize.price;
-    
+
     // Add options price
     selectedOptions.forEach(optId => {
       const option = OPTIONS.find(o => o.id === optId);
@@ -106,27 +108,7 @@ export default function ModularPremium() {
     });
 
     setTotalPrice(price);
-
-    // Calculate shipping based on advanced rules (Double Container for Premium)
-    if (selectedDestination.id === "mq" || selectedDestination.id === "gp") {
-      let baseShipping = 0;
-      
-      // 1. Base shipping based on house size (Double container required)
-      if (selectedSize.id === "20ft") {
-        // 20ft house requires 2x 20ft containers (one for house, one for roof/terrace)
-        baseShipping = selectedDestination.id === "mq" ? 5500 * 2 : 5500 * 2;
-      } else {
-        // 30ft and 40ft houses require 2x 40ft containers
-        baseShipping = selectedDestination.id === "mq" ? 9500 * 2 : 8650 * 2;
-      }
-
-      // 2. Options fit in the second container, so NO extra volume cost
-      setShippingPrice(baseShipping);
-    } else {
-      setShippingPrice(null); // Sur devis for other destinations
-    }
-
-  }, [selectedSize, selectedOptions, selectedDestination]);
+  }, [selectedSize, selectedOptions]);
 
   const toggleOption = (id: string) => {
     if (selectedOptions.includes(id)) {
@@ -185,8 +167,8 @@ export default function ModularPremium() {
           
           {/* Breadcrumb */}
           <div className="text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-[#1a237e]">Accueil</a> <span className="mx-2">/</span>
-            <a href="/maisons" className="hover:text-[#1a237e]">Maisons Modulaires</a> <span className="mx-2">/</span>
+            <a href="/" className="hover:text-[#4A90D9]">Accueil</a> <span className="mx-2">/</span>
+            <a href="/maisons" className="hover:text-[#4A90D9]">Maisons Modulaires</a> <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Premium</span>
           </div>
 
@@ -259,7 +241,7 @@ export default function ModularPremium() {
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
                     className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      currentSlide === idx ? 'border-[#1a237e] ring-2 ring-[#1a237e]/20' : 'border-transparent opacity-70 hover:opacity-100'
+                      currentSlide === idx ? 'border-[#4A90D9] ring-2 ring-[#4A90D9]/20' : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
                     {media.type === 'video' ? (
@@ -275,14 +257,14 @@ export default function ModularPremium() {
               </div>
 
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold text-[#1a237e] mb-6 flex items-center">
+                <h3 className="text-xl font-bold text-[#4A90D9] mb-6 flex items-center">
                   <ShieldCheck className="w-5 h-5 mr-2" />
                   Caractéristiques Techniques
                 </h3>
                 <div className="space-y-3 text-sm text-gray-600">
                   <div className="flex justify-between py-2 border-b border-gray-100 bg-blue-50/50 px-2 rounded-lg">
-                    <span className="font-bold text-[#1a237e]">Toiture & Terrasse</span>
-                    <span className="text-right font-bold text-[#1a237e]">Toit double pente + Terrasse avant inclus</span>
+                    <span className="font-bold text-[#4A90D9]">Toiture & Terrasse</span>
+                    <span className="text-right font-bold text-[#4A90D9]">Toit double pente + Terrasse avant inclus</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
                     <span className="font-medium text-gray-900">Structure</span>
@@ -323,7 +305,7 @@ export default function ModularPremium() {
                 </div>
 
                 <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <h4 className="font-bold text-[#1a237e] mb-2 flex items-center text-sm">
+                  <h4 className="font-bold text-[#4A90D9] mb-2 flex items-center text-sm">
                     <PaintBucket className="w-4 h-4 mr-2" />
                     Personnalisation
                   </h4>
@@ -338,7 +320,7 @@ export default function ModularPremium() {
                     href="/docs/fiche_technique_maison_modulaire.pdf" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:border-[#1a237e] hover:text-[#1a237e] transition-colors"
+                    className="flex items-center justify-center w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:border-[#4A90D9] hover:text-[#4A90D9] transition-colors"
                   >
                     <FileText className="w-5 h-5 mr-2" />
                     Télécharger la Fiche Technique (PDF)
@@ -351,11 +333,11 @@ export default function ModularPremium() {
             <div>
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-blue-50 sticky top-24">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-3 py-1 bg-[#1a237e] text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                  <span className="px-3 py-1 bg-[#4A90D9] text-white text-xs font-bold rounded-full uppercase tracking-wider">
                     Premium
                   </span>
                 </div>
-                <h1 className="text-3xl font-serif font-bold text-[#1a237e] mb-2">
+                <h1 className="text-3xl font-serif font-bold text-[#4A90D9] mb-2">
                   Maison Modulaire Premium
                 </h1>
                 <p className="text-gray-500 mb-6">
@@ -364,7 +346,7 @@ export default function ModularPremium() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
-                  <div className="text-4xl font-bold text-[#1a237e]">
+                  <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(totalPrice)}
                   </div>
                 </div>
@@ -384,7 +366,7 @@ export default function ModularPremium() {
                         onClick={() => setSelectedSize(size)}
                         className={`py-3 px-2 rounded-xl border-2 text-sm font-bold transition-all ${
                           selectedSize.id === size.id
-                            ? "border-[#1a237e] bg-blue-50 text-[#1a237e]"
+                            ? "border-[#4A90D9] bg-blue-50 text-[#4A90D9]"
                             : "border-gray-100 text-gray-600 hover:border-gray-300"
                         }`}
                       >
@@ -410,21 +392,21 @@ export default function ModularPremium() {
                         onClick={() => toggleOption(option.id)}
                         className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           selectedOptions.includes(option.id)
-                            ? "border-[#1a237e] bg-blue-50/50"
+                            ? "border-[#4A90D9] bg-blue-50/50"
                             : "border-gray-100 hover:border-gray-200"
                         }`}
                       >
                         <div className={`mt-1 mr-4 p-2 rounded-full ${
-                          selectedOptions.includes(option.id) ? "bg-[#1a237e] text-white" : "bg-gray-100 text-gray-400"
+                          selectedOptions.includes(option.id) ? "bg-[#4A90D9] text-white" : "bg-gray-100 text-gray-400"
                         }`}>
                           <option.icon className="w-4 h-4" />
                         </div>
                         <div className="flex-grow">
                           <div className="flex justify-between items-center mb-1">
-                            <span className={`font-bold ${selectedOptions.includes(option.id) ? "text-[#1a237e]" : "text-gray-700"}`}>
+                            <span className={`font-bold ${selectedOptions.includes(option.id) ? "text-[#4A90D9]" : "text-gray-700"}`}>
                               {option.name}
                             </span>
-                            <span className="text-sm font-bold text-[#1a237e]">
+                            <span className="text-sm font-bold text-[#4A90D9]">
                               {option.price > 0 ? `+${formatPrice(option.price)}` : "Sur devis"}
                             </span>
                           </div>
@@ -439,50 +421,27 @@ export default function ModularPremium() {
 
                 <Separator className="my-6" />
 
-                {/* Shipping Calculator */}
-                <div className="bg-gray-50 rounded-2xl p-6 mb-8">
-                  <h4 className="font-bold text-gray-900 mb-4 flex items-center">
-                    <Truck className="w-5 h-5 mr-2 text-blue-600" />
-                    Estimation Livraison
-                  </h4>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                        Destination
-                      </label>
-                      <select 
-                        className="w-full p-3 rounded-xl border border-gray-200 bg-white font-medium text-gray-700 focus:ring-2 focus:ring-[#1a237e] focus:border-transparent outline-none appearance-none"
-                        value={selectedDestination.id}
-                        onChange={(e) => setSelectedDestination(DESTINATIONS.find(d => d.id === e.target.value) || DESTINATIONS[0])}
-                      >
-                        {DESTINATIONS.map(dest => (
-                          <option key={dest.id} value={dest.id}>{dest.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-sm text-gray-600">Frais de port estimés</span>
-                      <span className="text-xl font-bold text-[#1a237e]">
-                        {shippingPrice !== null ? formatPrice(shippingPrice) : "Sur devis"}
-                      </span>
-                    </div>
-                    
-                    {shippingPrice !== null && (
-                      <p className="text-xs text-gray-500 italic">
-                        *Inclut 2 conteneurs (Maison + Toiture/Terrasse). Hors douane et octroi de mer.
-                      </p>
-                    )}
-                  </div>
-                </div>
+                {/* Delivery Estimator */}
+                <DeliveryEstimator
+                  houseSize={selectedSize.approxM2}
+                  housePrice={totalPrice}
+                  selectedOptions={selectedOptions}
+                  optionPrices={{
+                    ac: 2500,
+                    solar: 7912,
+                    furniture: 0,
+                    extra_room: 0,
+                  }}
+                />
 
                 {/* CTA Button */}
-                <Button className="w-full h-14 text-lg font-bold bg-[#1a237e] hover:bg-[#0d1b60] shadow-lg shadow-blue-900/20 rounded-xl">
-                  Demander un devis complet
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                
+                <a href="https://wa.me/33663284908" target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3570B5] shadow-lg shadow-blue-900/20 rounded-xl">
+                    Demander un devis complet
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </a>
+
                 <p className="text-center text-xs text-gray-400 mt-4">
                   Réponse sous 24h ouvrées. Sans engagement.
                 </p>

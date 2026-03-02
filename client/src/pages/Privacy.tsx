@@ -15,7 +15,7 @@ export default function Privacy() {
               <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-700">
                 <Lock className="w-6 h-6" />
               </div>
-              <h1 className="text-3xl font-bold text-[#1a237e]">Politique de Confidentialité</h1>
+              <h1 className="text-3xl font-bold text-[#4A90D9]">Politique de Confidentialité</h1>
             </div>
 
             <div className="prose prose-blue max-w-none text-gray-600">
@@ -23,7 +23,7 @@ export default function Privacy() {
                 La protection de vos données personnelles est une priorité pour Import 97. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <Database className="w-5 h-5" /> 1. Collecte des Données
               </h3>
               <p>
@@ -38,7 +38,7 @@ export default function Privacy() {
                 Les données collectées peuvent inclure : Nom, Prénom, Adresse email, Numéro de téléphone, Adresse de livraison.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <Eye className="w-5 h-5" /> 2. Utilisation des Données
               </h3>
               <p>
@@ -54,14 +54,14 @@ export default function Privacy() {
                 <strong>Nous ne vendons jamais vos données à des tiers.</strong>
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <Cookie className="w-5 h-5" /> 3. Cookies
               </h3>
               <p>
                 Notre site utilise des cookies pour améliorer votre expérience de navigation et mesurer l'audience. Vous pouvez à tout moment configurer votre navigateur pour refuser les cookies.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 4. Vos Droits
               </h3>
               <p>
@@ -71,7 +71,7 @@ export default function Privacy() {
                 Pour exercer ces droits, contactez-nous à : <strong>import97@sasfr.com</strong>
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 5. Sécurité
               </h3>
               <p>

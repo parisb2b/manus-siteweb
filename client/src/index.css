@@ -43,12 +43,12 @@
 }
 
 :root {
-  /* Original Rippa Europe Colors */
-  --primary: oklch(0.25 0.1 270); /* Deep Navy Blue #1a1a5e */
+  /* Import 97 / Rippa Europe Colors - Light Blue */
+  --primary: oklch(0.62 0.16 250); /* Light Blue #4A90D9 */
   --primary-foreground: oklch(1 0 0);
   
   --secondary: oklch(0.9 0.05 60); /* Gold/Yellow accent */
-  --secondary-foreground: oklch(0.2 0.1 270);
+  --secondary-foreground: oklch(0.62 0.16 250);
   
   --radius: 0rem; /* Square design */
   
@@ -72,20 +72,20 @@
   
   --border: oklch(0.92 0 0);
   --input: oklch(0.92 0 0);
-  --ring: oklch(0.25 0.1 270);
+  --ring: oklch(0.62 0.16 250);
   
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.2 0.02 270);
-  --sidebar-primary: oklch(0.25 0.1 270);
+  --sidebar-primary: oklch(0.62 0.16 250);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.96 0 0);
   --sidebar-accent-foreground: oklch(0.2 0.02 270);
   --sidebar-border: oklch(0.92 0 0);
-  --sidebar-ring: oklch(0.25 0.1 270);
+  --sidebar-ring: oklch(0.62 0.16 250);
 }
 
 .dark {
-  --primary: oklch(0.3 0.1 270);
+  --primary: oklch(0.55 0.16 250);
   --primary-foreground: oklch(1 0 0);
   --background: oklch(0.1 0.01 270);
   --foreground: oklch(0.95 0 0);

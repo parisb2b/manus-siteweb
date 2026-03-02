@@ -13,7 +13,7 @@ export default function Services() {
       <Header />
 
       {/* Hero Section */}
-      <div className="bg-white text-[#1a1a5e] py-16 md:py-24">
+      <div className="bg-white text-[#4A90D9] py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6">Nos Services & Engagements</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -28,9 +28,9 @@ export default function Services() {
         <section id="livraison" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12 scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-blue-100 p-4 rounded-full">
-              <Truck className="h-8 w-8 text-[#1a1a5e]" />
+              <Truck className="h-8 w-8 text-[#4A90D9]" />
             </div>
-            <h2 className="text-3xl font-bold text-[#1a1a5e]">Livraison DOM TOM</h2>
+            <h2 className="text-3xl font-bold text-[#4A90D9]">Livraison DOM TOM</h2>
           </div>
           
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -43,7 +43,7 @@ export default function Services() {
               
               <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 space-y-4">
                 <div>
-                  <h3 className="font-bold text-[#1a1a5e] mb-2 flex items-center gap-2">
+                  <h3 className="font-bold text-[#4A90D9] mb-2 flex items-center gap-2">
                     <PackageCheck className="h-5 w-5" /> Préparation & Fabrication
                   </h3>
                   <p className="text-gray-700 text-sm">
@@ -52,7 +52,7 @@ export default function Services() {
                 </div>
                 
                 <div>
-                  <h3 className="font-bold text-[#1a1a5e] mb-2 flex items-center gap-2">
+                  <h3 className="font-bold text-[#4A90D9] mb-2 flex items-center gap-2">
                     <Clock className="h-5 w-5" /> Transport Maritime
                   </h3>
                   <p className="text-gray-700 text-sm">
@@ -102,9 +102,9 @@ export default function Services() {
         <section id="paiement" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12 scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-blue-100 p-4 rounded-full">
-              <CreditCard className="h-8 w-8 text-[#1a1a5e]" />
+              <CreditCard className="h-8 w-8 text-[#4A90D9]" />
             </div>
-            <h2 className="text-3xl font-bold text-[#1a1a5e]">Livraison & Paiement</h2>
+            <h2 className="text-3xl font-bold text-[#4A90D9]">Livraison & Paiement</h2>
           </div>
 
           <div className="space-y-8">
@@ -116,7 +116,7 @@ export default function Services() {
               {/* Step 1 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 1</div>
-                <div className="text-4xl font-bold text-[#1a1a5e] mb-2">20%</div>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">20%</div>
                 <h3 className="font-bold text-gray-900 mb-2">A la commande</h3>
                 <p className="text-sm text-gray-600">Acompte pour valider votre commande et lancer la préparation.</p>
               </div>
@@ -124,7 +124,7 @@ export default function Services() {
               {/* Step 2 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 2</div>
-                <div className="text-4xl font-bold text-[#1a1a5e] mb-2">30%</div>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">30%</div>
                 <h3 className="font-bold text-gray-900 mb-2">Fin de préparation</h3>
                 <p className="text-sm text-gray-600">Acompte une fois la production ou préparation terminée à l'usine.</p>
               </div>
@@ -132,7 +132,7 @@ export default function Services() {
               {/* Step 3 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 3</div>
-                <div className="text-4xl font-bold text-[#1a1a5e] mb-2">30%</div>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">30%</div>
                 <h3 className="font-bold text-gray-900 mb-2">Départ Conteneur</h3>
                 <p className="text-sm text-gray-600">Acompte avant le chargement et le départ du navire.</p>
               </div>
@@ -148,9 +148,9 @@ export default function Services() {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 flex items-start gap-4">
-                <Camera className="h-6 w-6 text-[#1a1a5e] mt-1 flex-shrink-0" />
+                <Camera className="h-6 w-6 text-[#4A90D9] mt-1 flex-shrink-0" />
                 <div>
-                  <h3 className="font-bold text-[#1a1a5e] mb-2">Suivi Visuel Complet</h3>
+                  <h3 className="font-bold text-[#4A90D9] mb-2">Suivi Visuel Complet</h3>
                   <p className="text-gray-700 text-sm">
                     Pour votre tranquillité d'esprit, <strong>des photos et vidéos vous sont envoyées à chaque étape</strong> (fabrication, chargement, expédition). 
                     Vous recevez également toutes les informations de tracking du conteneur.
@@ -178,9 +178,9 @@ export default function Services() {
         <section id="sav" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-blue-100 p-4 rounded-full">
-              <Wrench className="h-8 w-8 text-[#1a1a5e]" />
+              <Wrench className="h-8 w-8 text-[#4A90D9]" />
             </div>
-            <h2 className="text-3xl font-bold text-[#1a1a5e]">SAV & Contact</h2>
+            <h2 className="text-3xl font-bold text-[#4A90D9]">SAV & Contact</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12">
@@ -204,7 +204,7 @@ export default function Services() {
 
                 <div className="flex gap-4">
                   <div className="bg-blue-100 p-3 rounded-lg h-fit">
-                    <Clock className="h-6 w-6 text-[#1a1a5e]" />
+                    <Clock className="h-6 w-6 text-[#4A90D9]" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Réactivité 72h</h3>
@@ -228,7 +228,7 @@ export default function Services() {
               </div>
             </div>
 
-            <div className="bg-[#1a1a5e] rounded-xl p-8 text-white flex flex-col justify-center items-center text-center">
+            <div className="bg-[#4A90D9] rounded-xl p-8 text-white flex flex-col justify-center items-center text-center">
               <h3 className="text-2xl font-bold mb-4">Besoin d'assistance ?</h3>
               <p className="text-blue-200 mb-8">
                 Notre équipe technique est disponible pour répondre à toutes vos questions.

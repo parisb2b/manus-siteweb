@@ -15,14 +15,14 @@ export default function Legal() {
               <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-700">
                 <Scale className="w-6 h-6" />
               </div>
-              <h1 className="text-3xl font-bold text-[#1a237e]">Mentions Légales</h1>
+              <h1 className="text-3xl font-bold text-[#4A90D9]">Mentions Légales</h1>
             </div>
 
             <div className="space-y-8">
               
               {/* Éditeur du Site */}
               <div className="border-b border-gray-100 pb-8">
-                <h3 className="text-xl font-bold text-[#1a237e] flex items-center gap-2 mb-4">
+                <h3 className="text-xl font-bold text-[#4A90D9] flex items-center gap-2 mb-4">
                   <Building className="w-5 h-5" /> Éditeur du Site
                 </h3>
                 <div className="bg-blue-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
@@ -38,7 +38,7 @@ export default function Legal() {
 
               {/* Contact */}
               <div className="border-b border-gray-100 pb-8">
-                <h3 className="text-xl font-bold text-[#1a237e] flex items-center gap-2 mb-4">
+                <h3 className="text-xl font-bold text-[#4A90D9] flex items-center gap-2 mb-4">
                   <User className="w-5 h-5" /> Contact
                 </h3>
                 <div className="bg-green-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
@@ -50,7 +50,7 @@ export default function Legal() {
 
               {/* Hébergement */}
               <div>
-                <h3 className="text-xl font-bold text-[#1a237e] flex items-center gap-2 mb-4">
+                <h3 className="text-xl font-bold text-[#4A90D9] flex items-center gap-2 mb-4">
                   <Server className="w-5 h-5" /> Hébergement
                 </h3>
                 <div className="bg-gray-50 p-6 rounded-xl text-sm text-gray-700 space-y-2">

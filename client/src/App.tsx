@@ -14,6 +14,7 @@ import Privacy from "./pages/Privacy";
 import Delivery from "./pages/Delivery";
 import Legal from "./pages/Legal";
 import Services from "./pages/Services";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
       <Route path="/agricole" component={Agriculture} />
       <Route path="/products/:id" component={ProductDetail} />
       <Route path="/accessoires" component={Accessories} />
+      <Route path="/cart" component={Cart} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/delivery" component={Delivery} />

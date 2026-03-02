@@ -117,7 +117,7 @@ export default function PortalHome() {
                 />
                 <button 
                   type="submit"
-                  className="bg-[#1a237e] hover:bg-[#283593] text-white px-6 py-3 rounded-full font-bold transition-all shadow-md text-sm uppercase tracking-wide"
+                  className="bg-[#4A90D9] hover:bg-[#3A7BC8] text-white px-6 py-3 rounded-full font-bold transition-all shadow-md text-sm uppercase tracking-wide"
                 >
                   Rechercher
                 </button>
@@ -153,7 +153,7 @@ export default function PortalHome() {
                       <category.icon className={`w-8 h-8 ${category.iconColor}`} />
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#1a237e] transition-colors">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#4A90D9] transition-colors">
                       {category.title}
                     </h3>
                     <p className="text-gray-500 text-sm leading-relaxed mb-4 flex-grow">
@@ -172,27 +172,27 @@ export default function PortalHome() {
         {/* Trust Indicators */}
         <div className="bg-white py-16 border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 text-center">
-            <h3 className="text-2xl font-bold text-[#1a237e] mb-12">Pourquoi choisir IMPORT97 ?</h3>
+            <h3 className="text-2xl font-bold text-[#4A90D9] mb-12">Pourquoi choisir IMPORT97 ?</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="p-6 rounded-2xl bg-gray-50">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#1a237e] shadow-md">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#4A90D9] shadow-md">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h4 className="font-bold text-lg mb-2 text-[#1a237e]">Expertise DOM TOM</h4>
+                <h4 className="font-bold text-lg mb-2 text-[#4A90D9]">Expertise DOM TOM</h4>
                 <p className="text-gray-500 text-sm">Livraison maîtrisée vers la Guadeloupe, Martinique, Guyane, Réunion et Mayotte.</p>
               </div>
               <div className="p-6 rounded-2xl bg-gray-50">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#1a237e] shadow-md">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#4A90D9] shadow-md">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h4 className="font-bold text-lg mb-2 text-[#1a237e]">Qualité Certifiée</h4>
+                <h4 className="font-bold text-lg mb-2 text-[#4A90D9]">Qualité Certifiée</h4>
                 <p className="text-gray-500 text-sm">Des produits rigoureusement sélectionnés pour leur robustesse et leur durabilité.</p>
               </div>
               <div className="p-6 rounded-2xl bg-gray-50">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#1a237e] shadow-md">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#4A90D9] shadow-md">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 </div>
-                <h4 className="font-bold text-lg mb-2 text-[#1a237e]">SAV Réactif</h4>
+                <h4 className="font-bold text-lg mb-2 text-[#4A90D9]">SAV Réactif</h4>
                 <p className="text-gray-500 text-sm">Assistance technique disponible 24/7 via WhatsApp pour vous accompagner.</p>
               </div>
             </div>

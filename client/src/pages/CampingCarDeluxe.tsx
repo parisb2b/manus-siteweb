@@ -54,8 +54,8 @@ export default function CampingCarDeluxe() {
           
           {/* Breadcrumb */}
           <div className="text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-[#1a237e]">Accueil</a> <span className="mx-2">/</span>
-            <a href="/maisons" className="hover:text-[#1a237e]">Maisons Modulaires</a> <span className="mx-2">/</span>
+            <a href="/" className="hover:text-[#4A90D9]">Accueil</a> <span className="mx-2">/</span>
+            <a href="/maisons" className="hover:text-[#4A90D9]">Maisons Modulaires</a> <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Camping Car Deluxe</span>
           </div>
 
@@ -89,8 +89,8 @@ export default function CampingCarDeluxe() {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-[#1a237e]" />
-                  <CarouselNext className="right-4 bg-white/80 hover:bg-white text-[#1a237e]" />
+                  <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-[#4A90D9]" />
+                  <CarouselNext className="right-4 bg-white/80 hover:bg-white text-[#4A90D9]" />
                 </Carousel>
                 <div className="p-4 bg-gray-50 text-center text-xs text-gray-500 italic border-t border-gray-100">
                   Photos non contractuelles. Le modèle présenté inclut des options de série haut de gamme.
@@ -100,8 +100,8 @@ export default function CampingCarDeluxe() {
               {/* Key Features Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-                  <BatteryCharging className="h-6 w-6 text-[#1a237e]" />
-                  <span className="font-bold text-[#1a237e] text-sm">Hybride</span>
+                  <BatteryCharging className="h-6 w-6 text-[#4A90D9]" />
+                  <span className="font-bold text-[#4A90D9] text-sm">Hybride</span>
                   <span className="text-[10px] text-gray-600">Essence + Électrique</span>
                 </div>
                 <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 flex flex-col items-center text-center gap-2">
@@ -122,7 +122,7 @@ export default function CampingCarDeluxe() {
               </div>
 
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold text-[#1a237e] mb-6 flex items-center">
+                <h3 className="text-xl font-bold text-[#4A90D9] mb-6 flex items-center">
                   <ShieldCheck className="w-5 h-5 mr-2" />
                   Caractéristiques Techniques
                 </h3>
@@ -144,8 +144,8 @@ export default function CampingCarDeluxe() {
                     <span className="text-right">150 kW (204 ch)</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100 bg-blue-50/50 px-2 rounded-lg">
-                    <span className="font-bold text-[#1a237e]">Batterie Lame</span>
-                    <span className="text-right font-bold text-[#1a237e]">18.3 kWh (Standard)</span>
+                    <span className="font-bold text-[#4A90D9]">Batterie Lame</span>
+                    <span className="text-right font-bold text-[#4A90D9]">18.3 kWh (Standard)</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
                     <span className="font-medium text-gray-900">Réservoir Eau Propre</span>
@@ -170,11 +170,11 @@ export default function CampingCarDeluxe() {
                   <span className="px-3 py-1 bg-[#ff6d00] text-white text-xs font-bold rounded-full uppercase tracking-wider">
                     Nouveauté
                   </span>
-                  <span className="px-3 py-1 bg-[#1a237e] text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                  <span className="px-3 py-1 bg-[#4A90D9] text-white text-xs font-bold rounded-full uppercase tracking-wider">
                     Premium
                   </span>
                 </div>
-                <h1 className="text-3xl font-serif font-bold text-[#1a237e] mb-2">
+                <h1 className="text-3xl font-serif font-bold text-[#4A90D9] mb-2">
                   Camping Car Deluxe Hybride
                 </h1>
                 <p className="text-gray-500 mb-6">
@@ -183,7 +183,7 @@ export default function CampingCarDeluxe() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
-                  <div className="text-4xl font-bold text-[#1a237e]">
+                  <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(BASE_PRICE)}
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function CampingCarDeluxe() {
                   <div className="mb-4">
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Destination</label>
                     <select 
-                      className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#1a237e]"
+                      className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#4A90D9]"
                       value={selectedDestination.id}
                       onChange={(e) => setSelectedDestination(DESTINATIONS.find(d => d.id === e.target.value) || DESTINATIONS[0])}
                     >
@@ -212,7 +212,7 @@ export default function CampingCarDeluxe() {
 
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                     <span className="text-gray-600 text-sm">Frais de port estimés :</span>
-                    <span className="font-bold text-lg text-[#1a237e]">
+                    <span className="font-bold text-lg text-[#4A90D9]">
                       {selectedDestination.price !== null ? formatPrice(selectedDestination.price) : "Sur devis"}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export default function CampingCarDeluxe() {
                   <div className="flex justify-between items-end mb-4">
                     <span className="text-gray-600 font-medium">Total Estimé (HT)</span>
                     <div className="text-right">
-                      <span className="block text-3xl font-bold text-[#1a237e]">
+                      <span className="block text-3xl font-bold text-[#4A90D9]">
                         {formatPrice(BASE_PRICE + (selectedDestination.price || 0))}
                       </span>
                       {selectedDestination.price === null && (
@@ -252,7 +252,7 @@ export default function CampingCarDeluxe() {
                   </div>
 
                   <a href="mailto:contact@import97.com?subject=Devis%20Camping%20Car%20Deluxe%20Hybride">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#1a237e] hover:bg-[#283593] shadow-lg shadow-blue-900/20">
+                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20">
                       Demander un Devis Officiel <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </a>

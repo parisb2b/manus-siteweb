@@ -20,7 +20,7 @@ export default function Footer() {
     : "/images/logo/logo_import97_footer.png";
 
   return (
-    <footer className="bg-[#1a1a5e] text-white pt-16 pb-8 font-sans">
+    <footer className="bg-[#4A90D9] text-white pt-16 pb-8 font-sans">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Column 1 - Brand */}
@@ -83,7 +83,7 @@ export default function Footer() {
               </a>
               <a 
                 href="mailto:import97@sasfr.com" 
-                className="inline-flex items-center justify-center bg-white text-[#1a1a5e] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full"
+                className="inline-flex items-center justify-center bg-white text-[#4A90D9] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full"
               >
                 import97@sasfr.com
               </a>

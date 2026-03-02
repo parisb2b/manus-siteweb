@@ -12,10 +12,10 @@ export default function Terms() {
           
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-[#1a237e]">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-[#4A90D9]">
                 <ScrollText className="w-6 h-6" />
               </div>
-              <h1 className="text-3xl font-bold text-[#1a237e]">Conditions Générales de Vente</h1>
+              <h1 className="text-3xl font-bold text-[#4A90D9]">Conditions Générales de Vente</h1>
             </div>
 
             <div className="prose prose-blue max-w-none text-gray-600">
@@ -23,21 +23,21 @@ export default function Terms() {
                 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 1. Objet
               </h3>
               <p>
                 Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>[NOM DE LA SOCIÉTÉ À COMPLÉTER]</strong> (ci-après "le Vendeur") et toute personne physique ou morale (ci-après "le Client") souhaitant procéder à un achat via le site internet Import 97.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 2. Produits et Conformité
               </h3>
               <p>
                 Les produits proposés sont ceux qui figurent sur le site Import 97 (Mini-pelles, Maisons Modulaires, Panneaux Solaires, Machines Agricoles). Ces produits sont importés et conformes aux normes en vigueur. Les photographies ne sont pas contractuelles. Le Vendeur se réserve le droit de modifier à tout moment l'assortiment de produits.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <CreditCard className="w-5 h-5" /> 3. Tarifs et Modalités de Paiement
               </h3>
               <p>
@@ -49,7 +49,7 @@ export default function Terms() {
                 <li><strong>Moyens de paiement :</strong> Virement bancaire uniquement.</li>
               </ul>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <Truck className="w-5 h-5" /> 4. Livraison et Transport
               </h3>
               <p>
@@ -59,7 +59,7 @@ export default function Terms() {
                 Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5" /> 5. Garanties et SAV
               </h3>
               <p>
@@ -69,14 +69,14 @@ export default function Terms() {
                 <strong>Service Après-Vente :</strong> Le SAV est assuré par nos équipes locales ou partenaires agréés. Les pièces détachées sont expédiées sous 72h en cas de disponibilité stock, ou commandées express depuis l'usine.
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 6. Rétractation
               </h3>
               <p>
                 Conformément à la législation en vigueur, pour les ventes à distance, le Client particulier dispose d'un délai de rétractation de 14 jours. Toutefois, ce droit ne s'applique pas aux produits confectionnés sur mesure ou nettement personnalisés (ex: Maisons Modulaires avec plans spécifiques).
               </p>
 
-              <h3 className="text-[#1a237e] flex items-center gap-2">
+              <h3 className="text-[#4A90D9] flex items-center gap-2">
                 7. Litiges
               </h3>
               <p>

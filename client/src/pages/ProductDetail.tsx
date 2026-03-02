@@ -5,6 +5,7 @@ import { useRoute, useLocation } from "wouter";
 import { useState } from "react";
 import { Minus, Plus, Check, FileText, ShoppingCart, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
 
 // Images mapping (main images)
@@ -311,6 +312,7 @@ export default function ProductDetail() {
   const product = productId ? PRODUCTS_DATA[productId] : null;
   const productSpecs = productId ? specs[productId] : null;
   const { addToCart } = useCart();
+  const { user, setShowAuthModal } = useAuth();
   
   // Use a default image if not found in mapping
   const mainImage = productId && productImages[productId] 
@@ -330,7 +332,7 @@ export default function ProductDetail() {
         <Header />
         <main className="flex-grow flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <h1 className="text-4xl font-serif font-bold text-[#1a1a5e] mb-4">Produit non trouvé</h1>
+            <h1 className="text-4xl font-serif font-bold text-[#4A90D9] mb-4">Produit non trouvé</h1>
             <Button onClick={() => setLocation("/")} className="btn-rippa">
               Retour à l'accueil
             </Button>
@@ -342,6 +344,10 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
     addToCart({
       id: product.id,
       name: product.name,
@@ -360,11 +366,11 @@ export default function ProductDetail() {
         <div className="container mx-auto px-4">
           {/* Breadcrumb */}
           <div className="flex items-center text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-[#1a1a5e]">Accueil</a>
+            <a href="/" className="hover:text-[#4A90D9]">Accueil</a>
             <span className="mx-2">/</span>
-            <a href="/#minipelles" className="hover:text-[#1a1a5e]">Mini-pelles</a>
+            <a href="/#minipelles" className="hover:text-[#4A90D9]">Mini-pelles</a>
             <span className="mx-2">/</span>
-            <span className="text-[#1a1a5e] font-medium">{product.name}</span>
+            <span className="text-[#4A90D9] font-medium">{product.name}</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
@@ -384,7 +390,7 @@ export default function ProductDetail() {
                       key={index}
                       onClick={() => setActiveImage(index)}
                       className={`bg-gray-50 rounded-lg p-2 aspect-square border transition-all ${
-                        activeImage === index ? "border-[#1a1a5e] ring-1 ring-[#1a1a5e]" : "border-gray-100 hover:border-gray-300"
+                        activeImage === index ? "border-[#4A90D9] ring-1 ring-[#4A90D9]" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
                       <img 
@@ -400,9 +406,9 @@ export default function ProductDetail() {
 
             {/* Product Info */}
             <div>
-              <span className="text-[#1a1a5e] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#1a1a5e] mb-6">{product.name}</h1>
-              <div className="text-2xl font-bold text-[#1a1a5e] mb-6">{product.price}</div>
+              <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
+              <div className="text-2xl font-bold text-[#4A90D9] mb-6">{product.price}</div>
               
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {product.description}
@@ -412,19 +418,19 @@ export default function ProductDetail() {
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-gray-50 p-4 rounded border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Poids</span>
-                  <span className="block font-bold text-[#1a1a5e]">{product.specs.weight}</span>
+                  <span className="block font-bold text-[#4A90D9]">{product.specs.weight}</span>
                 </div>
                 <div className="bg-gray-50 p-4 rounded border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Puissance</span>
-                  <span className="block font-bold text-[#1a1a5e]">{product.specs.power}</span>
+                  <span className="block font-bold text-[#4A90D9]">{product.specs.power}</span>
                 </div>
                 <div className="bg-gray-50 p-4 rounded border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Profondeur Max</span>
-                  <span className="block font-bold text-[#1a1a5e]">{product.specs.depth}</span>
+                  <span className="block font-bold text-[#4A90D9]">{product.specs.depth}</span>
                 </div>
                 <div className="bg-gray-50 p-4 rounded border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Moteur</span>
-                  <span className="block font-bold text-[#1a1a5e]">{product.specs.engine}</span>
+                  <span className="block font-bold text-[#4A90D9]">{product.specs.engine}</span>
                 </div>
               </div>
 
@@ -437,7 +443,7 @@ export default function ProductDetail() {
                 </Button>
                 {product.pdf && (
                   <a href={product.pdf} target="_blank" rel="noopener noreferrer" className="flex-1">
-                    <Button variant="outline" className="w-full h-14 px-8 border-[#1a1a5e] text-[#1a1a5e] hover:bg-[#1a1a5e] hover:text-white rounded-none uppercase font-bold tracking-wider">
+                    <Button variant="outline" className="w-full h-14 px-8 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white rounded-none uppercase font-bold tracking-wider">
                       <FileText className="mr-2 h-4 w-4" /> FICHE TECHNIQUE
                     </Button>
                   </a>
@@ -445,7 +451,7 @@ export default function ProductDetail() {
               </div>
               
               <div className="border-t border-gray-100 pt-8">
-                <h3 className="font-serif font-bold text-[#1a1a5e] mb-4">Points Forts</h3>
+                <h3 className="font-serif font-bold text-[#4A90D9] mb-4">Points Forts</h3>
                 <ul className="space-y-2">
                   {product.features.map((feature: string, index: number) => (
                     <li key={index} className="flex items-start">
@@ -461,12 +467,12 @@ export default function ProductDetail() {
           {/* Detailed Specs */}
           {productSpecs && (
             <div className="mt-16">
-              <h2 className="text-3xl font-serif font-bold text-[#1a1a5e] mb-8 pb-4 border-b border-gray-200">Spécifications Techniques</h2>
+              <h2 className="text-3xl font-serif font-bold text-[#4A90D9] mb-8 pb-4 border-b border-gray-200">Spécifications Techniques</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
                 {Object.entries(productSpecs).map(([category, items]: [string, any]) => (
                   <div key={category}>
-                    <h3 className="text-xl font-bold text-[#1a1a5e] mb-6 bg-gray-50 p-3 border-l-4 border-[#1a1a5e]">{category}</h3>
+                    <h3 className="text-xl font-bold text-[#4A90D9] mb-6 bg-gray-50 p-3 border-l-4 border-[#4A90D9]">{category}</h3>
                     <div className="space-y-4">
                       {items.map((item: any, index: number) => (
                         <div key={index} className="flex justify-between border-b border-gray-100 pb-2">
@@ -482,12 +488,12 @@ export default function ProductDetail() {
           )}
 
           {/* Financing Banner */}
-          <div className="mt-20 bg-[#1a1a5e] rounded-lg p-8 md:p-12 text-white text-center">
+          <div className="mt-20 bg-[#4A90D9] rounded-lg p-8 md:p-12 text-white text-center">
             <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">Besoin d'un financement ?</h2>
             <p className="text-white/80 mb-8 max-w-2xl mx-auto">
               Nous proposons des solutions de financement adaptées aux professionnels. Contactez nos experts pour obtenir une simulation personnalisée.
             </p>
-            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-[#1a1a5e] h-12 px-8">
+            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-[#4A90D9] h-12 px-8">
               Contacter un conseiller
             </Button>
           </div>

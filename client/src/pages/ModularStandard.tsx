@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import DeliveryEstimator from "@/components/DeliveryEstimator";
 import {
   Carousel,
   CarouselContent,
@@ -18,18 +19,21 @@ const SIZES = [
     id: "20ft",
     name: "20 Pieds (37m²)",
     price: 5600,
+    approxM2: 40, // ~37m² → closest bracket 40m²
     shipping: { martinique: 5500, guadeloupe: 5500 }
   },
   {
     id: "30ft",
     name: "30 Pieds (57m²)",
     price: 7400,
+    approxM2: 60, // ~57m² → closest bracket 60m²
     shipping: { martinique: 9500, guadeloupe: 8650 }
   },
   {
     id: "40ft",
     name: "40 Pieds (74m²)",
     price: 9200,
+    approxM2: 80, // ~74m² → closest bracket 80m²
     shipping: { martinique: 9500, guadeloupe: 8650 }
   }
 ];
@@ -97,13 +101,11 @@ const IMAGES = [
 export default function ModularStandard() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedDestination, setSelectedDestination] = useState(DESTINATIONS[0]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [shippingPrice, setShippingPrice] = useState<number | null>(null);
 
   useEffect(() => {
     let price = selectedSize.price;
-    
+
     // Add options price
     selectedOptions.forEach(optId => {
       const option = OPTIONS.find(o => o.id === optId);
@@ -113,35 +115,7 @@ export default function ModularStandard() {
     });
 
     setTotalPrice(price);
-
-    // Calculate shipping based on advanced rules
-    if (selectedDestination.id === "mq" || selectedDestination.id === "gp") {
-      let baseShipping = 0;
-      
-      // 1. Base shipping based on house size (Container 20' vs 40')
-      if (selectedSize.id === "20ft") {
-        // 20ft house uses 20ft container price
-        baseShipping = selectedDestination.id === "mq" ? 5500 : 5500;
-      } else {
-        // 30ft and 40ft houses use 40ft container price
-        baseShipping = selectedDestination.id === "mq" ? 9500 : 8650;
-      }
-
-      // 2. Add volume-based shipping for options (250€/m3)
-      let optionsVolumeCost = 0;
-      selectedOptions.forEach(optId => {
-        const option = OPTIONS.find(o => o.id === optId);
-        if (option && option.volume && option.volume > 0) {
-          optionsVolumeCost += option.volume * 250;
-        }
-      });
-
-      setShippingPrice(baseShipping + optionsVolumeCost);
-    } else {
-      setShippingPrice(null); // Sur devis for other destinations
-    }
-
-  }, [selectedSize, selectedOptions, selectedDestination]);
+  }, [selectedSize, selectedOptions]);
 
   const toggleOption = (id: string) => {
     if (selectedOptions.includes(id)) {
@@ -164,8 +138,8 @@ export default function ModularStandard() {
           
           {/* Breadcrumb */}
           <div className="text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-[#1a237e]">Accueil</a> <span className="mx-2">/</span>
-            <a href="/maisons" className="hover:text-[#1a237e]">Maisons Modulaires</a> <span className="mx-2">/</span>
+            <a href="/" className="hover:text-[#4A90D9]">Accueil</a> <span className="mx-2">/</span>
+            <a href="/maisons" className="hover:text-[#4A90D9]">Maisons Modulaires</a> <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Standard</span>
           </div>
 
@@ -201,8 +175,8 @@ export default function ModularStandard() {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-[#1a237e]" />
-                  <CarouselNext className="right-4 bg-white/80 hover:bg-white text-[#1a237e]" />
+                  <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-[#4A90D9]" />
+                  <CarouselNext className="right-4 bg-white/80 hover:bg-white text-[#4A90D9]" />
                 </Carousel>
                 <div className="p-4 bg-gray-50 text-center text-xs text-gray-500 italic border-t border-gray-100">
                   Photos non contractuelles. Les modèles présentés peuvent inclure des options.
@@ -210,7 +184,7 @@ export default function ModularStandard() {
               </div>
 
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold text-[#1a237e] mb-6 flex items-center">
+                <h3 className="text-xl font-bold text-[#4A90D9] mb-6 flex items-center">
                   <ShieldCheck className="w-5 h-5 mr-2" />
                   Caractéristiques Techniques
                 </h3>
@@ -254,7 +228,7 @@ export default function ModularStandard() {
                 </div>
 
                 <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <h4 className="font-bold text-[#1a237e] mb-2 flex items-center text-sm">
+                  <h4 className="font-bold text-[#4A90D9] mb-2 flex items-center text-sm">
                     <PaintBucket className="w-4 h-4 mr-2" />
                     Personnalisation
                   </h4>
@@ -269,7 +243,7 @@ export default function ModularStandard() {
                     href="/docs/fiche_technique_maison_modulaire.pdf" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:border-[#1a237e] hover:text-[#1a237e] transition-colors"
+                    className="flex items-center justify-center w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:border-[#4A90D9] hover:text-[#4A90D9] transition-colors"
                   >
                     <FileText className="w-5 h-5 mr-2" />
                     Télécharger la Fiche Technique (PDF)
@@ -281,7 +255,7 @@ export default function ModularStandard() {
             {/* Right Column: Configuration & Pricing */}
             <div>
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-blue-50 sticky top-24">
-                <h1 className="text-3xl font-serif font-bold text-[#1a237e] mb-2">
+                <h1 className="text-3xl font-serif font-bold text-[#4A90D9] mb-2">
                   Maison Modulaire Standard
                 </h1>
                 <p className="text-gray-500 mb-6">
@@ -290,7 +264,7 @@ export default function ModularStandard() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
-                  <div className="text-4xl font-bold text-[#1a237e]">
+                  <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(totalPrice)}
                   </div>
                 </div>
@@ -310,7 +284,7 @@ export default function ModularStandard() {
                         onClick={() => setSelectedSize(size)}
                         className={`py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
                           selectedSize.id === size.id
-                            ? "border-[#1a237e] bg-blue-50 text-[#1a237e]"
+                            ? "border-[#4A90D9] bg-blue-50 text-[#4A90D9]"
                             : "border-gray-200 text-gray-600 hover:border-blue-200"
                         }`}
                       >
@@ -333,18 +307,18 @@ export default function ModularStandard() {
                         onClick={() => toggleOption(option.id)}
                         className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           selectedOptions.includes(option.id)
-                            ? "border-[#1a237e] bg-blue-50"
+                            ? "border-[#4A90D9] bg-blue-50"
                             : "border-gray-100 hover:border-blue-100"
                         }`}
                       >
                         <div className={`mt-1 mr-4 p-2 rounded-full ${
-                          selectedOptions.includes(option.id) ? "bg-[#1a237e] text-white" : "bg-gray-100 text-gray-400"
+                          selectedOptions.includes(option.id) ? "bg-[#4A90D9] text-white" : "bg-gray-100 text-gray-400"
                         }`}>
                           <option.icon className="w-4 h-4" />
                         </div>
                         <div className="flex-grow">
                           <div className="flex justify-between items-center mb-1">
-                            <span className={`font-bold ${selectedOptions.includes(option.id) ? "text-[#1a237e]" : "text-gray-700"}`}>
+                            <span className={`font-bold ${selectedOptions.includes(option.id) ? "text-[#4A90D9]" : "text-gray-700"}`}>
                               {option.name}
                             </span>
                             <span className="text-sm font-bold text-gray-900">
@@ -354,81 +328,30 @@ export default function ModularStandard() {
                           <p className="text-xs text-gray-500">{option.description}</p>
                         </div>
                         {selectedOptions.includes(option.id) && (
-                          <Check className="w-5 h-5 text-[#1a237e] ml-2" />
+                          <Check className="w-5 h-5 text-[#4A90D9] ml-2" />
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Shipping Estimator */}
-                <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                  <h4 className="font-bold text-gray-900 mb-4 flex items-center">
-                    <Truck className="w-5 h-5 mr-2 text-blue-600" />
-                    Estimation Livraison
-                  </h4>
-                  
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Destination</label>
-                    <select 
-                      className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#1a237e]"
-                      value={selectedDestination.id}
-                      onChange={(e) => setSelectedDestination(DESTINATIONS.find(d => d.id === e.target.value) || DESTINATIONS[0])}
-                    >
-                      {DESTINATIONS.map(d => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Delivery Estimator */}
+                <DeliveryEstimator
+                  houseSize={selectedSize.approxM2}
+                  housePrice={totalPrice}
+                  selectedOptions={selectedOptions}
+                  optionPrices={{
+                    ac: 2500,
+                    solar: 7912,
+                    furniture: 0,
+                    extra_room: 0,
+                  }}
+                />
 
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                    <span className="text-gray-600 text-sm">Frais de port estimés :</span>
-                    <span className="font-bold text-lg text-[#1a237e]">
-                      {shippingPrice !== null ? formatPrice(shippingPrice) : "Sur devis"}
-                    </span>
-                  </div>
-                  
-                  {shippingPrice === null && (
-                     <div className="mt-3">
-                        <Button variant="outline" className="w-full text-xs h-8 border-blue-200 text-blue-700 hover:bg-blue-50">
-                          Demander une tarification pour {selectedDestination.name.split(' ')[0]}
-                        </Button>
-                     </div>
-                  )}
-
-                  <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-                    <p className="text-[10px] text-gray-400 leading-tight">
-                      *Le prix de la livraison des options est calculé sur la base d'un forfait de 250€ HT/m³ occupé.
-                    </p>
-                    {selectedOptions.includes('furniture') && (
-                      <div className="flex items-start p-2 bg-amber-50 rounded-lg border border-amber-100">
-                        <Info className="w-4 h-4 text-amber-600 mr-2 flex-shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-amber-800 leading-tight">
-                          Vous avez choisi l'option mobilier : un devis séparé vous sera communiqué pour le prix des meubles et leur livraison. Le montant affiché ici n'inclut ni les meubles ni leur transport.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Total & CTA */}
+                {/* CTA */}
                 <div className="space-y-4">
-                  <div className="flex justify-between items-end mb-4">
-                    <span className="text-gray-600 font-medium">Total Estimé (HT)</span>
-                    <div className="text-right">
-                      <span className="block text-3xl font-bold text-[#1a237e]">
-                        {formatPrice(totalPrice + (shippingPrice || 0))}
-                      </span>
-                      {shippingPrice === null && (
-                        <span className="text-xs text-orange-500 font-medium block mt-1">
-                          *Hors frais de livraison
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
                   <a href="https://wa.me/33663284908" target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#1a237e] hover:bg-[#283593] shadow-lg shadow-blue-900/20">
+                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20 rounded-xl">
                       Demander un Devis Complet <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </a>
