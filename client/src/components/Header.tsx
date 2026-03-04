@@ -3,6 +3,7 @@ import { Search, User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ export default function Header() {
   const [location] = useLocation();
   const { cartCount } = useCart();
   const { user, profile, signOut, setShowAuthModal } = useAuth();
+  const { content } = useSiteContent();
 
   const isActive = (path: string) => location === path;
 
@@ -38,7 +40,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-sm font-sans">
       {/* Top Bar - Promotion */}
       <div className="bg-[#4A90D9] text-white text-center py-2 text-xs font-bold tracking-wider uppercase">
-        Expédition sous 45 jours dans les DOM TOM
+        {content?.siteSettings?.topBanner || "EXPÉDITION SOUS 45 JOURS DANS LES DOM TOM"}
       </div>
 
       <div className="container mx-auto px-4 py-4">
@@ -50,27 +52,11 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
-            <Link href="/">
-              <span className={`nav-link ${isActive('/') ? 'text-[#4A90D9]' : ''}`}>Accueil</span>
-            </Link>
-            <Link href="/minipelles">
-              <span className={`nav-link ${isActive('/minipelles') ? 'text-[#4A90D9]' : ''}`}>Mini-pelles</span>
-            </Link>
-            <Link href="/accessoires">
-              <span className={`nav-link ${isActive('/accessoires') ? 'text-[#4A90D9]' : ''}`}>Accessoires</span>
-            </Link>
-            <Link href="/maisons">
-              <span className={`nav-link ${isActive('/maisons') ? 'text-[#4A90D9]' : ''}`}>Maisons</span>
-            </Link>
-            <Link href="/solaire">
-              <span className={`nav-link ${isActive('/solaire') ? 'text-[#4A90D9]' : ''}`}>Solaire</span>
-            </Link>
-            <Link href="/agricole">
-              <span className={`nav-link ${isActive('/agricole') ? 'text-[#4A90D9]' : ''}`}>Agricole</span>
-            </Link>
-            <Link href="/services">
-              <span className={`nav-link ${isActive('/services') ? 'text-[#4A90D9]' : ''}`}>Services</span>
-            </Link>
+            {content?.navigation?.menuItems?.filter(item => item.visible).map((item) => (
+              <Link key={item.path} href={item.path}>
+                <span className={`nav-link ${isActive(item.path) ? 'text-[#4A90D9]' : ''}`}>{item.label}</span>
+              </Link>
+            ))}
           </nav>
 
           {/* Icons */}
@@ -142,27 +128,11 @@ export default function Header() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg py-4 px-4 flex flex-col space-y-4">
-          <Link href="/" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Accueil</span>
-          </Link>
-          <Link href="/minipelles" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Mini-pelles</span>
-          </Link>
-          <Link href="/accessoires" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Accessoires</span>
-          </Link>
-          <Link href="/maisons" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Maisons Modulaires</span>
-          </Link>
-          <Link href="/solaire" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Panneaux Solaires</span>
-          </Link>
-          <Link href="/agricole" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Machines Agricoles</span>
-          </Link>
-          <Link href="/services" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Services</span>
-          </Link>
+          {content?.navigation?.menuItems?.filter(item => item.visible).map((item) => (
+            <Link key={item.path} href={item.path} onClick={() => setIsMenuOpen(false)}>
+              <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">{item.label}</span>
+            </Link>
+          ))}
 
           {/* Mobile Auth & Cart */}
           <div className="pt-4 border-t border-gray-100 flex flex-col space-y-3">

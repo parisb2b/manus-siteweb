@@ -4,14 +4,35 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package } from "lucide-react";
+import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package, Truck, AlertTriangle } from "lucide-react";
 import { Link } from "wouter";
+
+// Shipping calculation constants
+const CONTAINER_20FT_VOLUME = 33;
+const CONTAINER_40FT_VOLUME = 67;
+
+const SHIPPING_PRICES: Record<string, { "20ft": number | null; "40ft": number | null }> = {
+  martinique: { "20ft": 5500, "40ft": 9500 },
+  guadeloupe: { "20ft": 5000, "40ft": 8500 },
+  guyane: { "20ft": null, "40ft": null },
+  reunion: { "20ft": null, "40ft": null },
+  mayotte: { "20ft": null, "40ft": null },
+  autre: { "20ft": null, "40ft": null },
+};
+
+const DESTINATIONS = [
+  { id: "martinique", name: "Martinique" },
+  { id: "guadeloupe", name: "Guadeloupe" },
+  { id: "guyane", name: "Guyane" },
+  { id: "reunion", name: "Réunion" },
+  { id: "mayotte", name: "Mayotte" },
+  { id: "autre", name: "Autre destination" },
+];
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user, profile } = useAuth();
 
-  // Custom product form
   const [customProduct, setCustomProduct] = useState({
     name: "",
     specs: "",
@@ -19,7 +40,8 @@ export default function Cart() {
     hasFile: false,
   });
 
-  // Parse price string to number
+  const [destination, setDestination] = useState("martinique");
+
   const parsePrice = (priceStr: string): number => {
     const cleaned = priceStr
       .replace(/[^0-9,.\s]/g, "")
@@ -41,6 +63,27 @@ export default function Cart() {
   }));
 
   const total = subtotals.reduce((acc, item) => acc + item.subtotal, 0);
+
+  // Delivery estimation - simplified for cart context
+  const estimatedVolume = Math.max(total / 1000, 5);
+  const destPrices = SHIPPING_PRICES[destination];
+  const isQuoteDestination = !destPrices || destPrices["20ft"] === null;
+  const isOverflow = estimatedVolume > CONTAINER_40FT_VOLUME;
+
+  let containerType: string | null = null;
+  let shippingPrice: number | null = null;
+
+  if (!isQuoteDestination && !isOverflow && destPrices) {
+    if (estimatedVolume <= CONTAINER_20FT_VOLUME) {
+      containerType = "Conteneur 20 pieds";
+      shippingPrice = destPrices["20ft"];
+    } else {
+      containerType = "Conteneur 40 pieds";
+      shippingPrice = destPrices["40ft"];
+    }
+  }
+
+  const grandTotal = total + (shippingPrice || 0);
 
   const handleRequestQuote = () => {
     if (items.length === 0 && !customProduct.name) return;
@@ -64,7 +107,14 @@ export default function Cart() {
         }
         message += "\n";
       });
-      message += `\nTOTAL : ${formatPrice(total)}\n`;
+      message += `\nTOTAL PRODUITS : ${formatPrice(total)}\n`;
+    }
+
+    if (shippingPrice !== null) {
+      message += `\nLIVRAISON ESTIMÉE (${DESTINATIONS.find(d => d.id === destination)?.name}) : ${formatPrice(shippingPrice)}\n`;
+      message += `TOTAL GÉNÉRAL : ${formatPrice(grandTotal)}\n`;
+    } else {
+      message += `\nDESTINATION : ${DESTINATIONS.find(d => d.id === destination)?.name} (livraison sur devis)\n`;
     }
 
     if (customProduct.name) {
@@ -91,7 +141,7 @@ export default function Cart() {
         </h1>
 
         {items.length === 0 && !customProduct.name ? (
-          <div className="text-center py-16 bg-gray-50 rounded-lg">
+          <div className="text-center py-16 bg-gray-50 rounded-xl">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-6 text-lg">
               Votre panier est vide pour le moment.
@@ -106,7 +156,6 @@ export default function Cart() {
             <div className="lg:col-span-2 space-y-6">
               {items.length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                  {/* Table Header */}
                   <div className="hidden sm:grid grid-cols-12 gap-4 bg-gray-50 px-6 py-3 text-xs font-bold uppercase text-gray-500 tracking-wider border-b border-gray-200">
                     <div className="col-span-5">Produit</div>
                     <div className="col-span-2 text-center">Prix unitaire</div>
@@ -122,7 +171,7 @@ export default function Cart() {
                     >
                       <div className="sm:col-span-5 flex items-center gap-4">
                         <Link href={item.type === "machine" ? `/products/${item.id}` : "/accessoires"}>
-                          <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                          <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                           </div>
                         </Link>
@@ -140,7 +189,7 @@ export default function Cart() {
                       </div>
 
                       <div className="sm:col-span-2 flex items-center justify-center">
-                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-2 hover:bg-gray-100 transition-colors">
                             <Minus className="w-3 h-3" />
                           </button>
@@ -157,7 +206,7 @@ export default function Cart() {
                       </div>
 
                       <div className="sm:col-span-1 text-right">
-                        <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -196,7 +245,7 @@ export default function Cart() {
                       placeholder="Ex: Godet trapèze 600mm"
                       value={customProduct.name}
                       onChange={(e) => setCustomProduct({ ...customProduct, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -206,7 +255,7 @@ export default function Cart() {
                       value={customProduct.specs}
                       onChange={(e) => setCustomProduct({ ...customProduct, specs: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent resize-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent resize-none"
                     />
                   </div>
                   <div>
@@ -218,13 +267,13 @@ export default function Cart() {
                         placeholder="https://example.com/produit"
                         value={customProduct.url}
                         onChange={(e) => setCustomProduct({ ...customProduct, url: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                       />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Image / Vidéo</label>
-                    <label className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-[#4A90D9] transition-colors cursor-pointer block">
+                    <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-[#4A90D9] transition-colors cursor-pointer block">
                       <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">
                         Glissez votre fichier ici ou <span className="text-[#4A90D9] font-bold">cliquez pour choisir</span>
@@ -238,7 +287,7 @@ export default function Cart() {
                       />
                     </label>
                     {customProduct.hasFile && (
-                      <p className="text-xs text-green-600 mt-2 font-medium">✓ Fichier sélectionné</p>
+                      <p className="text-xs text-green-600 mt-2 font-medium">Fichier sélectionné</p>
                     )}
                   </div>
                 </div>
@@ -276,14 +325,78 @@ export default function Cart() {
                     <span className="font-bold">{items.reduce((acc, i) => acc + i.quantity, 0)}</span>
                   </div>
                   <div className="flex justify-between items-end">
-                    <span className="text-gray-600 font-medium">Total HT</span>
+                    <span className="text-gray-600 font-medium">Sous-total HT</span>
                     <span className="text-2xl font-bold text-[#4A90D9]">{formatPrice(total)}</span>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg border border-blue-100 mb-6">
-                  <strong>Note :</strong> Les frais de transport seront calculés et communiqués dans le devis final selon la destination.
-                </div>
+                {/* Delivery Estimator */}
+                {items.length > 0 && (
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <Truck className="w-4 h-4 mr-2 text-[#4A90D9]" />
+                      Estimation Livraison
+                    </h4>
+
+                    <div className="mb-3">
+                      <select
+                        className="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none"
+                        value={destination}
+                        onChange={(e) => setDestination(e.target.value)}
+                      >
+                        {DESTINATIONS.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {containerType && (
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-500">Type</span>
+                        <span className="font-medium text-gray-700">{containerType}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
+                      <span className="text-gray-600">Frais estimés</span>
+                      <span className="font-bold text-[#4A90D9]">
+                        {isOverflow
+                          ? "Nous contacter"
+                          : isQuoteDestination
+                          ? "Sur devis"
+                          : shippingPrice !== null
+                          ? formatPrice(shippingPrice)
+                          : "—"}
+                      </span>
+                    </div>
+
+                    {isOverflow && (
+                      <div className="flex items-start p-2 bg-orange-50 rounded-xl border border-orange-200 mt-2">
+                        <AlertTriangle className="w-4 h-4 text-orange-500 mr-2 flex-shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-orange-800 leading-relaxed">
+                          Volume important. Contactez-nous pour un devis personnalisé.
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-gray-400 mt-2">
+                      Estimation indicative. Le tarif exact sera confirmé dans le devis.
+                    </p>
+                  </div>
+                )}
+
+                {/* Grand Total with shipping */}
+                {shippingPrice !== null && items.length > 0 && !isQuoteDestination && !isOverflow && (
+                  <div className="border-t border-gray-200 pt-4 mb-4">
+                    <div className="flex justify-between items-end">
+                      <span className="text-gray-700 font-bold text-sm">Total estimé HT</span>
+                      <span className="text-2xl font-bold text-[#4A90D9]">{formatPrice(grandTotal)}</span>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-1">Produits + livraison estimée</p>
+                  </div>
+                )}
 
                 <Button
                   onClick={handleRequestQuote}

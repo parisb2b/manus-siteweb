@@ -229,7 +229,7 @@ export default function Services() {
             </div>
 
             <div className="bg-[#4A90D9] rounded-xl p-8 text-white flex flex-col justify-center items-center text-center">
-              <h3 className="text-2xl font-bold mb-4">Besoin d'assistance ?</h3>
+              <h3 className="text-2xl font-bold mb-4 text-white">Besoin d'assistance ?</h3>
               <p className="text-blue-200 mb-8">
                 Notre équipe technique est disponible pour répondre à toutes vos questions.
               </p>

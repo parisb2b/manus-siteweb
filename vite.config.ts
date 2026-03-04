@@ -1,6 +1,7 @@
 import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
@@ -150,7 +151,195 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+// =============================================================================
+// API Routes Plugin - Enables /api/products and /api/settings for admin back-office
+// =============================================================================
+function viteApiPlugin(): Plugin {
+  const dataDir = path.resolve(import.meta.dirname, "client", "src", "data");
+  return {
+    name: "api-routes",
+    configureServer(server: ViteDevServer) {
+      // JSON body parser for /api/ POST
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith("/api/") && (req.method === "POST" || req.method === "PUT")) {
+          let body = "";
+          req.on("data", (chunk) => { body += chunk.toString(); });
+          req.on("end", () => {
+            try { (req as any).body = JSON.parse(body); } catch { (req as any).body = {}; }
+            next();
+          });
+        } else {
+          next();
+        }
+      });
+
+      server.middlewares.use("/api/products", (req, res, next) => {
+        const filePath = path.join(dataDir, "products.json");
+        const urlPath = req.url || "";
+        const idMatch = urlPath.match(/^\/([^/?]+)/);
+        const productId = idMatch ? idMatch[1] : null;
+
+        if (productId) {
+          // Individual product: GET /api/products/:id, PUT /api/products/:id
+          if (req.method === "GET") {
+            try {
+              const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+              const product = data.find((p: any) => p.id === productId);
+              if (product) {
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify(product));
+              } else {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Not found" }));
+              }
+            } catch {
+              res.writeHead(404, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Not found" }));
+            }
+          } else if (req.method === "PUT") {
+            try {
+              const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+              const index = data.findIndex((p: any) => p.id === productId);
+              if (index >= 0) {
+                data[index] = (req as any).body;
+                fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ success: true }));
+              } else {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Not found" }));
+              }
+            } catch (e) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: false, error: String(e) }));
+            }
+          } else {
+            next();
+          }
+        } else {
+          // Collection: GET /api/products, POST /api/products
+          if (req.method === "GET") {
+            try {
+              const data = fs.readFileSync(filePath, "utf-8");
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(data);
+            } catch {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end("[]");
+            }
+          } else if (req.method === "POST") {
+            try {
+              if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+              fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: false, error: String(e) }));
+            }
+          } else {
+            next();
+          }
+        }
+      });
+
+      server.middlewares.use("/api/settings", (req, res, next) => {
+        const filePath = path.join(dataDir, "settings.json");
+        if (req.method === "GET") {
+          try {
+            const data = fs.readFileSync(filePath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(data);
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+        } else if (req.method === "POST") {
+          try {
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+            fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Site content API
+      server.middlewares.use("/api/site-content", (req, res, next) => {
+        const filePath = path.join(dataDir, "site-content.json");
+        if (req.method === "GET") {
+          try {
+            const data = fs.readFileSync(filePath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(data);
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+        } else if (req.method === "POST") {
+          try {
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+            fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Publish API - git add, commit, push
+      server.middlewares.use("/api/publish", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const projectRoot = path.resolve(import.meta.dirname);
+            const now = new Date();
+            const dateStr = now.toLocaleString("fr-FR", { timeZone: "Europe/Paris" });
+            const commitMsg = `Mise à jour depuis le back-office [${dateStr}]`;
+            execSync("git add -A", { cwd: projectRoot, stdio: "pipe" });
+            execSync(`git commit -m "${commitMsg}"`, { cwd: projectRoot, stdio: "pipe" });
+            execSync("git push origin main", { cwd: projectRoot, stdio: "pipe" });
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true, message: "Site mis à jour avec succès" }));
+          } catch (e: any) {
+            const stderr = e.stderr ? e.stderr.toString() : String(e);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: stderr }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Publish status - check for uncommitted changes
+      server.middlewares.use("/api/publish-status", (req, res, next) => {
+        if (req.method === "GET") {
+          try {
+            const projectRoot = path.resolve(import.meta.dirname);
+            const status = execSync("git status --porcelain", { cwd: projectRoot, stdio: "pipe" }).toString().trim();
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ hasChanges: status.length > 0, details: status }));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ hasChanges: false }));
+          }
+        } else {
+          next();
+        }
+      });
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), viteApiPlugin()];
 
 export default defineConfig({
   plugins,

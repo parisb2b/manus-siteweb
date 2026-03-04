@@ -69,7 +69,7 @@ export default function Delivery() {
           <div className="bg-[#4A90D9] rounded-3xl p-8 md:p-12 text-white shadow-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3 text-white">
                   <Clock className="w-6 h-6 text-yellow-400" /> Délais Moyens
                 </h3>
                 <ul className="space-y-4 text-blue-100">
@@ -92,7 +92,7 @@ export default function Delivery() {
                 </ul>
               </div>
               <div>
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3 text-white">
                   <MapPin className="w-6 h-6 text-yellow-400" /> Ports Desservis
                 </h3>
                 <p className="text-blue-100 mb-6 leading-relaxed">
