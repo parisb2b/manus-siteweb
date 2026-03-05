@@ -1891,5 +1891,86 @@
       "url": "/admin/pages",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:31:22.798Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:31:54.517Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:31:58.716Z",
+    "data": {
+      "route": "/products/r22-pro",
+      "url": "/products/r22-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:52:53.805Z",
+    "data": {
+      "route": "/products/r22-pro",
+      "url": "/products/r22-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:52:53.889Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:53:16.952Z",
+    "data": {
+      "route": "/products/r22-pro",
+      "url": "/products/r22-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:53:17.897Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T16:00:44.866Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T16:00:53.204Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
   }
 ]
