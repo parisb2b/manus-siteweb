@@ -91,7 +91,7 @@
       ]
     },
     "minipelles": {
-      "pageTitle": "Mini-pelles Série Pro",
+      "pageTitle": "Mini-pelle Série Pro",
       "pageSubtitle": "NOTRE GAMME",
       "ctaTitle": "Besoin d'accessoires ?",
       "ctaDescription": "Optimisez votre mini-pelle avec notre gamme complète d'accessoires : godets, marteaux, tarières et plus encore.",
@@ -116,7 +116,7 @@
       ]
     },
     "maisons": {
-      "pageTitle": "Maisons & Studios",
+      "pageTitle": "Maison Modulaire",
       "pageSubtitle": "NOTRE GAMME",
       "ctaTitle": "Un projet sur mesure ?",
       "ctaDescription": "Nos équipes vous accompagnent dans la conception de votre espace modulaire idéal. Contactez-nous pour une étude personnalisée.",
@@ -142,7 +142,7 @@
       ]
     },
     "solaire": {
-      "pageTitle": "Solutions Photovoltaïques",
+      "pageTitle": "Panneau Solaire",
       "pageSubtitle": "NOTRE GAMME",
       "ctaTitle": "Une étude solaire ?",
       "ctaDescription": "Dimensionnez votre installation selon vos besoins réels. Nos experts vous conseillent pour optimiser votre production.",
@@ -168,14 +168,14 @@
       ]
     },
     "agricole": {
-      "pageTitle": "Machines Agricoles",
+      "pageTitle": "Machine Agricole",
       "pageSubtitle": "NOTRE GAMME",
       "comingSoonTitle": "Page Machines Agricoles en maintenance",
       "comingSoonDescription": "Notre gamme de machines agricoles (tracteurs, compacteurs) est en cours de mise à jour pour mieux vous servir. Revenez très bientôt !",
       "bottomSections": []
     },
     "accessoires": {
-      "pageTitle": "Accessoires Mini-pelles",
+      "pageTitle": "Accessoires Mini-pelle",
       "pageSubtitle": "NOTRE GAMME",
       "bottomSections": []
     },

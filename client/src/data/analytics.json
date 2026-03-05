@@ -1297,5 +1297,23 @@
       "url": "/admin/navigation",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:26:35.731Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:27:43.481Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
   }
 ]
