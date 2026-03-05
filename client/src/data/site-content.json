@@ -4,10 +4,10 @@
     "logo": "/images/logo_import97_large.png",
     "primaryColor": "#4A90D9",
     "whatsappNumber": "33663284908",
-    "topBanner": "EXPÉDITION SOUS 45 JOURS DANS LES DOM TOM",
+    "topBanner": "-50% PAR RAPPORT AU PRIX DE VENTE EN MARTINIQUE",
     "footerText": "© 2026 97 import - Tous droits réservés",
     "footerDescription": "97 import simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.",
-    "contactEmail": "import97@sasfr.com",
+    "contactEmail": "info@97import.com",
     "contactPhone": "+33 6 63 28 49 08 / +33 6 20 60 74 48",
     "metaDescription": "97 import - Spécialiste de l'importation depuis la Chine vers les DOM-TOM. Mini-pelles, maisons modulaires, panneaux solaires.",
     "faviconUrl": "/favicon.ico",
@@ -60,8 +60,8 @@
   },
   "pages": {
     "home": {
-      "heroTitle": "Bienvenue",
-      "heroSubtitle": "Avec 97 import, l'importation n'a jamais été aussi simple depuis la Chine vers les Antilles.",
+      "heroTitle": "97 import",
+      "heroSubtitle": "L'importation n'a jamais été aussi simple depuis la Chine vers les Antilles.",
       "heroButtonText": "Rechercher",
       "heroImage": "/images/portal/hero_ship.png",
       "trustTitle": "Pourquoi choisir 97 import?",
@@ -78,7 +78,7 @@
         },
         {
           "title": "SAV Réactif",
-          "description": "Assistance technique disponible 24/7 via WhatsApp pour vous accompagner.",
+          "description": "Assistance technique disponible via WhatsApp pour vous accompagner.",
           "icon": "support"
         }
       ],
@@ -101,7 +101,7 @@
         {
           "icon": "truck",
           "title": "Expédition DOM TOM",
-          "description": "Livraison sécurisée sous 45 jours vers Martinique, Guadeloupe et Guyane."
+          "description": "Livraison depuis la Chine jusqu'à votre destination en 30 à 45 jours."
         },
         {
           "icon": "shield",
@@ -191,15 +191,15 @@
     },
     "terms": {
       "pageTitle": "Conditions Générales de Vente",
-      "content": "<p class=\"text-sm text-gray-500 italic mb-8\">Dernière mise à jour : mars 2026</p><h3>1. Objet</h3><p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>[NOM DE LA SOCIÉTÉ À COMPLÉTER]</strong> (ci-après \"le Vendeur\") et toute personne physique ou morale (ci-après \"le Client\") souhaitant procéder à un achat via le site internet 97 import.</p><h3>2. Produits et Conformité</h3><p>Les produits proposés sont ceux qui figurent sur le site 97 import (Mini-pelles, Maisons Modulaires, Panneaux Solaires, Machines Agricoles). Ces produits sont importés et conformes aux normes en vigueur. Les photographies ne sont pas contractuelles. Le Vendeur se réserve le droit de modifier à tout moment l'assortiment de produits.</p><h3>3. Tarifs et Modalités de Paiement</h3><p>Les prix sont indiqués en Euros (€) Hors Taxes (HT). La TVA et l'Octroi de mer sont à la charge du Client lors de l'arrivée des marchandises aux Antilles/Guyane/Réunion, sauf mention contraire \"Clé en main\".</p><ul><li><strong>Acompte :</strong> Un acompte de 30% à 50% est exigé à la commande pour lancer la fabrication ou la réservation.</li><li><strong>Solde :</strong> Le solde est dû avant l'embarquement des marchandises ou contre remise des documents d'expédition (Bill of Lading).</li><li><strong>Moyens de paiement :</strong> Virement bancaire uniquement.</li></ul><h3>4. Livraison et Transport</h3><p>Les délais de livraison sont donnés à titre indicatif (généralement 45 à 60 jours pour les DOM-TOM). Le transfert des risques s'effectue selon l'incoterm convenu (généralement CIF ou DAP).</p><p>Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.</p><h3>5. Garanties et SAV</h3><p><strong>Garantie Constructeur :</strong> Nos produits bénéficient d'une garantie constructeur (durée variable selon le produit, généralement 1 à 2 ans sur les pièces principales).</p><p><strong>Service Après-Vente :</strong> Le SAV est assuré par nos équipes locales ou partenaires agréés. Les pièces détachées sont expédiées sous 72h en cas de disponibilité stock, ou commandées express depuis l'usine.</p><h3>6. Rétractation</h3><p>Conformément à la législation en vigueur, pour les ventes à distance, le Client particulier dispose d'un délai de rétractation de 14 jours. Toutefois, ce droit ne s'applique pas aux produits confectionnés sur mesure ou nettement personnalisés (ex: Maisons Modulaires avec plans spécifiques).</p><h3>7. Litiges</h3><p>Tout litige relatif à l'interprétation et à l'exécution des présentes CGV est soumis au droit français. À défaut de résolution amiable, le litige sera porté devant le Tribunal de Commerce de <strong>[VILLE D'IMMATRICULATION À COMPLÉTER]</strong>.</p>"
+      "content": ""
     },
     "privacy": {
       "pageTitle": "Politique de Confidentialité",
-      "content": "<p>La protection de vos données personnelles est une priorité pour 97 import. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations.</p><h3>1. Collecte des Données</h3><p>Nous collectons les informations que vous nous fournissez directement lorsque :</p><ul><li>Vous remplissez un formulaire de contact ou de demande de devis.</li><li>Vous nous contactez par email ou téléphone.</li><li>Vous naviguez sur notre site (via des cookies techniques).</li></ul><p>Les données collectées peuvent inclure : Nom, Prénom, Adresse email, Numéro de téléphone, Adresse de livraison.</p><h3>2. Utilisation des Données</h3><p>Vos données sont utilisées exclusivement pour :</p><ul><li>Traiter vos commandes et organiser la livraison.</li><li>Répondre à vos demandes de renseignements et devis.</li><li>Vous envoyer des informations sur votre commande (suivi logistique).</li><li>Améliorer notre site et nos services.</li></ul><p><strong>Nous ne vendons jamais vos données à des tiers.</strong></p><h3>3. Cookies</h3><p>Notre site utilise des cookies pour améliorer votre expérience de navigation et mesurer l'audience. Vous pouvez à tout moment configurer votre navigateur pour refuser les cookies.</p><h3>4. Vos Droits</h3><p>Conformément au RGPD (Règlement Général sur la Protection des Données), vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données.</p><p>Pour exercer ces droits, contactez-nous à : <strong>import97@sasfr.com</strong></p><h3>5. Sécurité</h3><p>Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès non autorisé, perte ou altération.</p>"
+      "content": ""
     },
     "legal": {
       "pageTitle": "Mentions Légales",
-      "content": "<h3>Éditeur du Site</h3><p><strong>Dénomination Sociale :</strong> [À COMPLÉTER]</p><p><strong>Forme Juridique :</strong> [À COMPLÉTER] (ex: SAS, SARL)</p><p><strong>Capital Social :</strong> [À COMPLÉTER] €</p><p><strong>Siège Social :</strong> [À COMPLÉTER]</p><p><strong>RCS :</strong> [À COMPLÉTER] (Ville)</p><p><strong>SIRET :</strong> [À COMPLÉTER]</p><p><strong>Numéro de TVA Intracommunautaire :</strong> [À COMPLÉTER]</p><h3>Contact</h3><p><strong>Email :</strong> import97@sasfr.com</p><p><strong>Téléphone :</strong> +33 6 63 28 49 08 / +33 6 20 60 74 48</p><p><strong>Directeur de la Publication :</strong> [À COMPLÉTER]</p><h3>Hébergement</h3><p><strong>Hébergeur :</strong> [À COMPLÉTER]</p><p><strong>Adresse :</strong> [À COMPLÉTER]</p><p><strong>Site Web :</strong> [À COMPLÉTER]</p><p class=\"mt-8 text-xs text-gray-400 italic\">Ce site respecte le droit d'auteur. Tous les droits des auteurs des œuvres protégées reproduites et communiquées sur ce site, sont réservés. Sauf autorisation, toute utilisation des œuvres autres que la reproduction et la consultation individuelles et privées sont interdites.</p>"
+      "content": ""
     }
   },
   "shipping": {
@@ -207,13 +207,11 @@
     "destinations": [
       {
         "name": "Martinique",
-        "container20": 5500,
-        "container40": 9500
+        "onQuote": true
       },
       {
         "name": "Guadeloupe",
-        "container20": 5000,
-        "container40": 8500
+        "onQuote": true
       },
       {
         "name": "Guyane",

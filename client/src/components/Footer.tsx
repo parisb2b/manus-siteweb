@@ -22,7 +22,7 @@ export default function Footer() {
     : "/images/logo_import97_footer_transparent.png";
 
   const whatsappNumber = content?.siteSettings?.whatsappNumber || "33663284908";
-  const contactEmail = content?.siteSettings?.contactEmail || "import97@sasfr.com";
+  const contactEmail = content?.siteSettings?.contactEmail || "info@97import.com";
   const tiktokUrl = content?.siteSettings?.tiktokUrl || "https://www.tiktok.com/@direxport";
 
   return (

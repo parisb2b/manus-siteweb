@@ -37,9 +37,10 @@ export default function Privacy() {
                   <Shield className="w-5 h-5" /> 1. Responsable du Traitement
                 </h3>
                 <div className="bg-blue-50/50 p-4 rounded-xl text-sm space-y-1">
-                  <p><strong>Société :</strong> [NOM DE LA SOCIÉTÉ — À COMPLÉTER]</p>
-                  <p><strong>Adresse :</strong> [ADRESSE DU SIÈGE — À COMPLÉTER]</p>
-                  <p><strong>Email :</strong> import97@sasfr.com</p>
+                  <p><strong>Société :</strong> LUXENT LIMITED</p>
+                  <p><strong>Adresse :</strong> 2nd Floor College House, 17 King Edwards Road, Ruislip, London HA4 7AE, United Kingdom</p>
+                  <p><strong>Company Number :</strong> 14852122</p>
+                  <p><strong>Email :</strong> info@97import.com</p>
                   <p><strong>Téléphone :</strong> +33 6 63 28 49 08</p>
                 </div>
 
@@ -116,7 +117,7 @@ export default function Privacy() {
                   <li><strong>Droit à la limitation :</strong> restreindre le traitement de vos données</li>
                 </ul>
                 <p>
-                  Pour exercer ces droits, contactez-nous à : <strong>import97@sasfr.com</strong>. Nous nous engageons à répondre dans un délai de 30 jours.
+                  Pour exercer ces droits, contactez-nous à : <strong>info@97import.com</strong>. Nous nous engageons à répondre dans un délai de 30 jours.
                 </p>
 
                 <h3 className="text-[#4A90D9] flex items-center gap-2">

@@ -47,7 +47,7 @@ export default function Services() {
                     <PackageCheck className="h-5 w-5" /> Préparation & Fabrication
                   </h3>
                   <p className="text-gray-700 text-sm">
-                    Selon le produit commandé et le stock disponible à l'usine, la préparation peut prendre <strong>entre 15 et 30 jours</strong>.
+                    Selon le produit commandé et le stock disponible à l'usine, la préparation peut prendre <strong>entre 2 et 30 jours</strong>.
                   </p>
                 </div>
                 
@@ -56,7 +56,7 @@ export default function Services() {
                     <Clock className="h-5 w-5" /> Transport Maritime
                   </h3>
                   <p className="text-gray-700 text-sm">
-                    Comptez <strong>en moyenne 45 jours</strong> pour l'acheminement par bateau jusqu'à votre port de destination.
+                    Comptez <strong>entre 30 et 45 jours</strong> pour l'acheminement par bateau. Livraison depuis la Chine jusqu'à votre destination.
                   </p>
                 </div>
               </div>
@@ -116,25 +116,25 @@ export default function Services() {
               {/* Step 1 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 1</div>
-                <div className="text-4xl font-bold text-[#4A90D9] mb-2">20%</div>
-                <h3 className="font-bold text-gray-900 mb-2">A la commande</h3>
-                <p className="text-sm text-gray-600">Acompte pour valider votre commande et lancer la préparation.</p>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">500 €</div>
+                <h3 className="font-bold text-gray-900 mb-2">Signature du devis</h3>
+                <p className="text-sm text-gray-600">Acompte de 500 € à la signature du devis pour valider votre commande.</p>
               </div>
 
               {/* Step 2 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 2</div>
-                <div className="text-4xl font-bold text-[#4A90D9] mb-2">30%</div>
-                <h3 className="font-bold text-gray-900 mb-2">Fin de préparation</h3>
-                <p className="text-sm text-gray-600">Acompte une fois la production ou préparation terminée à l'usine.</p>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">45%</div>
+                <h3 className="font-bold text-gray-900 mb-2">À la commande</h3>
+                <p className="text-sm text-gray-600">45% du montant total pour lancer la production ou la préparation à l'usine.</p>
               </div>
 
               {/* Step 3 */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Étape 3</div>
-                <div className="text-4xl font-bold text-[#4A90D9] mb-2">30%</div>
+                <div className="text-4xl font-bold text-[#4A90D9] mb-2">35%</div>
                 <h3 className="font-bold text-gray-900 mb-2">Départ Conteneur</h3>
-                <p className="text-sm text-gray-600">Acompte avant le chargement et le départ du navire.</p>
+                <p className="text-sm text-gray-600">35% avant le chargement et le départ du navire vers votre destination.</p>
               </div>
 
               {/* Step 4 */}
@@ -142,7 +142,7 @@ export default function Services() {
                 <div className="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Solde</div>
                 <div className="text-4xl font-bold text-green-600 mb-2">20%</div>
                 <h3 className="font-bold text-gray-900 mb-2">Arrivée à destination</h3>
-                <p className="text-sm text-gray-600">Paiement final à l'arrivée, sous réserve de conformité et bonne réception.</p>
+                <p className="text-sm text-gray-600">Solde de 20% à l'arrivée à destination, sous réserve de conformité et bonne réception.</p>
               </div>
             </div>
 

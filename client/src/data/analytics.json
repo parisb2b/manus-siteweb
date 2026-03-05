@@ -1369,5 +1369,383 @@
       "url": "/admin/dashboard",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:28:44.268Z",
+    "data": {
+      "route": "/admin/products",
+      "url": "/admin/products",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:29:00.917Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:05.602Z",
+    "data": {
+      "route": "/products/r18-pro",
+      "url": "/products/r18-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:08.236Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:27.680Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:32.461Z",
+    "data": {
+      "route": "/accessoires",
+      "url": "/accessoires",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:35.468Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:38.386Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:38:40.610Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:39:33.530Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:39:37.576Z",
+    "data": {
+      "route": "/products/r18-pro",
+      "url": "/products/r18-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:40:04.867Z",
+    "data": {
+      "route": "/contact",
+      "url": "/contact",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:40:26.179Z",
+    "data": {
+      "route": "/accessoires",
+      "url": "/accessoires",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:41:37.051Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:41:38.433Z",
+    "data": {
+      "route": "/maisons/premium",
+      "url": "/maisons/premium",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:42:48.601Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:43:05.419Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:43:15.483Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:44:04.953Z",
+    "data": {
+      "route": "/agricole",
+      "url": "/agricole",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:44:14.796Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:49:07.217Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:49:53.887Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:49:55.874Z",
+    "data": {
+      "route": "/agricole",
+      "url": "/agricole",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:49:58.334Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:50:17.386Z",
+    "data": {
+      "route": "/terms",
+      "url": "/terms",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:51:10.474Z",
+    "data": {
+      "route": "/delivery",
+      "url": "/delivery",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:53:47.009Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:54:43.817Z",
+    "data": {
+      "route": "/terms",
+      "url": "/terms",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:54:50.597Z",
+    "data": {
+      "route": "/privacy",
+      "url": "/privacy",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:54:54.175Z",
+    "data": {
+      "route": "/delivery",
+      "url": "/delivery",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:54:55.863Z",
+    "data": {
+      "route": "/legal",
+      "url": "/legal",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:55:20.957Z",
+    "data": {
+      "route": "/terms",
+      "url": "/terms",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:07:02.688Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:07:03.112Z",
+    "data": {
+      "route": "/terms",
+      "url": "/terms",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:07:38.436Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:07:41.224Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:11:33.428Z",
+    "data": {
+      "route": "/privacy",
+      "url": "/privacy",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:11:50.034Z",
+    "data": {
+      "route": "/contact",
+      "url": "/contact",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:18:16.306Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:09.283Z",
+    "data": {
+      "route": "/admin/navigation",
+      "url": "/admin/navigation",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:09.885Z",
+    "data": {
+      "route": "/admin/pricing",
+      "url": "/admin/pricing",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:10.828Z",
+    "data": {
+      "route": "/admin/shipping",
+      "url": "/admin/shipping",
+      "lang": "fr"
+    }
   }
 ]

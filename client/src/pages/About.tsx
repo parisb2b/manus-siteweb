@@ -51,7 +51,7 @@ export default function About() {
               </div>
               <div className="bg-blue-50 rounded-xl p-6 text-center">
                 <Truck className="h-8 w-8 text-[#4A90D9] mx-auto mb-3" />
-                <span className="text-2xl font-bold text-[#4A90D9] block">45j</span>
+                <span className="text-2xl font-bold text-[#4A90D9] block">2-30j</span>
                 <span className="text-sm text-gray-500">Délai moyen</span>
               </div>
               <div className="bg-blue-50 rounded-xl p-6 text-center">

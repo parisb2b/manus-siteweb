@@ -36,14 +36,10 @@ export default function Legal() {
                     <Building className="w-5 h-5" /> 1. Éditeur du Site
                   </h3>
                   <div className="bg-blue-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
-                    <p><strong>Dénomination Sociale :</strong> [À COMPLÉTER]</p>
-                    <p><strong>Forme Juridique :</strong> [À COMPLÉTER] (ex : SAS, SARL, EURL)</p>
-                    <p><strong>Capital Social :</strong> [À COMPLÉTER] €</p>
-                    <p><strong>Siège Social :</strong> [À COMPLÉTER]</p>
-                    <p><strong>RCS :</strong> [À COMPLÉTER] (Ville d'immatriculation)</p>
-                    <p><strong>SIRET :</strong> [À COMPLÉTER]</p>
-                    <p><strong>Numéro de TVA Intracommunautaire :</strong> [À COMPLÉTER]</p>
-                    <p><strong>Code APE / NAF :</strong> [À COMPLÉTER]</p>
+                    <p><strong>Dénomination Sociale :</strong> LUXENT LIMITED</p>
+                    <p><strong>Forme Juridique :</strong> Private Limited Company</p>
+                    <p><strong>Siège Social :</strong> 2nd Floor College House, 17 King Edwards Road, Ruislip, London HA4 7AE, United Kingdom</p>
+                    <p><strong>Numéro d'enregistrement :</strong> 14852122</p>
                   </div>
                 </div>
 
@@ -64,7 +60,7 @@ export default function Legal() {
                     <Globe className="w-5 h-5" /> 3. Contact
                   </h3>
                   <div className="bg-blue-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
-                    <p><strong>Email :</strong> import97@sasfr.com</p>
+                    <p><strong>Email :</strong> info@97import.com</p>
                     <p><strong>Téléphone :</strong> +33 6 63 28 49 08 / +33 6 20 60 74 48</p>
                     <p><strong>WhatsApp :</strong> +33 6 63 28 49 08</p>
                   </div>

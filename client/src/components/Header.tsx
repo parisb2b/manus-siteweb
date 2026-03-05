@@ -48,7 +48,7 @@ export default function Header() {
 
       {/* Top Bar - Promotion */}
       <div className="bg-[#4A90D9] text-white text-center py-2 text-xs font-bold tracking-wider uppercase">
-        {content?.siteSettings?.topBanner || "EXPÉDITION SOUS 45 JOURS DANS LES DOM TOM"}
+        {content?.siteSettings?.topBanner || "-50% PAR RAPPORT AU PRIX DE VENTE EN MARTINIQUE"}
       </div>
 
       <div className="container mx-auto px-4 py-4">

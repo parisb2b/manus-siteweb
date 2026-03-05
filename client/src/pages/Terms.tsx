@@ -33,7 +33,7 @@ export default function Terms() {
                   <FileText className="w-5 h-5" /> Article 1 — Objet
                 </h3>
                 <p>
-                  Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>[NOM DE LA SOCIÉTÉ — À COMPLÉTER]</strong>, ci-après dénommée « le Vendeur », et toute personne physique ou morale, ci-après dénommée « le Client », souhaitant procéder à un achat via le site internet 97 import.
+                  Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>LUXENT LIMITED</strong> (Company Number : 14852122), dont le siège social est situé au 2nd Floor College House, 17 King Edwards Road, Ruislip, London HA4 7AE, United Kingdom, ci-après dénommée « le Vendeur », et toute personne physique ou morale, ci-après dénommée « le Client », souhaitant procéder à un achat via le site internet 97 import.
                 </p>
                 <p>
                   Toute commande implique l'acceptation sans réserve des présentes CGV. Ces conditions prévaudront sur toute autre condition figurant dans tout autre document, sauf dérogation formelle et expresse.
@@ -69,20 +69,22 @@ export default function Terms() {
                 <h3 className="text-[#4A90D9] flex items-center gap-2">
                   <CreditCard className="w-5 h-5" /> Article 5 — Modalités de Paiement
                 </h3>
+                <p>Le paiement s'effectue par <strong>virement bancaire</strong> selon l'échelonnement suivant :</p>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong>Acompte :</strong> Un acompte de 30% à 50% est exigé à la commande pour lancer la fabrication ou la réservation.</li>
-                  <li><strong>Solde :</strong> Le solde est dû avant l'embarquement des marchandises ou contre remise des documents d'expédition (Bill of Lading).</li>
-                  <li><strong>Moyens de paiement :</strong> Virement bancaire uniquement.</li>
+                  <li><strong>500 € d'acompte</strong> à la signature du devis</li>
+                  <li><strong>45%</strong> du montant total à la commande</li>
+                  <li><strong>35%</strong> au départ du conteneur</li>
+                  <li><strong>20% (solde)</strong> à l'arrivée à destination</li>
                 </ul>
                 <p>
-                  En cas de retard de paiement, des pénalités de retard seront appliquées conformément à l'article L.441-10 du Code de commerce.
+                  En cas de retard de paiement, des pénalités de retard seront appliquées conformément aux dispositions légales en vigueur.
                 </p>
 
                 <h3 className="text-[#4A90D9] flex items-center gap-2">
                   <Truck className="w-5 h-5" /> Article 6 — Livraison et Transport
                 </h3>
                 <p>
-                  Les délais de livraison sont donnés à titre indicatif (généralement 45 à 60 jours pour les DOM-TOM). Le transfert des risques s'effectue selon l'incoterm convenu (généralement CIF ou DAP). Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.
+                  Les délais de livraison sont donnés à titre indicatif : préparation entre 2 et 30 jours, transport maritime entre 30 et 45 jours. Livraison depuis la Chine jusqu'à votre destination. Le transfert des risques s'effectue selon l'incoterm convenu (généralement CIF ou DAP). Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.
                 </p>
                 <p>
                   En cas de retard de livraison supérieur à 30 jours par rapport à la date estimée, le Client pourra demander la résolution de la vente par lettre recommandée avec accusé de réception.
@@ -127,10 +129,7 @@ export default function Terms() {
                   <Scale className="w-5 h-5" /> Article 11 — Litiges et Droit Applicable
                 </h3>
                 <p>
-                  Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut de résolution amiable dans un délai de 30 jours, le litige sera porté devant le Tribunal de Commerce de <strong>[VILLE D'IMMATRICULATION — À COMPLÉTER]</strong>.
-                </p>
-                <p>
-                  Conformément à l'article L.612-1 du Code de la consommation, le Client peut recourir à un médiateur de la consommation. Le médiateur compétent est : <strong>[NOM DU MÉDIATEUR — À COMPLÉTER]</strong>.
+                  Les présentes CGV sont soumises au droit anglais. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut de résolution amiable dans un délai de 30 jours, le litige sera porté devant le <strong>Tribunal de Commerce de Londres</strong>.
                 </p>
 
               </div>

@@ -113,7 +113,7 @@ export default function PortalHome() {
             className="relative z-10 max-w-4xl mx-auto"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight leading-tight text-white">
-              {page?.heroTitle || "Bienvenue"}
+              {page?.heroTitle || "97 import"}
             </h1>
 
             <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-3xl mx-auto font-light">

@@ -25,7 +25,7 @@ export default function Delivery() {
               </div>
               <h3 className="text-xl font-bold text-[#4A90D9] mb-3">1. Préparation & Fabrication</h3>
               <p className="text-gray-600">
-                Selon le produit commandé et le stock disponible, la préparation peut prendre <strong>entre 15 et 30 jours</strong>. Vos marchandises sont ensuite soigneusement emballées et sécurisées.
+                Selon le produit commandé et le stock disponible, la préparation peut prendre <strong>entre 2 et 30 jours</strong>. Vos marchandises sont ensuite soigneusement emballées et sécurisées.
               </p>
             </div>
 
@@ -36,7 +36,7 @@ export default function Delivery() {
               </div>
               <h3 className="text-xl font-bold text-[#4A90D9] mb-3">2. Transport Maritime</h3>
               <p className="text-gray-600">
-                Expédition depuis le port de départ (généralement Qingdao ou Shanghai) vers votre port de destination. Nous travaillons avec les meilleures compagnies maritimes (CMA CGM, Maersk, MSC).
+                Transport maritime <strong>entre 30 et 45 jours</strong>. Livraison depuis la Chine jusqu'à votre destination. Nous travaillons avec les meilleures compagnies maritimes (CMA CGM, Maersk, MSC).
               </p>
             </div>
 
