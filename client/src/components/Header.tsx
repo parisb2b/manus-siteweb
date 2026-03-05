@@ -3,7 +3,7 @@ import { User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContent, getPageKeyFromPath } from "@/hooks/useSiteContent";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -60,7 +60,12 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
-            {content?.navigation?.menuItems?.filter(item => item.visible).map((item) => (
+            {content?.navigation?.menuItems?.filter(item => {
+              if (!item.visible) return false;
+              const pk = getPageKeyFromPath(item.path);
+              if (pk && content?.pagesConfig?.[pk]?.enabled === false) return false;
+              return true;
+            }).map((item) => (
               <Link key={item.path} href={item.path}>
                 <span className={`nav-link ${isActive(item.path) ? 'text-[#4A90D9]' : ''}`}>{item.label}</span>
               </Link>
@@ -130,7 +135,12 @@ export default function Header() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg py-4 px-4 flex flex-col space-y-4">
-          {content?.navigation?.menuItems?.filter(item => item.visible).map((item) => (
+          {content?.navigation?.menuItems?.filter(item => {
+              if (!item.visible) return false;
+              const pk = getPageKeyFromPath(item.path);
+              if (pk && content?.pagesConfig?.[pk]?.enabled === false) return false;
+              return true;
+            }).map((item) => (
             <Link key={item.path} href={item.path} onClick={() => setIsMenuOpen(false)}>
               <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">{item.label}</span>
             </Link>

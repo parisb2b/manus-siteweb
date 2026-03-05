@@ -202,6 +202,56 @@
       "content": ""
     }
   },
+  "pagesConfig": {
+    "minipelles": {
+      "enabled": true,
+      "label": "Mini-pelles"
+    },
+    "maisons": {
+      "enabled": true,
+      "label": "Maisons Modulaires"
+    },
+    "solaire": {
+      "enabled": true,
+      "label": "Panneaux Solaires"
+    },
+    "agricole": {
+      "enabled": false,
+      "label": "Machines Agricoles"
+    },
+    "accessoires": {
+      "enabled": true,
+      "label": "Accessoires"
+    },
+    "services": {
+      "enabled": true,
+      "label": "Services"
+    },
+    "delivery": {
+      "enabled": true,
+      "label": "Livraison"
+    },
+    "contact": {
+      "enabled": true,
+      "label": "Contact"
+    },
+    "about": {
+      "enabled": true,
+      "label": "À propos"
+    },
+    "terms": {
+      "enabled": true,
+      "label": "CGV"
+    },
+    "privacy": {
+      "enabled": true,
+      "label": "Confidentialité"
+    },
+    "legal": {
+      "enabled": true,
+      "label": "Mentions Légales"
+    }
+  },
   "shipping": {
     "pricePerCubicMeter": 250,
     "destinations": [

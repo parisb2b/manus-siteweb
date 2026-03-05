@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Youtube, MessageCircle } from "lucide-react";
 import TikTokIcon from "./TikTokIcon";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContent, getPageKeyFromPath } from "@/hooks/useSiteContent";
 
 export default function Footer() {
   const [location] = useLocation();
@@ -51,7 +51,12 @@ export default function Footer() {
           <div>
             {/* Navigation Header Removed */}
             <ul className="space-y-3 text-sm text-blue-100 mt-0 md:mt-12">
-              {content?.navigation?.menuItems?.filter(item => item.visible).map((item) => (
+              {content?.navigation?.menuItems?.filter(item => {
+                if (!item.visible) return false;
+                const pk = getPageKeyFromPath(item.path);
+                if (pk && content?.pagesConfig?.[pk]?.enabled === false) return false;
+                return true;
+              }).map((item) => (
                 <li key={item.path}><Link href={item.path} className="hover:text-white transition-colors">{item.label}</Link></li>
               ))}
             </ul>
@@ -61,12 +66,16 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-bold mb-6 uppercase tracking-wider text-white">Informations</h4>
             <ul className="space-y-3 text-sm text-blue-100">
-              <li><Link href="/about" className="hover:text-white transition-colors">À propos</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Conditions Générales de Vente</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Politique de Confidentialité</Link></li>
-              <li><Link href="/delivery" className="hover:text-white transition-colors">Livraison DOM TOM</Link></li>
-              <li><Link href="/legal" className="hover:text-white transition-colors">Mentions Légales</Link></li>
+              {[
+                { path: "/about", label: "À propos", key: "about" },
+                { path: "/contact", label: "Contact", key: "contact" },
+                { path: "/terms", label: "Conditions Générales de Vente", key: "terms" },
+                { path: "/privacy", label: "Politique de Confidentialité", key: "privacy" },
+                { path: "/delivery", label: "Livraison DOM TOM", key: "delivery" },
+                { path: "/legal", label: "Mentions Légales", key: "legal" },
+              ].filter(item => content?.pagesConfig?.[item.key]?.enabled !== false).map((item) => (
+                <li key={item.path}><Link href={item.path} className="hover:text-white transition-colors">{item.label}</Link></li>
+              ))}
             </ul>
           </div>
 

@@ -20,6 +20,7 @@ export interface SiteContent {
     menuItems: { label: string; path: string; visible: boolean }[];
   };
   pages: Record<string, any>;
+  pagesConfig?: Record<string, { enabled: boolean; label: string }>;
   shipping: {
     pricePerCubicMeter: number;
     destinations: { name: string; container20?: number; container40?: number; onQuote?: boolean }[];
@@ -77,6 +78,33 @@ export function usePageContent(pageKey: string) {
     shipping: content?.shipping || null,
     loading,
   };
+}
+
+const PATH_TO_PAGE_KEY: Record<string, string> = {
+  "/minipelles": "minipelles",
+  "/maisons": "maisons",
+  "/maisons/standard": "maisons",
+  "/maisons/premium": "maisons",
+  "/maisons/camping-car-deluxe": "maisons",
+  "/solaire": "solaire",
+  "/agricole": "agricole",
+  "/accessoires": "accessoires",
+  "/services": "services",
+  "/delivery": "delivery",
+  "/contact": "contact",
+  "/about": "about",
+  "/terms": "terms",
+  "/privacy": "privacy",
+  "/legal": "legal",
+};
+
+export function getPageKeyFromPath(path: string): string | null {
+  return PATH_TO_PAGE_KEY[path] || null;
+}
+
+export function isPageEnabled(content: SiteContent | null, pageKey: string): boolean {
+  if (!content?.pagesConfig) return true;
+  return content.pagesConfig[pageKey]?.enabled ?? true;
 }
 
 export function invalidateSiteContentCache() {

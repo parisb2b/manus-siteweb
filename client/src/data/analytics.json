@@ -1747,5 +1747,149 @@
       "url": "/admin/shipping",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:29.510Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:40.441Z",
+    "data": {
+      "route": "/contact",
+      "url": "/contact",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:45.295Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:46.090Z",
+    "data": {
+      "route": "/contact",
+      "url": "/contact",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:48.274Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:20:58.998Z",
+    "data": {
+      "route": "/agricole",
+      "url": "/agricole",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:21:00.303Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:21:01.470Z",
+    "data": {
+      "route": "/agricole",
+      "url": "/agricole",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:21:06.405Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:21:07.514Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:21:14.564Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:25:38.705Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:25:38.887Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:25:38.895Z",
+    "data": {
+      "route": "/services",
+      "url": "/services",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:30:58.976Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T15:31:19.692Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
   }
 ]

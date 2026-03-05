@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { trackPageView } from "./lib/analytics";
 import ScrollToTop from "./components/ScrollToTop";
 import SEO from "./components/SEO";
+import { useSiteContent, isPageEnabled } from "./hooks/useSiteContent";
 import MiniPelles from "./pages/MiniPelles";
 import PortalHome from "./pages/PortalHome";
 import ModularHomes from "./pages/ModularHomes";
@@ -25,6 +26,14 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 
+function PageGuard({ pageKey, component: Component }: { pageKey: string; component: React.ComponentType }) {
+  const { content, loading } = useSiteContent();
+  if (loading) return null;
+  const enabled = isPageEnabled(content, pageKey);
+  if (!enabled) return <NotFound />;
+  return <Component />;
+}
+
 function App() {
   const [location] = useLocation();
 
@@ -38,23 +47,23 @@ function App() {
       <SEO />
       <Switch>
         <Route path="/" component={PortalHome} />
-        <Route path="/minipelles" component={MiniPelles} />
-        <Route path="/maisons" component={ModularHomes} />
-        <Route path="/maisons/standard" component={ModularStandard} />
-        <Route path="/maisons/premium" component={ModularPremium} />
-        <Route path="/maisons/camping-car-deluxe" component={CampingCarDeluxe} />
-        <Route path="/solaire" component={Solar} />
-        <Route path="/agricole" component={Agriculture} />
+        <Route path="/minipelles">{() => <PageGuard pageKey="minipelles" component={MiniPelles} />}</Route>
+        <Route path="/maisons">{() => <PageGuard pageKey="maisons" component={ModularHomes} />}</Route>
+        <Route path="/maisons/standard">{() => <PageGuard pageKey="maisons" component={ModularStandard} />}</Route>
+        <Route path="/maisons/premium">{() => <PageGuard pageKey="maisons" component={ModularPremium} />}</Route>
+        <Route path="/maisons/camping-car-deluxe">{() => <PageGuard pageKey="maisons" component={CampingCarDeluxe} />}</Route>
+        <Route path="/solaire">{() => <PageGuard pageKey="solaire" component={Solar} />}</Route>
+        <Route path="/agricole">{() => <PageGuard pageKey="agricole" component={Agriculture} />}</Route>
         <Route path="/products/:id" component={ProductDetail} />
-        <Route path="/accessoires" component={Accessories} />
+        <Route path="/accessoires">{() => <PageGuard pageKey="accessoires" component={Accessories} />}</Route>
         <Route path="/cart" component={Cart} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/privacy" component={Privacy} />
-        <Route path="/delivery" component={Delivery} />
-        <Route path="/legal" component={Legal} />
-        <Route path="/services" component={Services} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/about" component={About} />
+        <Route path="/terms">{() => <PageGuard pageKey="terms" component={Terms} />}</Route>
+        <Route path="/privacy">{() => <PageGuard pageKey="privacy" component={Privacy} />}</Route>
+        <Route path="/delivery">{() => <PageGuard pageKey="delivery" component={Delivery} />}</Route>
+        <Route path="/legal">{() => <PageGuard pageKey="legal" component={Legal} />}</Route>
+        <Route path="/services">{() => <PageGuard pageKey="services" component={Services} />}</Route>
+        <Route path="/contact">{() => <PageGuard pageKey="contact" component={Contact} />}</Route>
+        <Route path="/about">{() => <PageGuard pageKey="about" component={About} />}</Route>
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/:rest*" component={AdminLayout} />
         <Route component={NotFound} />

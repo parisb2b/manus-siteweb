@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Save, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { FileText, Save, ChevronRight, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 
 const PAGE_LABELS: Record<string, string> = {
   home: "Accueil",
@@ -10,16 +10,21 @@ const PAGE_LABELS: Record<string, string> = {
   accessoires: "Accessoires",
   services: "Services",
   delivery: "Livraison",
+  contact: "Contact",
+  about: "À propos",
   terms: "CGV",
-  privacy: "Confidentialit\u00e9",
-  legal: "Mentions l\u00e9gales",
+  privacy: "Confidentialité",
+  legal: "Mentions légales",
 };
 
 const PAGE_KEYS = Object.keys(PAGE_LABELS);
 
+// Pages that cannot be disabled (always active)
+const NON_DISABLABLE_PAGES = ["home"];
+
 const CATALOG_PAGES = ["home", "minipelles", "maisons", "solaire", "agricole", "accessoires"];
 const LEGAL_PAGES = ["terms", "privacy", "legal"];
-const INFO_PAGES = ["services", "delivery"];
+const INFO_PAGES = ["services", "delivery", "contact", "about"];
 
 export default function AdminPages() {
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -32,6 +37,10 @@ export default function AdminPages() {
     fetch("/api/site-content")
       .then((res) => res.json())
       .then((data) => {
+        // Ensure pagesConfig exists
+        if (!data.pagesConfig) {
+          data.pagesConfig = {};
+        }
         setSiteContent(data);
         setLoading(false);
       })
@@ -49,7 +58,7 @@ export default function AdminPages() {
         body: JSON.stringify(siteContent),
       });
       if (res.ok) {
-        setSaveMessage("Contenu des pages sauvegard\u00e9 avec succ\u00e8s");
+        setSaveMessage("Contenu des pages sauvegardé avec succès");
       } else {
         setSaveMessage("Erreur lors de la sauvegarde");
       }
@@ -71,6 +80,26 @@ export default function AdminPages() {
         },
       },
     }));
+  };
+
+  const togglePageEnabled = (pageKey: string) => {
+    setSiteContent((prev: any) => {
+      const currentConfig = prev.pagesConfig?.[pageKey] || { enabled: true, label: PAGE_LABELS[pageKey] };
+      return {
+        ...prev,
+        pagesConfig: {
+          ...prev.pagesConfig,
+          [pageKey]: {
+            ...currentConfig,
+            enabled: !currentConfig.enabled,
+          },
+        },
+      };
+    });
+  };
+
+  const isPageEnabled = (pageKey: string): boolean => {
+    return siteContent?.pagesConfig?.[pageKey]?.enabled ?? true;
   };
 
   const updateTrustItem = (index: number, field: string, value: string) => {
@@ -168,7 +197,7 @@ export default function AdminPages() {
         <>
           <div className="pt-4 border-t border-gray-100">
             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">
-              Section CTA (appel \u00e0 l'action)
+              Section CTA (appel à l'action)
             </h3>
           </div>
           {renderInputField("Titre CTA", "ctaTitle")}
@@ -201,7 +230,7 @@ export default function AdminPages() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <label className="block text-sm font-medium text-gray-700">
-            \u00c9l\u00e9ments de confiance
+            Éléments de confiance
           </label>
           <button
             type="button"
@@ -219,7 +248,7 @@ export default function AdminPages() {
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-400 uppercase">
-                \u00c9l\u00e9ment {index + 1}
+                Élément {index + 1}
               </span>
               <button
                 type="button"
@@ -237,7 +266,7 @@ export default function AdminPages() {
                 value={item.title || ""}
                 onChange={(e) => updateTrustItem(index, "title", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800 text-sm"
-                placeholder="Titre de l'\u00e9l\u00e9ment"
+                placeholder="Titre de l'élément"
               />
             </div>
             <div>
@@ -247,7 +276,7 @@ export default function AdminPages() {
                 value={item.description || ""}
                 onChange={(e) => updateTrustItem(index, "description", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800 text-sm"
-                placeholder="Description de l'\u00e9l\u00e9ment"
+                placeholder="Description de l'élément"
               />
             </div>
           </div>
@@ -305,6 +334,9 @@ export default function AdminPages() {
     return null;
   };
 
+  const enabledCount = PAGE_KEYS.filter(key => isPageEnabled(key)).length;
+  const disabledCount = PAGE_KEYS.length - enabledCount;
+
   return (
     <div className="font-sans">
       {/* Header */}
@@ -312,7 +344,7 @@ export default function AdminPages() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Contenu des Pages</h1>
           <p className="text-gray-500 mt-1">
-            G\u00e9rez les textes et contenus de chaque page du site
+            Gérez les textes et la visibilité de chaque page du site
           </p>
         </div>
         <button
@@ -338,10 +370,18 @@ export default function AdminPages() {
         </div>
       )}
 
+      {/* Stats bar */}
+      {disabledCount > 0 && (
+        <div className="mb-4 px-4 py-3 rounded-xl text-sm font-medium bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-2">
+          <EyeOff className="w-4 h-4" />
+          {disabledCount} page{disabledCount > 1 ? "s" : ""} désactivée{disabledCount > 1 ? "s" : ""} — {enabledCount} active{enabledCount > 1 ? "s" : ""}
+        </div>
+      )}
+
       {/* Main layout: sidebar + editor */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar - Page list */}
-        <div className="lg:w-64 flex-shrink-0">
+        <div className="lg:w-72 flex-shrink-0">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
@@ -351,22 +391,56 @@ export default function AdminPages() {
             <nav className="py-1">
               {PAGE_KEYS.map((key) => {
                 const isActive = selectedPage === key;
+                const enabled = isPageEnabled(key);
+                const canToggle = !NON_DISABLABLE_PAGES.includes(key);
                 return (
-                  <button
+                  <div
                     key={key}
-                    onClick={() => setSelectedPage(key)}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                    className={`flex items-center transition-colors ${
                       isActive
-                        ? "bg-[#4A90D9]/10 text-[#4A90D9] font-semibold border-r-2 border-[#4A90D9]"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-[#4A90D9]/10 border-r-2 border-[#4A90D9]"
+                        : "hover:bg-gray-50"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <FileText className={`w-4 h-4 ${isActive ? "text-[#4A90D9]" : "text-gray-400"}`} />
-                      <span>{PAGE_LABELS[key]}</span>
-                    </div>
-                    {isActive && <ChevronRight className="w-4 h-4 text-[#4A90D9]" />}
-                  </button>
+                    <button
+                      onClick={() => setSelectedPage(key)}
+                      className={`flex-1 flex items-center gap-2.5 px-4 py-2.5 text-sm text-left ${
+                        isActive
+                          ? "text-[#4A90D9] font-semibold"
+                          : enabled
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                      }`}
+                    >
+                      <FileText className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[#4A90D9]" : enabled ? "text-gray-400" : "text-gray-300"}`} />
+                      <span className={!enabled ? "line-through" : ""}>{PAGE_LABELS[key]}</span>
+                      {!enabled && (
+                        <span className="ml-auto text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
+                          Off
+                        </span>
+                      )}
+                    </button>
+                    {canToggle && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePageEnabled(key);
+                        }}
+                        className={`p-2 mr-2 rounded-lg transition-colors flex-shrink-0 ${
+                          enabled
+                            ? "text-emerald-600 hover:bg-emerald-50"
+                            : "text-gray-400 hover:bg-gray-100"
+                        }`}
+                        title={enabled ? "Page active — cliquer pour désactiver" : "Page désactivée — cliquer pour activer"}
+                      >
+                        {enabled ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </nav>
@@ -381,7 +455,22 @@ export default function AdminPages() {
               <h2 className="text-lg font-semibold text-gray-800">
                 {PAGE_LABELS[selectedPage]}
               </h2>
+              {!isPageEnabled(selectedPage) && !NON_DISABLABLE_PAGES.includes(selectedPage) && (
+                <span className="ml-2 text-xs font-bold uppercase tracking-wider bg-red-100 text-red-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <EyeOff className="w-3 h-3" />
+                  Page désactivée
+                </span>
+              )}
             </div>
+            {!isPageEnabled(selectedPage) && !NON_DISABLABLE_PAGES.includes(selectedPage) && (
+              <div className="mx-6 mt-4 px-4 py-3 rounded-xl text-sm bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-2">
+                <EyeOff className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  Cette page est désactivée. Elle n'est pas visible sur le site.
+                  Vous pouvez modifier son contenu pour le préparer avant réactivation.
+                </span>
+              </div>
+            )}
             <div className="px-6 py-6 space-y-5">{renderPageEditor()}</div>
           </div>
         </div>
