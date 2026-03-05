@@ -37,7 +37,7 @@ export default function PortalHome() {
     {
       id: "modular",
       title: "Maisons Modulaires",
-      description: "Apple Cabins, studios de jardin et camping-cars tout confort.",
+      description: "Maisons modulaires, studios et camping-cars tout confort.",
       image: "/images/portal/modular_home.png",
       link: "/maisons",
       icon: HomeIcon,
@@ -100,7 +100,7 @@ export default function PortalHome() {
           <div className="absolute inset-0 z-0">
             <img
               src="/images/portal/hero_ship.png"
-              alt="Logistique Import 97"
+              alt="Logistique 97 import"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
@@ -117,7 +117,7 @@ export default function PortalHome() {
             </h1>
 
             <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-3xl mx-auto font-light">
-              {page?.heroSubtitle || "Avec Import97, l'importation n'a jamais été aussi simple depuis la Chine vers les Antilles."}
+              {page?.heroSubtitle || "Avec 97 import, l'importation n'a jamais été aussi simple depuis la Chine vers les Antilles."}
             </p>
 
             {/* Search Bar */}
@@ -188,7 +188,7 @@ export default function PortalHome() {
         {/* Trust Indicators */}
         <div className="bg-white py-16 border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 text-center">
-            <h3 className="text-2xl font-bold text-[#4A90D9] mb-12">{page?.trustTitle || "Pourquoi choisir IMPORT97 ?"}</h3>
+            <h3 className="text-2xl font-bold text-[#4A90D9] mb-12">{page?.trustTitle || "Pourquoi choisir 97 import ?"}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {trustItems.map((item: { title: string; description: string }, index: number) => (
                 <div key={index} className="p-6 rounded-2xl bg-gray-50">

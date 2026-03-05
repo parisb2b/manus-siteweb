@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { trackAddToCart, trackRemoveFromCart } from "@/lib/analytics";
 
 export type CartItem = {
   id: string;
@@ -6,7 +7,11 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
-  type: "machine" | "accessory";
+  type: "machine" | "accessory" | "house";
+  houseConfig?: {
+    size: string;
+    options: string[];
+  };
 };
 
 type CartContextType = {
@@ -42,19 +47,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (newItem: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === newItem.id);
+      // For houses, create a unique cart ID based on configuration
+      const cartId = newItem.type === "house" && newItem.houseConfig
+        ? `${newItem.id}-${newItem.houseConfig.size}-${newItem.houseConfig.options.sort().join(",")}`
+        : newItem.id;
+
+      const existingItem = prevItems.find((item) => {
+        if (item.type === "house" && item.houseConfig && newItem.type === "house" && newItem.houseConfig) {
+          const existingCartId = `${item.id}-${item.houseConfig.size}-${item.houseConfig.options.sort().join(",")}`;
+          return existingCartId === cartId;
+        }
+        return item.id === newItem.id;
+      });
+
       if (existingItem) {
-        return prevItems.map((item) =>
-          item.id === newItem.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prevItems.map((item) => {
+          if (item.type === "house" && item.houseConfig && newItem.type === "house" && newItem.houseConfig) {
+            const existingCartId = `${item.id}-${item.houseConfig.size}-${item.houseConfig.options.sort().join(",")}`;
+            return existingCartId === cartId ? { ...item, quantity: item.quantity + 1 } : item;
+          }
+          return item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item;
+        });
       }
       return [...prevItems, { ...newItem, quantity: 1 }];
     });
+    trackAddToCart(newItem.id, newItem.name, newItem.price, 1);
   };
 
   const removeFromCart = (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (item) trackRemoveFromCart(item.id, item.name);
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 

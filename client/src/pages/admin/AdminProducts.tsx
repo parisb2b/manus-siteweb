@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2 } from "lucide-react";
 import { invalidateProductsCache } from "@/hooks/useProducts";
 
 interface SpecRow { label: string; value: string; }
@@ -115,16 +115,51 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [activeTab, setActiveTab] = useState("Général");
+  const [isDirty, setIsDirty] = useState(false);
+  const [canRestore, setCanRestore] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const originalProductRef = useRef<string>("");
 
-  useEffect(() => { fetchProducts(); }, []);
+  // Unsaved changes warning
+  useEffect(() => {
+    if (!isDirty) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Check if backup exists
+  const checkBackupStatus = useCallback(() => {
+    fetch("/api/backup/status").then(r => r.json()).then(data => setCanRestore(data.hasBackup)).catch(() => {});
+  }, []);
+
+  useEffect(() => { fetchProducts(); checkBackupStatus(); }, [checkBackupStatus]);
 
   const fetchProducts = () => {
     fetch("/api/products").then(r => r.json()).then(data => { setProducts(data); setLoading(false); }).catch(() => setLoading(false));
   };
 
-  const openAdd = () => { setEditingProduct({ ...emptyProduct }); setActiveTab("Général"); };
-  const openEdit = (product: Product) => { setEditingProduct({ ...product }); setActiveTab("Général"); };
-  const closeEditor = () => { setEditingProduct(null); };
+  const openAdd = () => {
+    const p = { ...emptyProduct };
+    setEditingProduct(p);
+    originalProductRef.current = JSON.stringify(p);
+    setIsDirty(false);
+    setActiveTab("Général");
+  };
+  const openEdit = (product: Product) => {
+    setEditingProduct({ ...product });
+    originalProductRef.current = JSON.stringify(product);
+    setIsDirty(false);
+    setActiveTab("Général");
+  };
+  const closeEditor = () => {
+    if (isDirty && !window.confirm("Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?")) return;
+    setEditingProduct(null);
+    setIsDirty(false);
+  };
 
   const handleSaveProduct = async () => {
     if (!editingProduct) return;
@@ -145,10 +180,14 @@ export default function AdminProducts() {
     }
 
     try {
+      // Create backup before saving
+      await fetch("/api/backup", { method: "POST" });
       await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedProducts) });
       setProducts(updatedProducts);
       invalidateProductsCache();
-      closeEditor();
+      setIsDirty(false);
+      setEditingProduct(null);
+      setCanRestore(true);
       setSaveMessage("Produit sauvegardé avec succès");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch {
@@ -156,6 +195,29 @@ export default function AdminProducts() {
       setTimeout(() => setSaveMessage(""), 3000);
     }
     setSaving(false);
+  };
+
+  const handleRestore = async () => {
+    if (!window.confirm("Restaurer la dernière version sauvegardée ? Cette action est irréversible.")) return;
+    setRestoring(true);
+    try {
+      const res = await fetch("/api/restore", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        fetchProducts();
+        invalidateProductsCache();
+        setCanRestore(false);
+        setSaveMessage("Restauration effectuée avec succès");
+        setTimeout(() => setSaveMessage(""), 3000);
+      } else {
+        setSaveMessage("Erreur lors de la restauration");
+        setTimeout(() => setSaveMessage(""), 3000);
+      }
+    } catch {
+      setSaveMessage("Erreur lors de la restauration");
+      setTimeout(() => setSaveMessage(""), 3000);
+    }
+    setRestoring(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -175,7 +237,9 @@ export default function AdminProducts() {
 
   const updateField = (field: string, value: any) => {
     if (!editingProduct) return;
-    setEditingProduct({ ...editingProduct, [field]: value });
+    const updated = { ...editingProduct, [field]: value };
+    setEditingProduct(updated);
+    setIsDirty(JSON.stringify(updated) !== originalProductRef.current);
   };
 
   // ========= EDITOR VIEW =========
@@ -518,9 +582,17 @@ export default function AdminProducts() {
           <h1 className="text-2xl font-bold text-gray-800">Produits</h1>
           <p className="text-gray-500 mt-1">Gérez le catalogue de produits ({products.length})</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors">
-          <Plus className="w-5 h-5" /> Ajouter un produit
-        </button>
+        <div className="flex items-center gap-3">
+          {canRestore && (
+            <button onClick={handleRestore} disabled={restoring}
+              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50">
+              <Undo2 className="w-4 h-4" /> {restoring ? "Restauration..." : "Annuler dernière modification"}
+            </button>
+          )}
+          <button onClick={openAdd} className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors">
+            <Plus className="w-5 h-5" /> Ajouter un produit
+          </button>
+        </div>
       </div>
 
       {saveMessage && (

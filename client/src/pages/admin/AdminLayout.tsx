@@ -16,6 +16,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  BarChart3,
+  Eye,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -25,6 +27,7 @@ import AdminUsers from "./AdminUsers";
 import AdminSettings from "./AdminSettings";
 import AdminPages from "./AdminPages";
 import AdminNavigation from "./AdminNavigation";
+import AdminAnalytics from "./AdminAnalytics";
 
 interface NavItem {
   label: string;
@@ -41,6 +44,7 @@ const navItems: NavItem[] = [
   { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing },
   { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping },
   { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
+  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics },
   { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings },
 ];
 
@@ -125,7 +129,7 @@ export default function AdminLayout() {
         {/* Logo */}
         <div className="px-6 py-6 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold tracking-wide">Import 97 Admin</h1>
+            <h1 className="text-xl font-bold tracking-wide">97 import Admin</h1>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-white/70 hover:text-white"
@@ -185,6 +189,17 @@ export default function AdminLayout() {
             </button>
             <h2 className="text-lg font-semibold text-gray-800">{currentNav.label}</h2>
           </div>
+
+          {/* Preview button */}
+          <a
+            href="/?preview=true"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm mr-3"
+          >
+            <Eye className="w-4 h-4" />
+            <span className="hidden sm:inline">Aperçu</span>
+          </a>
 
           {/* Publish button */}
           <div className="relative">

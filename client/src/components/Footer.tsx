@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Youtube } from "lucide-react";
+import { Youtube, MessageCircle } from "lucide-react";
 import TikTokIcon from "./TikTokIcon";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
@@ -11,15 +11,15 @@ export default function Footer() {
   // Rippa branding is ONLY for /minipelles and /accessoires routes
   const isRippaPage = location.startsWith('/minipelles') || location.startsWith('/accessoires');
 
-  const brandName = isRippaPage ? "Rippa DOM TOM" : "Import 97";
+  const brandName = isRippaPage ? "Rippa DOM TOM" : "97 import";
   const brandDescription = isRippaPage
     ? "Rippa DOM TOM est votre partenaire de confiance pour les mini-pelles de haute qualité dans les DOM TOM. Performance, fiabilité et service local."
-    : content?.siteSettings?.footerDescription || "Import 97 simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.";
+    : content?.siteSettings?.footerDescription || "97 import simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.";
 
-  // Use the new logos
+  // Use dedicated footer logos
   const logoSrc = isRippaPage
-    ? "/images/rippa-dom-tom-white.png"
-    : "/images/logo/logo_import97_footer.png";
+    ? "/images/logo_rippa_domtom_transparent.png"
+    : "/images/logo_import97_footer_transparent.png";
 
   const whatsappNumber = content?.siteSettings?.whatsappNumber || "33663284908";
   const contactEmail = content?.siteSettings?.contactEmail || "import97@sasfr.com";
@@ -35,7 +35,7 @@ export default function Footer() {
                <img
                  src={logoSrc}
                  alt={brandName}
-                 className={`h-16 w-auto object-contain`}
+                 className="h-16 w-auto object-contain"
                />
             </div>
             <p className="text-blue-100 text-sm leading-relaxed mb-6">
@@ -61,6 +61,8 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-bold mb-6 uppercase tracking-wider text-white">Informations</h4>
             <ul className="space-y-3 text-sm text-blue-100">
+              <li><Link href="/about" className="hover:text-white transition-colors">À propos</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Conditions Générales de Vente</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Politique de Confidentialité</Link></li>
               <li><Link href="/delivery" className="hover:text-white transition-colors">Livraison DOM TOM</Link></li>
@@ -79,13 +81,14 @@ export default function Footer() {
                 href={`https://wa.me/${whatsappNumber}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center bg-green-600 text-white font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-green-700 transition-colors w-full"
+                className="inline-flex items-center justify-center gap-2 bg-green-600 text-white font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-green-700 transition-colors w-full rounded-lg"
               >
+                <MessageCircle className="h-4 w-4" />
                 Contact WhatsApp
               </a>
               <a
-                href={`mailto:${contactEmail}?subject=Demande%20d'information%2097Import`}
-                className="inline-flex items-center justify-center bg-white text-[#4A90D9] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full"
+                href={`mailto:${contactEmail}`}
+                className="inline-flex items-center justify-center bg-white text-[#4A90D9] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full rounded-lg"
               >
                 {contactEmail}
               </a>

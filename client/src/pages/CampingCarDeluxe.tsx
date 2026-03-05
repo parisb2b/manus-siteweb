@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, Play, Info } from "lucide-react";
+import { Check, Truck, ArrowRight, ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, Play, Info, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,15 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProduct } from "@/hooks/useProducts";
 import type { Destination } from "@/hooks/useProducts";
 
 export default function CampingCarDeluxe() {
   const { product, loading } = useProduct("camping-car-deluxe-hybride");
+  const { addToCart } = useCart();
+  const { user, setShowAuthModal } = useAuth();
 
   const destinations = product?.destinations || [];
   const gallery = product?.gallery || [];
@@ -32,6 +36,25 @@ export default function CampingCarDeluxe() {
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: formatPrice(basePrice),
+      image: product.image || gallery[0]?.src || "",
+      type: "house",
+      houseConfig: {
+        size: "Standard",
+        options: [],
+      },
+    });
   };
 
   const currentDestination = selectedDestination || destinations[0];
@@ -159,7 +182,7 @@ export default function CampingCarDeluxe() {
                 </p>
 
                 <div className="mb-8">
-                  <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base HT – hors livraison</span>
                   <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(basePrice)}
                   </div>
@@ -230,11 +253,13 @@ export default function CampingCarDeluxe() {
                     </div>
                   </div>
 
-                  <a href="mailto:import97@sasfr.com?subject=Devis%20Camping%20Car%20Deluxe%20Hybride">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20">
-                      Demander un Devis Officiel <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </a>
+                  <Button
+                    onClick={handleAddToCart}
+                    className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20"
+                  >
+                    <ShoppingCart className="mr-2 w-5 h-5" />
+                    Ajouter au panier
+                  </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     *Ce configurateur fournit une estimation. Le prix final sera confirmé par devis officiel. Garantie constructeur incluse.
                   </p>

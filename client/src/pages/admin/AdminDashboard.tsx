@@ -25,7 +25,7 @@ export default function AdminDashboard() {
   }, []);
 
   const totalProducts = products.length;
-  const categories = [...new Set(products.map((p) => p.category))].length;
+  const categories = Array.from(new Set(products.map((p) => p.category))).length;
   const activeProducts = products.filter((p) => p.active !== false).length;
 
   const stats = [
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-gray-500 mt-1">
-          Bienvenue sur le panneau d'administration d'Import 97
+          Bienvenue sur le panneau d'administration de 97 import
         </p>
       </div>
 

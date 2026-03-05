@@ -30,7 +30,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-[#F5F5F5] font-sans">
       {/* Header */}
       <div className="bg-[#1A1A2E] text-white py-4 px-6 shadow-lg">
-        <h1 className="text-xl font-bold tracking-wide">Import 97 - Administration</h1>
+        <h1 className="text-xl font-bold tracking-wide">97 import - Administration</h1>
       </div>
 
       {/* Login Card */}

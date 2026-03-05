@@ -116,7 +116,8 @@ export default function ProductDetail() {
             <div>
               <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">{product.subcategory ? `Mini-pelle ${product.subcategory}` : product.category}</span>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
-              <div className="text-2xl font-bold text-[#4A90D9] mb-6">{product.priceDisplay}</div>
+              <div className="text-2xl font-bold text-[#4A90D9] mb-1">{product.priceDisplay}</div>
+              <p className="text-xs text-gray-400 mb-6">Prix de base HT – hors livraison</p>
 
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {product.longDescription || product.description}
@@ -157,7 +158,7 @@ export default function ProductDetail() {
                   onClick={handleAddToCart}
                   className="btn-rippa h-14 px-8 text-base flex-1"
                 >
-                  AJOUTER AU DEVIS
+                  AJOUTER AU PANIER
                 </Button>
                 {product.pdf && (
                   <a href={product.pdf} target="_blank" rel="noopener noreferrer" className="flex-1">

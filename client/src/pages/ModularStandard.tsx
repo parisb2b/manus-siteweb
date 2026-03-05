@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info } from "lucide-react";
+import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProduct } from "@/hooks/useProducts";
 import type { SizeOption, ProductOption, Destination, GalleryItem } from "@/hooks/useProducts";
 
@@ -20,6 +22,8 @@ const ICON_MAP: Record<string, any> = {
 
 export default function ModularStandard() {
   const { product, loading } = useProduct("maison-modulaire-standard");
+  const { addToCart } = useCart();
+  const { user, setShowAuthModal } = useAuth();
 
   const sizes = product?.sizes || [];
   const options = product?.options || [];
@@ -60,6 +64,32 @@ export default function ModularStandard() {
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedSize || !product) return;
+
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const selectedOptionNames = selectedOptions.map(optId => {
+      const opt = options.find(o => o.id === optId);
+      return opt?.name || optId;
+    });
+
+    addToCart({
+      id: product.id,
+      name: `${product.name} - ${selectedSize.name}`,
+      price: formatPrice(totalPrice),
+      image: product.image || gallery[0]?.src || "",
+      type: "house",
+      houseConfig: {
+        size: selectedSize.name,
+        options: selectedOptionNames,
+      },
+    });
   };
 
   if (loading || !product) {
@@ -180,7 +210,7 @@ export default function ModularStandard() {
                 </p>
 
                 <div className="mb-8">
-                  <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base HT – hors livraison</span>
                   <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(totalPrice)}
                   </div>
@@ -261,11 +291,14 @@ export default function ModularStandard() {
 
                 {/* CTA */}
                 <div className="space-y-4">
-                  <a href="https://wa.me/33663284908" target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20 rounded-xl">
-                      Demander un Devis Complet <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </a>
+                  <Button
+                    onClick={handleAddToCart}
+                    disabled={!selectedSize}
+                    className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20 rounded-xl"
+                  >
+                    <ShoppingCart className="mr-2 w-5 h-5" />
+                    Ajouter au panier
+                  </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     *Ce configurateur fournit une estimation. Le prix final sera confirmé par devis officiel.
                   </p>

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
+import { User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,8 @@ export default function Header() {
   const { user, profile, signOut, setShowAuthModal } = useAuth();
   const { content } = useSiteContent();
 
+  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("preview");
+
   const isActive = (path: string) => location === path;
 
   const isRippaPage = location.startsWith('/minipelles') || location.startsWith('/accessoires');
@@ -21,7 +23,7 @@ export default function Header() {
     ? "/images/logo_rippa_new.png"
     : "/images/logo_import97_large.png";
 
-  const logoAlt = isRippaPage ? "Rippa DOM TOM" : "Import 97";
+  const logoAlt = isRippaPage ? "Rippa DOM TOM" : "97 import";
 
   const handleUserClick = () => {
     if (user) {
@@ -38,6 +40,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-sm font-sans">
+      {isPreview && (
+        <div className="bg-amber-400 text-black text-center py-2 text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2">
+          <span>⚠️</span> MODE APERÇU — Modifications non publiées <span>⚠️</span>
+        </div>
+      )}
+
       {/* Top Bar - Promotion */}
       <div className="bg-[#4A90D9] text-white text-center py-2 text-xs font-bold tracking-wider uppercase">
         {content?.siteSettings?.topBanner || "EXPÉDITION SOUS 45 JOURS DANS LES DOM TOM"}
@@ -61,12 +69,6 @@ export default function Header() {
 
           {/* Icons */}
           <div className="hidden lg:flex items-center space-x-6 text-gray-600">
-            <div className="flex items-center space-x-1 text-xs font-bold uppercase cursor-pointer hover:text-[#4A90D9]">
-              <span>Français</span>
-              <span className="text-[10px]">▼</span>
-            </div>
-            <Search className="h-5 w-5 cursor-pointer hover:text-[#4A90D9]" />
-
             {/* Auth Button */}
             <div className="relative">
               <button
@@ -145,7 +147,7 @@ export default function Header() {
                   onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
                   className="text-sm text-red-600 font-bold"
                 >
-                  Déconnexion
+                  Se déconnecter
                 </button>
               </div>
             ) : (
@@ -154,11 +156,10 @@ export default function Header() {
                 className="flex items-center gap-2 py-2 text-sm font-bold uppercase text-[#4A90D9]"
               >
                 <User className="h-5 w-5" />
-                Se connecter
+Se connecter
               </button>
             )}
             <div className="flex items-center space-x-6 text-gray-600">
-              <Search className="h-5 w-5" />
               <Link href="/cart" onClick={() => setIsMenuOpen(false)}>
                 <div className="relative">
                   <ShoppingBag className="h-5 w-5" />

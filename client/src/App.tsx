@@ -1,5 +1,8 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { useEffect } from "react";
+import { trackPageView } from "./lib/analytics";
 import ScrollToTop from "./components/ScrollToTop";
+import SEO from "./components/SEO";
 import MiniPelles from "./pages/MiniPelles";
 import PortalHome from "./pages/PortalHome";
 import ModularHomes from "./pages/ModularHomes";
@@ -15,14 +18,24 @@ import Privacy from "./pages/Privacy";
 import Delivery from "./pages/Delivery";
 import Legal from "./pages/Legal";
 import Services from "./pages/Services";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
 import Cart from "./pages/Cart";
+import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 
 function App() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    trackPageView(location);
+  }, [location]);
+
   return (
     <>
       <ScrollToTop />
+      <SEO />
       <Switch>
         <Route path="/" component={PortalHome} />
         <Route path="/minipelles" component={MiniPelles} />
@@ -40,8 +53,11 @@ function App() {
         <Route path="/delivery" component={Delivery} />
         <Route path="/legal" component={Legal} />
         <Route path="/services" component={Services} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/about" component={About} />
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/:rest*" component={AdminLayout} />
+        <Route component={NotFound} />
       </Switch>
     </>
   );

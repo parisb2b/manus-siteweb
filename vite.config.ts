@@ -5,7 +5,6 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
-import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -161,7 +160,7 @@ function viteApiPlugin(): Plugin {
     configureServer(server: ViteDevServer) {
       // JSON body parser for /api/ POST
       server.middlewares.use((req, res, next) => {
-        if (req.url?.startsWith("/api/") && (req.method === "POST" || req.method === "PUT")) {
+        if (req.url?.startsWith("/api/") && (req.method === "POST" || req.method === "PUT" || req.method === "DELETE")) {
           let body = "";
           req.on("data", (chunk) => { body += chunk.toString(); });
           req.on("end", () => {
@@ -319,6 +318,211 @@ function viteApiPlugin(): Plugin {
         }
       });
 
+      // Analytics API
+      server.middlewares.use("/api/analytics", (req, res, next) => {
+        const analyticsPath = path.join(dataDir, "analytics.json");
+        const urlPath = req.url || "";
+
+        // POST /api/analytics/event - track an event
+        if (urlPath === "/event" && req.method === "POST") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            events.push((req as any).body);
+            // Keep max 10000 events
+            if (events.length > 10000) events = events.slice(-10000);
+            fs.writeFileSync(analyticsPath, JSON.stringify(events, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+          return;
+        }
+
+        // GET /api/analytics/events?days=7 - get events for last N days
+        if (urlPath.startsWith("/events") && req.method === "GET") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            const urlParams = new URL(`http://localhost${req.url}`).searchParams;
+            const days = parseInt(urlParams.get("days") || "7", 10);
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            const filtered = events.filter((e: any) => new Date(e.timestamp) >= cutoff);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(filtered));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("[]");
+          }
+          return;
+        }
+
+        // GET /api/analytics/summary - aggregate stats
+        if (urlPath === "/summary" && req.method === "GET") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            const now = new Date();
+            const todayStr = now.toISOString().split("T")[0];
+            const todayEvents = events.filter((e: any) => e.timestamp?.startsWith(todayStr));
+            const last7 = events.filter((e: any) => {
+              const d = new Date(e.timestamp);
+              return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+            });
+
+            // Daily breakdown for chart
+            const dailyCounts: Record<string, number> = {};
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(now);
+              d.setDate(d.getDate() - i);
+              dailyCounts[d.toISOString().split("T")[0]] = 0;
+            }
+            last7.filter((e: any) => e.type === "page_view").forEach((e: any) => {
+              const day = e.timestamp?.split("T")[0];
+              if (day && dailyCounts[day] !== undefined) dailyCounts[day]++;
+            });
+
+            // Top products
+            const productViews: Record<string, { name: string; views: number; carts: number }> = {};
+            last7.forEach((e: any) => {
+              if (e.type === "product_view" && e.data?.product_id) {
+                const id = e.data.product_id;
+                if (!productViews[id]) productViews[id] = { name: e.data.product_name || id, views: 0, carts: 0 };
+                productViews[id].views++;
+              }
+              if (e.type === "add_to_cart" && e.data?.product_id) {
+                const id = e.data.product_id;
+                if (!productViews[id]) productViews[id] = { name: e.data.product_name || id, views: 0, carts: 0 };
+                productViews[id].carts++;
+              }
+            });
+            const topProducts = Object.entries(productViews)
+              .map(([id, data]) => ({ id, ...data }))
+              .sort((a, b) => (b.views + b.carts) - (a.views + a.carts))
+              .slice(0, 10);
+
+            // Top pages
+            const pageCounts: Record<string, number> = {};
+            last7.filter((e: any) => e.type === "page_view").forEach((e: any) => {
+              const route = e.data?.route || "/";
+              pageCounts[route] = (pageCounts[route] || 0) + 1;
+            });
+            const topPages = Object.entries(pageCounts)
+              .map(([route, count]) => ({ route, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10);
+
+            // Funnel
+            const uniqueVisitors = new Set(last7.filter((e: any) => e.type === "page_view").map((e: any) => e.timestamp?.split("T")[0])).size || todayEvents.filter((e: any) => e.type === "page_view").length || 0;
+            const cartAdds = last7.filter((e: any) => e.type === "add_to_cart").length;
+            const quotes = last7.filter((e: any) => e.type === "quote_request").length;
+
+            const summary = {
+              today: {
+                visitors: todayEvents.filter((e: any) => e.type === "page_view").length,
+                pageViews: todayEvents.filter((e: any) => e.type === "page_view").length,
+                cartAdds: todayEvents.filter((e: any) => e.type === "add_to_cart").length,
+                quotes: todayEvents.filter((e: any) => e.type === "quote_request").length,
+              },
+              dailyChart: Object.entries(dailyCounts).map(([date, count]) => ({ date, count })),
+              topProducts,
+              topPages,
+              funnel: { visitors: uniqueVisitors, cartAdds, quotes },
+              recentEvents: events.slice(-20).reverse(),
+            };
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(summary));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+          return;
+        }
+
+        // DELETE /api/analytics/reset
+        if (urlPath === "/reset" && req.method === "DELETE") {
+          try {
+            fs.writeFileSync(analyticsPath, "[]", "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+          return;
+        }
+
+        next();
+      });
+
+      // Backup API - create backup of products.json before changes
+      server.middlewares.use("/api/backup", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const productsPath = path.join(dataDir, "products.json");
+            const backupPath = path.join(dataDir, "products.backup.json");
+            if (fs.existsSync(productsPath)) {
+              fs.copyFileSync(productsPath, backupPath);
+            }
+            // Also backup site-content.json
+            const siteContentPath = path.join(dataDir, "site-content.json");
+            const siteContentBackup = path.join(dataDir, "site-content.backup.json");
+            if (fs.existsSync(siteContentPath)) {
+              fs.copyFileSync(siteContentPath, siteContentBackup);
+            }
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Backup status - check if backup exists
+      server.middlewares.use("/api/backup/status", (req, res, next) => {
+        if (req.method === "GET") {
+          const backupPath = path.join(dataDir, "products.backup.json");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ hasBackup: fs.existsSync(backupPath) }));
+        } else {
+          next();
+        }
+      });
+
+      // Restore API - restore from backup
+      server.middlewares.use("/api/restore", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const productsPath = path.join(dataDir, "products.json");
+            const backupPath = path.join(dataDir, "products.backup.json");
+            if (fs.existsSync(backupPath)) {
+              fs.copyFileSync(backupPath, productsPath);
+              fs.unlinkSync(backupPath);
+            }
+            // Also restore site-content.json
+            const siteContentPath = path.join(dataDir, "site-content.json");
+            const siteContentBackup = path.join(dataDir, "site-content.backup.json");
+            if (fs.existsSync(siteContentBackup)) {
+              fs.copyFileSync(siteContentBackup, siteContentPath);
+              fs.unlinkSync(siteContentBackup);
+            }
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
       // Publish status - check for uncommitted changes
       server.middlewares.use("/api/publish-status", (req, res, next) => {
         if (req.method === "GET") {
@@ -339,7 +543,7 @@ function viteApiPlugin(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), viteApiPlugin()];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusDebugCollector(), viteApiPlugin()];
 
 export default defineConfig({
   plugins,

@@ -1,15 +1,15 @@
 {
   "siteSettings": {
-    "siteName": "Import 97",
+    "siteName": "97 import",
     "logo": "/images/logo_import97_large.png",
     "primaryColor": "#4A90D9",
     "whatsappNumber": "33663284908",
     "topBanner": "EXPÉDITION SOUS 45 JOURS DANS LES DOM TOM",
-    "footerText": "© 2026 Import 97 - Tous droits réservés",
-    "footerDescription": "Import 97 simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.",
+    "footerText": "© 2026 97 import - Tous droits réservés",
+    "footerDescription": "97 import simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.",
     "contactEmail": "import97@sasfr.com",
     "contactPhone": "+33 6 63 28 49 08 / +33 6 20 60 74 48",
-    "metaDescription": "Import 97 - Spécialiste de l'importation depuis la Chine vers les DOM-TOM. Mini-pelles, maisons modulaires, panneaux solaires.",
+    "metaDescription": "97 import - Spécialiste de l'importation depuis la Chine vers les DOM-TOM. Mini-pelles, maisons modulaires, panneaux solaires.",
     "faviconUrl": "/favicon.ico",
     "tiktokUrl": "https://www.tiktok.com/@direxport",
     "youtubeUrl": ""
@@ -17,38 +17,43 @@
   "navigation": {
     "menuItems": [
       {
-        "label": "ACCUEIL",
+        "label": "Accueil",
         "path": "/",
         "visible": true
       },
       {
-        "label": "MINI-PELLES",
+        "label": "Mini-Pelle",
         "path": "/minipelles",
         "visible": true
       },
       {
-        "label": "ACCESSOIRES",
+        "label": "Accessoires Mini-Pelle",
         "path": "/accessoires",
         "visible": true
       },
       {
-        "label": "MAISONS",
+        "label": "Maison modulaire",
         "path": "/maisons",
         "visible": true
       },
       {
-        "label": "SOLAIRE",
+        "label": "Panneau Ssolaire",
         "path": "/solaire",
         "visible": true
       },
       {
-        "label": "AGRICOLE",
+        "label": "Machine Agricole",
         "path": "/agricole",
         "visible": true
       },
       {
-        "label": "SERVICES",
+        "label": "Services",
         "path": "/services",
+        "visible": true
+      },
+      {
+        "label": "Contact",
+        "path": "/contact",
         "visible": true
       }
     ]
@@ -56,10 +61,10 @@
   "pages": {
     "home": {
       "heroTitle": "Bienvenue",
-      "heroSubtitle": "Avec Import97, l'importation n'a jamais été aussi simple depuis la Chine vers les Antilles.",
+      "heroSubtitle": "Avec 97 import, l'importation n'a jamais été aussi simple depuis la Chine vers les Antilles.",
       "heroButtonText": "Rechercher",
       "heroImage": "/images/portal/hero_ship.png",
-      "trustTitle": "Pourquoi choisir 97Import?",
+      "trustTitle": "Pourquoi choisir 97 import?",
       "trustItems": [
         {
           "title": "Expertise DOM TOM",
@@ -186,11 +191,11 @@
     },
     "terms": {
       "pageTitle": "Conditions Générales de Vente",
-      "content": "<p class=\"text-sm text-gray-500 italic mb-8\">Dernière mise à jour : mars 2026</p><h3>1. Objet</h3><p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>[NOM DE LA SOCIÉTÉ À COMPLÉTER]</strong> (ci-après \"le Vendeur\") et toute personne physique ou morale (ci-après \"le Client\") souhaitant procéder à un achat via le site internet Import 97.</p><h3>2. Produits et Conformité</h3><p>Les produits proposés sont ceux qui figurent sur le site Import 97 (Mini-pelles, Maisons Modulaires, Panneaux Solaires, Machines Agricoles). Ces produits sont importés et conformes aux normes en vigueur. Les photographies ne sont pas contractuelles. Le Vendeur se réserve le droit de modifier à tout moment l'assortiment de produits.</p><h3>3. Tarifs et Modalités de Paiement</h3><p>Les prix sont indiqués en Euros (€) Hors Taxes (HT). La TVA et l'Octroi de mer sont à la charge du Client lors de l'arrivée des marchandises aux Antilles/Guyane/Réunion, sauf mention contraire \"Clé en main\".</p><ul><li><strong>Acompte :</strong> Un acompte de 30% à 50% est exigé à la commande pour lancer la fabrication ou la réservation.</li><li><strong>Solde :</strong> Le solde est dû avant l'embarquement des marchandises ou contre remise des documents d'expédition (Bill of Lading).</li><li><strong>Moyens de paiement :</strong> Virement bancaire uniquement.</li></ul><h3>4. Livraison et Transport</h3><p>Les délais de livraison sont donnés à titre indicatif (généralement 45 à 60 jours pour les DOM-TOM). Le transfert des risques s'effectue selon l'incoterm convenu (généralement CIF ou DAP).</p><p>Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.</p><h3>5. Garanties et SAV</h3><p><strong>Garantie Constructeur :</strong> Nos produits bénéficient d'une garantie constructeur (durée variable selon le produit, généralement 1 à 2 ans sur les pièces principales).</p><p><strong>Service Après-Vente :</strong> Le SAV est assuré par nos équipes locales ou partenaires agréés. Les pièces détachées sont expédiées sous 72h en cas de disponibilité stock, ou commandées express depuis l'usine.</p><h3>6. Rétractation</h3><p>Conformément à la législation en vigueur, pour les ventes à distance, le Client particulier dispose d'un délai de rétractation de 14 jours. Toutefois, ce droit ne s'applique pas aux produits confectionnés sur mesure ou nettement personnalisés (ex: Maisons Modulaires avec plans spécifiques).</p><h3>7. Litiges</h3><p>Tout litige relatif à l'interprétation et à l'exécution des présentes CGV est soumis au droit français. À défaut de résolution amiable, le litige sera porté devant le Tribunal de Commerce de <strong>[VILLE D'IMMATRICULATION À COMPLÉTER]</strong>.</p>"
+      "content": "<p class=\"text-sm text-gray-500 italic mb-8\">Dernière mise à jour : mars 2026</p><h3>1. Objet</h3><p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la société <strong>[NOM DE LA SOCIÉTÉ À COMPLÉTER]</strong> (ci-après \"le Vendeur\") et toute personne physique ou morale (ci-après \"le Client\") souhaitant procéder à un achat via le site internet 97 import.</p><h3>2. Produits et Conformité</h3><p>Les produits proposés sont ceux qui figurent sur le site 97 import (Mini-pelles, Maisons Modulaires, Panneaux Solaires, Machines Agricoles). Ces produits sont importés et conformes aux normes en vigueur. Les photographies ne sont pas contractuelles. Le Vendeur se réserve le droit de modifier à tout moment l'assortiment de produits.</p><h3>3. Tarifs et Modalités de Paiement</h3><p>Les prix sont indiqués en Euros (€) Hors Taxes (HT). La TVA et l'Octroi de mer sont à la charge du Client lors de l'arrivée des marchandises aux Antilles/Guyane/Réunion, sauf mention contraire \"Clé en main\".</p><ul><li><strong>Acompte :</strong> Un acompte de 30% à 50% est exigé à la commande pour lancer la fabrication ou la réservation.</li><li><strong>Solde :</strong> Le solde est dû avant l'embarquement des marchandises ou contre remise des documents d'expédition (Bill of Lading).</li><li><strong>Moyens de paiement :</strong> Virement bancaire uniquement.</li></ul><h3>4. Livraison et Transport</h3><p>Les délais de livraison sont donnés à titre indicatif (généralement 45 à 60 jours pour les DOM-TOM). Le transfert des risques s'effectue selon l'incoterm convenu (généralement CIF ou DAP).</p><p>Le Client est responsable du dédouanement et du paiement des taxes locales à l'arrivée, sauf si une prestation de transitaire a été incluse dans le devis.</p><h3>5. Garanties et SAV</h3><p><strong>Garantie Constructeur :</strong> Nos produits bénéficient d'une garantie constructeur (durée variable selon le produit, généralement 1 à 2 ans sur les pièces principales).</p><p><strong>Service Après-Vente :</strong> Le SAV est assuré par nos équipes locales ou partenaires agréés. Les pièces détachées sont expédiées sous 72h en cas de disponibilité stock, ou commandées express depuis l'usine.</p><h3>6. Rétractation</h3><p>Conformément à la législation en vigueur, pour les ventes à distance, le Client particulier dispose d'un délai de rétractation de 14 jours. Toutefois, ce droit ne s'applique pas aux produits confectionnés sur mesure ou nettement personnalisés (ex: Maisons Modulaires avec plans spécifiques).</p><h3>7. Litiges</h3><p>Tout litige relatif à l'interprétation et à l'exécution des présentes CGV est soumis au droit français. À défaut de résolution amiable, le litige sera porté devant le Tribunal de Commerce de <strong>[VILLE D'IMMATRICULATION À COMPLÉTER]</strong>.</p>"
     },
     "privacy": {
       "pageTitle": "Politique de Confidentialité",
-      "content": "<p>La protection de vos données personnelles est une priorité pour Import 97. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations.</p><h3>1. Collecte des Données</h3><p>Nous collectons les informations que vous nous fournissez directement lorsque :</p><ul><li>Vous remplissez un formulaire de contact ou de demande de devis.</li><li>Vous nous contactez par email ou téléphone.</li><li>Vous naviguez sur notre site (via des cookies techniques).</li></ul><p>Les données collectées peuvent inclure : Nom, Prénom, Adresse email, Numéro de téléphone, Adresse de livraison.</p><h3>2. Utilisation des Données</h3><p>Vos données sont utilisées exclusivement pour :</p><ul><li>Traiter vos commandes et organiser la livraison.</li><li>Répondre à vos demandes de renseignements et devis.</li><li>Vous envoyer des informations sur votre commande (suivi logistique).</li><li>Améliorer notre site et nos services.</li></ul><p><strong>Nous ne vendons jamais vos données à des tiers.</strong></p><h3>3. Cookies</h3><p>Notre site utilise des cookies pour améliorer votre expérience de navigation et mesurer l'audience. Vous pouvez à tout moment configurer votre navigateur pour refuser les cookies.</p><h3>4. Vos Droits</h3><p>Conformément au RGPD (Règlement Général sur la Protection des Données), vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données.</p><p>Pour exercer ces droits, contactez-nous à : <strong>import97@sasfr.com</strong></p><h3>5. Sécurité</h3><p>Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès non autorisé, perte ou altération.</p>"
+      "content": "<p>La protection de vos données personnelles est une priorité pour 97 import. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations.</p><h3>1. Collecte des Données</h3><p>Nous collectons les informations que vous nous fournissez directement lorsque :</p><ul><li>Vous remplissez un formulaire de contact ou de demande de devis.</li><li>Vous nous contactez par email ou téléphone.</li><li>Vous naviguez sur notre site (via des cookies techniques).</li></ul><p>Les données collectées peuvent inclure : Nom, Prénom, Adresse email, Numéro de téléphone, Adresse de livraison.</p><h3>2. Utilisation des Données</h3><p>Vos données sont utilisées exclusivement pour :</p><ul><li>Traiter vos commandes et organiser la livraison.</li><li>Répondre à vos demandes de renseignements et devis.</li><li>Vous envoyer des informations sur votre commande (suivi logistique).</li><li>Améliorer notre site et nos services.</li></ul><p><strong>Nous ne vendons jamais vos données à des tiers.</strong></p><h3>3. Cookies</h3><p>Notre site utilise des cookies pour améliorer votre expérience de navigation et mesurer l'audience. Vous pouvez à tout moment configurer votre navigateur pour refuser les cookies.</p><h3>4. Vos Droits</h3><p>Conformément au RGPD (Règlement Général sur la Protection des Données), vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données.</p><p>Pour exercer ces droits, contactez-nous à : <strong>import97@sasfr.com</strong></p><h3>5. Sécurité</h3><p>Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès non autorisé, perte ou altération.</p>"
     },
     "legal": {
       "pageTitle": "Mentions Légales",

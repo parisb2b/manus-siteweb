@@ -216,6 +216,11 @@ export default function AdminSettings() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800"
               placeholder="https://exemple.com/logo.png"
             />
+            {getSetting("logo") && (
+              <div className="mt-2 w-32 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 p-1">
+                <img src={getSetting("logo")} alt="Logo preview" className="w-full h-full object-contain" onError={e => (e.target as HTMLImageElement).style.display = "none"} />
+              </div>
+            )}
           </div>
 
           {/* Favicon URL */}
@@ -230,6 +235,11 @@ export default function AdminSettings() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800"
               placeholder="https://exemple.com/favicon.ico"
             />
+            {getSetting("faviconUrl") && (
+              <div className="mt-2 w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 p-1">
+                <img src={getSetting("faviconUrl")} alt="Favicon preview" className="w-full h-full object-contain" onError={e => (e.target as HTMLImageElement).style.display = "none"} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -268,7 +278,7 @@ export default function AdminSettings() {
               value={getSetting("footerText")}
               onChange={(e) => updateSetting("footerText", e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800"
-              placeholder="Import 97 - Tous droits réservés"
+              placeholder="97 import - Tous droits réservés"
             />
           </div>
 

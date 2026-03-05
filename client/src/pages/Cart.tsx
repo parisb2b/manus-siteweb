@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackQuoteRequest } from "@/lib/analytics";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package, Truck, AlertTriangle } from "lucide-react";
+import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package, Truck, AlertTriangle, LogIn } from "lucide-react";
 import { Link } from "wouter";
 
 // Shipping calculation constants
@@ -31,7 +32,7 @@ const DESTINATIONS = [
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, setShowAuthModal } = useAuth();
 
   const [customProduct, setCustomProduct] = useState({
     name: "",
@@ -88,6 +89,8 @@ export default function Cart() {
   const handleRequestQuote = () => {
     if (items.length === 0 && !customProduct.name) return;
 
+    trackQuoteRequest(total, items.length);
+
     let message = "Bonjour, je souhaite obtenir un devis pour :\n\n";
 
     if (user && profile) {
@@ -104,6 +107,12 @@ export default function Cart() {
         message += `- ${item.name} x${item.quantity} — ${item.price}`;
         if (item.quantity > 1) {
           message += ` (sous-total: ${formatPrice(subtotal)})`;
+        }
+        if (item.type === "house" && item.houseConfig) {
+          message += `\n  Taille: ${item.houseConfig.size}`;
+          if (item.houseConfig.options.length > 0) {
+            message += `\n  Options: ${item.houseConfig.options.join(", ")}`;
+          }
         }
         message += "\n";
       });
@@ -140,7 +149,22 @@ export default function Cart() {
           Votre Panier
         </h1>
 
-        {items.length === 0 && !customProduct.name ? (
+        {!user ? (
+          <div className="text-center py-16 bg-gray-50 rounded-xl">
+            <LogIn className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-700 mb-2">Connexion requise</h2>
+            <p className="text-gray-500 mb-6 text-lg max-w-md mx-auto">
+              Vous devez être connecté pour accéder à votre panier et ajouter des produits.
+            </p>
+            <Button
+              onClick={() => setShowAuthModal(true)}
+              className="bg-[#4A90D9] hover:bg-[#3A7BC8] text-white font-bold px-8 py-6 text-lg rounded-xl"
+            >
+              <LogIn className="mr-2 h-5 w-5" />
+              Se connecter / S'inscrire
+            </Button>
+          </div>
+        ) : items.length === 0 && !customProduct.name ? (
           <div className="text-center py-16 bg-gray-50 rounded-xl">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-6 text-lg">
@@ -170,7 +194,7 @@ export default function Cart() {
                       className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center px-6 py-4 border-b border-gray-100 last:border-b-0"
                     >
                       <div className="sm:col-span-5 flex items-center gap-4">
-                        <Link href={item.type === "machine" ? `/products/${item.id}` : "/accessoires"}>
+                        <Link href={item.type === "machine" ? `/products/${item.id}` : item.type === "house" ? "/maisons" : "/accessoires"}>
                           <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                           </div>
@@ -178,8 +202,16 @@ export default function Cart() {
                         <div>
                           <h3 className="font-bold text-gray-900 text-sm">{item.name}</h3>
                           <p className="text-xs text-gray-400 capitalize">
-                            {item.type === "machine" ? "Machine" : "Accessoire"}
+                            {item.type === "machine" ? "Machine" : item.type === "house" ? "Maison modulaire" : "Accessoire"}
                           </p>
+                          {item.houseConfig && (
+                            <div className="mt-1 space-y-0.5">
+                              <p className="text-xs text-gray-500">Taille : {item.houseConfig.size}</p>
+                              {item.houseConfig.options.length > 0 && (
+                                <p className="text-xs text-gray-500">Options : {item.houseConfig.options.join(", ")}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 
