@@ -1315,5 +1315,59 @@
       "url": "/",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:27:51.455Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:27:53.723Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:28:03.549Z",
+    "data": {
+      "route": "/",
+      "url": "/",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:28:08.823Z",
+    "data": {
+      "route": "/minipelles",
+      "url": "/minipelles",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:28:12.618Z",
+    "data": {
+      "route": "/products/r18-pro",
+      "url": "/products/r18-pro",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T14:28:33.545Z",
+    "data": {
+      "route": "/admin/dashboard",
+      "url": "/admin/dashboard",
+      "lang": "fr"
+    }
   }
 ]
