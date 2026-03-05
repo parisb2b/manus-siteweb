@@ -1972,5 +1972,32 @@
       "url": "/maisons",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T16:01:03.090Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T16:01:07.051Z",
+    "data": {
+      "route": "/admin/pages",
+      "url": "/admin/pages",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-05T16:01:07.894Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
   }
 ]

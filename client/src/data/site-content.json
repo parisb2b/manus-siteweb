@@ -216,7 +216,7 @@
       "label": "Panneaux Solaires"
     },
     "agricole": {
-      "enabled": true,
+      "enabled": false,
       "label": "Machines Agricoles"
     },
     "accessoires": {
