@@ -6,6 +6,7 @@ import ModularStandard from "@/pages/ModularStandard";
 import ModularPremium from "./pages/ModularPremium";
 import CampingCarDeluxe from "./pages/CampingCarDeluxe";
 import Solar from "./pages/Solar";
+import SolarKitDetail from "./pages/SolarKitDetail";
 import Agriculture from "./pages/Agriculture";
 import ProductDetail from "./pages/ProductDetail";
 import Accessories from "@/pages/Accessories";
@@ -26,6 +27,7 @@ function App() {
       <Route path="/maisons/premium" component={ModularPremium} />
       <Route path="/maisons/camping-car-deluxe" component={CampingCarDeluxe} />
       <Route path="/solaire" component={Solar} />
+      <Route path="/solaire/:slug" component={SolarKitDetail} />
       <Route path="/agricole" component={Agriculture} />
       <Route path="/products/:id" component={ProductDetail} />
       <Route path="/accessoires" component={Accessories} />

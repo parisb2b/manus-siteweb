@@ -6,7 +6,7 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
-  type: "machine" | "accessory";
+  type: "machine" | "accessory" | "solar";
 };
 
 type CartContextType = {

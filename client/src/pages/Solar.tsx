@@ -7,26 +7,26 @@ import { Sun, Battery, Zap, ShieldCheck } from "lucide-react";
 export default function Solar() {
   const products = [
     {
-      id: "solar-panel-400w",
-      name: "Panneau Solaire 400W",
-      price: "Sur devis",
-      image: "/images/portal/solar_panel.jpg",
-      link: "/products/solar-panel-400w",
+      id: "kit-solaire-10kw",
+      name: "Kit Solaire 10 kW",
+      price: "7 912 € HT",
+      image: "/images/portal/solar_panel_jinko.png",
+      link: "/solaire/kit-10kw",
     },
     {
-      id: "solar-kit-3kw",
-      name: "Kit Autoconsommation 3kW",
-      price: "Sur devis",
-      image: "/images/portal/solar_panel.jpg", // Placeholder
-      link: "/products/solar-kit-3kw",
+      id: "kit-solaire-12kw",
+      name: "Kit Solaire 12 kW",
+      price: "9 500 € HT",
+      image: "/images/portal/solar_panel_jinko.png",
+      link: "/solaire/kit-12kw",
     },
     {
-      id: "solar-battery",
-      name: "Batterie de Stockage",
-      price: "Sur devis",
-      image: "/images/portal/solar_panel.jpg", // Placeholder
-      link: "/products/solar-battery",
-    }
+      id: "kit-solaire-20kw",
+      name: "Kit Solaire 20 kW",
+      price: "15 800 € HT",
+      image: "/images/portal/solar_panel_jinko.png",
+      link: "/solaire/kit-20kw",
+    },
   ];
 
   return (
