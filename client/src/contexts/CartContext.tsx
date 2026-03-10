@@ -7,7 +7,7 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
-  type: "machine" | "accessory" | "house";
+  type: "machine" | "accessory" | "house" | "solar";
   houseConfig?: {
     size: string;
     options: string[];

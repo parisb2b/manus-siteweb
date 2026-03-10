@@ -11,6 +11,7 @@ import ModularStandard from "@/pages/ModularStandard";
 import ModularPremium from "./pages/ModularPremium";
 import CampingCarDeluxe from "./pages/CampingCarDeluxe";
 import Solar from "./pages/Solar";
+import SolarKitDetail from "./pages/SolarKitDetail";
 import Agriculture from "./pages/Agriculture";
 import ProductDetail from "./pages/ProductDetail";
 import Accessories from "@/pages/Accessories";
@@ -53,6 +54,7 @@ function App() {
         <Route path="/maisons/premium">{() => <PageGuard pageKey="maisons" component={ModularPremium} />}</Route>
         <Route path="/maisons/camping-car-deluxe">{() => <PageGuard pageKey="maisons" component={CampingCarDeluxe} />}</Route>
         <Route path="/solaire">{() => <PageGuard pageKey="solaire" component={Solar} />}</Route>
+        <Route path="/solaire/:slug">{() => <PageGuard pageKey="solaire" component={SolarKitDetail} />}</Route>
         <Route path="/agricole">{() => <PageGuard pageKey="agricole" component={Agriculture} />}</Route>
         <Route path="/products/:id" component={ProductDetail} />
         <Route path="/accessoires">{() => <PageGuard pageKey="accessoires" component={Accessories} />}</Route>

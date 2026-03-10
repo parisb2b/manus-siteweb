@@ -149,6 +149,15 @@
       "ctaButtonText": "Demander un devis",
       "ctaButtonLink": "https://wa.me/33663284908",
       "ctaButtonExternal": true,
+      "galleryImages": [
+        "/images/solar/jinko_600w_tiger_neo.jpg",
+        "/images/solar/deye_inverter.webp",
+        "/images/solar/battery_6fm250.webp",
+        "/images/solar/solar_cables.webp",
+        "/images/solar/solar_installations.jpg",
+        "/images/solar/jinko_truck_delivery.jpg",
+        "/images/solar/jinko_warehouse.jpg"
+      ],
       "bottomSections": [
         {
           "icon": "sun",

@@ -194,7 +194,7 @@ export default function Cart() {
                       className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center px-6 py-4 border-b border-gray-100 last:border-b-0"
                     >
                       <div className="sm:col-span-5 flex items-center gap-4">
-                        <Link href={item.type === "machine" ? `/products/${item.id}` : item.type === "house" ? "/maisons" : "/accessoires"}>
+                        <Link href={item.type === "machine" ? `/products/${item.id}` : item.type === "house" ? "/maisons" : item.type === "solar" ? "/solaire" : "/accessoires"}>
                           <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                           </div>
@@ -202,7 +202,7 @@ export default function Cart() {
                         <div>
                           <h3 className="font-bold text-gray-900 text-sm">{item.name}</h3>
                           <p className="text-xs text-gray-400 capitalize">
-                            {item.type === "machine" ? "Machine" : item.type === "house" ? "Maison modulaire" : "Accessoire"}
+                            {item.type === "machine" ? "Machine" : item.type === "house" ? "Maison modulaire" : item.type === "solar" ? "Kit Solaire" : "Accessoire"}
                           </p>
                           {item.houseConfig && (
                             <div className="mt-1 space-y-0.5">

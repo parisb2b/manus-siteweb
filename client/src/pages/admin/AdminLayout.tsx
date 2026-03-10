@@ -18,6 +18,7 @@ import {
   AlertCircle,
   BarChart3,
   Eye,
+  Image as ImageIcon,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -28,6 +29,7 @@ import AdminSettings from "./AdminSettings";
 import AdminPages from "./AdminPages";
 import AdminNavigation from "./AdminNavigation";
 import AdminAnalytics from "./AdminAnalytics";
+import AdminMedia from "./AdminMedia";
 
 interface NavItem {
   label: string;
@@ -39,6 +41,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard },
   { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts },
+  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia },
   { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages },
   { label: "Navigation", icon: Navigation, path: "/admin/navigation", component: AdminNavigation },
   { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing },

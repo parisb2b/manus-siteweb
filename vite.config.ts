@@ -523,6 +523,102 @@ function viteApiPlugin(): Plugin {
         }
       });
 
+      // GET /api/images - list all images by folder
+      server.middlewares.use("/api/images", (req, res, next) => {
+        if (req.url === "/upload" && req.method === "POST") return next();
+        if (req.url === "/delete" && req.method === "POST") return next();
+        if (req.method !== "GET") return next();
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const folders: Record<string, string[]> = {};
+        const validExts = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+        function scan(dir: string, prefix: string) {
+          if (!fs.existsSync(dir)) return;
+          for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (entry.isDirectory()) {
+              scan(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name);
+            } else if (validExts.includes(path.extname(entry.name).toLowerCase())) {
+              const folder = prefix || "(racine)";
+              if (!folders[folder]) folders[folder] = [];
+              folders[folder].push(`/images/${prefix ? prefix + "/" : ""}${entry.name}`);
+            }
+          }
+        }
+        try {
+          scan(imagesDir, "");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ folders }));
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
+      // POST /api/images/upload - upload image as base64
+      server.middlewares.use("/api/images/upload", (req, res, next) => {
+        if (req.method !== "POST") return next();
+        const { folder, filename, data } = (req as any).body || {};
+        if (!filename || !data) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "filename and data required" }));
+          return;
+        }
+        const validExts = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+        const ext = path.extname(filename).toLowerCase();
+        if (!validExts.includes(ext)) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid file type. Allowed: " + validExts.join(", ") }));
+          return;
+        }
+        const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const safeFolder = (folder || "").replace(/[^a-zA-Z0-9_-]/g, "_").replace(/^\.+/, "");
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const targetDir = safeFolder ? path.join(imagesDir, safeFolder) : imagesDir;
+        try {
+          if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+          const buffer = Buffer.from(data, "base64");
+          fs.writeFileSync(path.join(targetDir, safeName), buffer);
+          const publicPath = `/images/${safeFolder ? safeFolder + "/" : ""}${safeName}`;
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ success: true, path: publicPath }));
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
+      // POST /api/images/delete - delete an image
+      server.middlewares.use("/api/images/delete", (req, res, next) => {
+        if (req.method !== "POST") return next();
+        const { path: imgPath } = (req as any).body || {};
+        if (!imgPath) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "path required" }));
+          return;
+        }
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const relativePath = imgPath.replace(/^\/images\//, "");
+        const fullPath = path.resolve(imagesDir, relativePath);
+        // Security: ensure file is inside imagesDir
+        if (!fullPath.startsWith(imagesDir)) {
+          res.writeHead(403, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Access denied" }));
+          return;
+        }
+        try {
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } else {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "File not found" }));
+          }
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
       // Publish status - check for uncommitted changes
       server.middlewares.use("/api/publish-status", (req, res, next) => {
         if (req.method === "GET") {
