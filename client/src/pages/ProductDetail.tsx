@@ -477,7 +477,7 @@ export default function ProductDetail() {
                   onClick={handleAddToCart}
                   className="btn-rippa h-14 px-8 text-base flex-1"
                 >
-                  AJOUTER AU DEVIS
+                  AJOUTER AU PANIER
                 </Button>
                 {product.pdf && (
                   <a href={product.pdf} target="_blank" rel="noopener noreferrer" className="flex-1">
