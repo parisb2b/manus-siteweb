@@ -17,6 +17,8 @@ import Delivery from "./pages/Delivery";
 import Legal from "./pages/Legal";
 import Services from "./pages/Services";
 import Cart from "./pages/Cart";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
       <Route path="/delivery" component={Delivery} />
       <Route path="/legal" component={Legal} />
       <Route path="/services" component={Services} />
+      <Route path="/admin" component={AdminLogin} />
+      <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>
     </>
   );
