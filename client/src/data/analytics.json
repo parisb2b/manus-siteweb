@@ -2296,5 +2296,32 @@
       "url": "/solaire",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-11T09:35:39.663Z",
+    "data": {
+      "route": "/admin/products",
+      "url": "/admin/products",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-11T09:40:03.717Z",
+    "data": {
+      "route": "/solaire/kit-10kw",
+      "url": "/solaire/kit-10kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-11T10:13:10.700Z",
+    "data": {
+      "route": "/admin/media",
+      "url": "/admin/media",
+      "lang": "fr"
+    }
   }
 ]
