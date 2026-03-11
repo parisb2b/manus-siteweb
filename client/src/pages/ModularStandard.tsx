@@ -4,7 +4,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import DeliveryEstimator from "@/components/DeliveryEstimator";
 import {
   Carousel,
   CarouselContent,
@@ -334,19 +333,6 @@ export default function ModularStandard() {
                     ))}
                   </div>
                 </div>
-
-                {/* Delivery Estimator */}
-                <DeliveryEstimator
-                  houseSize={selectedSize.approxM2}
-                  housePrice={totalPrice}
-                  selectedOptions={selectedOptions}
-                  optionPrices={{
-                    ac: 2500,
-                    solar: 7912,
-                    furniture: 0,
-                    extra_room: 0,
-                  }}
-                />
 
                 {/* CTA */}
                 <div className="space-y-4">

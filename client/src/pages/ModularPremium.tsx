@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
 import Header from "@/components/Header";
-import DeliveryEstimator from "@/components/DeliveryEstimator";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -420,19 +419,6 @@ export default function ModularPremium() {
                 </div>
 
                 <Separator className="my-6" />
-
-                {/* Delivery Estimator */}
-                <DeliveryEstimator
-                  houseSize={selectedSize.approxM2}
-                  housePrice={totalPrice}
-                  selectedOptions={selectedOptions}
-                  optionPrices={{
-                    ac: 2500,
-                    solar: 7912,
-                    furniture: 0,
-                    extra_room: 0,
-                  }}
-                />
 
                 {/* CTA Button */}
                 <a href="https://wa.me/33663284908" target="_blank" rel="noopener noreferrer">

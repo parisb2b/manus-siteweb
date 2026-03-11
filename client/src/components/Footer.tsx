@@ -77,13 +77,13 @@ export default function Footer() {
                 href="https://wa.me/33663284908" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center bg-green-600 text-white font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-green-700 transition-colors w-full"
+                className="inline-flex items-center justify-center bg-green-600 text-white font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-green-700 transition-colors w-full rounded-xl"
               >
                 Contact WhatsApp
               </a>
               <a 
                 href="mailto:import97@sasfr.com" 
-                className="inline-flex items-center justify-center bg-white text-[#4A90D9] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full"
+                className="inline-flex items-center justify-center bg-white text-[#4A90D9] font-bold uppercase tracking-wider px-6 py-3 text-sm hover:bg-blue-50 transition-colors w-full rounded-xl"
               >
                 import97@sasfr.com
               </a>

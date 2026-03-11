@@ -376,7 +376,7 @@ export default function Accessories() {
                       (!selectedModel || selectedModel === "all" || selectedModel === model.name) && (
                         <div key={model.name} className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-white bg-[#4A90D9] px-2 py-0.5 rounded-sm">{model.name}</span>
+                            <span className="text-xs font-bold text-white bg-[#4A90D9] px-2 py-0.5 rounded-lg">{model.name}</span>
                           </div>
                           <div className="grid grid-cols-1 gap-2">
                             {model.options.map((option, idx) => (

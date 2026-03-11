@@ -3,6 +3,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CartShippingEstimator from "@/components/CartShippingEstimator";
 import { Button } from "@/components/ui/button";
 import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package } from "lucide-react";
 import { Link } from "wouter";
@@ -10,6 +11,9 @@ import { Link } from "wouter";
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user, profile } = useAuth();
+
+  // Shipping estimate
+  const [shippingPrice, setShippingPrice] = useState<number | null>(null);
 
   // Custom product form
   const [customProduct, setCustomProduct] = useState({
@@ -64,7 +68,11 @@ export default function Cart() {
         }
         message += "\n";
       });
-      message += `\nTOTAL : ${formatPrice(total)}\n`;
+      message += `\nTOTAL PRODUITS : ${formatPrice(total)}\n`;
+      if (shippingPrice !== null) {
+        message += `LIVRAISON ESTIMÉE : ${formatPrice(shippingPrice)}\n`;
+        message += `TOTAL ESTIMÉ (HT) : ${formatPrice(total + shippingPrice)}\n`;
+      }
     }
 
     if (customProduct.name) {
@@ -91,7 +99,7 @@ export default function Cart() {
         </h1>
 
         {items.length === 0 && !customProduct.name ? (
-          <div className="text-center py-16 bg-gray-50 rounded-lg">
+          <div className="text-center py-16 bg-gray-50 rounded-2xl">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-6 text-lg">
               Votre panier est vide pour le moment.
@@ -121,7 +129,7 @@ export default function Cart() {
                       className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center px-6 py-4 border-b border-gray-100 last:border-b-0"
                     >
                       <div className="sm:col-span-5 flex items-center gap-4">
-                        <Link href={item.type === "machine" ? `/products/${item.id}` : "/accessoires"}>
+                        <Link href={item.type === "machine" ? `/products/${item.id}` : item.type === "solar" ? `/solaire/${item.id.replace("kit-solaire-", "kit-")}` : "/accessoires"}>
                           <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                           </div>
@@ -129,7 +137,7 @@ export default function Cart() {
                         <div>
                           <h3 className="font-bold text-gray-900 text-sm">{item.name}</h3>
                           <p className="text-xs text-gray-400 capitalize">
-                            {item.type === "machine" ? "Machine" : "Accessoire"}
+                            {item.type === "machine" ? "Machine" : item.type === "solar" ? "Kit Solaire" : "Accessoire"}
                           </p>
                         </div>
                       </div>
@@ -140,7 +148,7 @@ export default function Cart() {
                       </div>
 
                       <div className="sm:col-span-2 flex items-center justify-center">
-                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-2 hover:bg-gray-100 transition-colors">
                             <Minus className="w-3 h-3" />
                           </button>
@@ -157,7 +165,7 @@ export default function Cart() {
                       </div>
 
                       <div className="sm:col-span-1 text-right">
-                        <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -196,7 +204,7 @@ export default function Cart() {
                       placeholder="Ex: Godet trapèze 600mm"
                       value={customProduct.name}
                       onChange={(e) => setCustomProduct({ ...customProduct, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -206,7 +214,7 @@ export default function Cart() {
                       value={customProduct.specs}
                       onChange={(e) => setCustomProduct({ ...customProduct, specs: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent resize-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent resize-none"
                     />
                   </div>
                   <div>
@@ -218,7 +226,7 @@ export default function Cart() {
                         placeholder="https://example.com/produit"
                         value={customProduct.url}
                         onChange={(e) => setCustomProduct({ ...customProduct, url: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -276,14 +284,26 @@ export default function Cart() {
                     <span className="font-bold">{items.reduce((acc, i) => acc + i.quantity, 0)}</span>
                   </div>
                   <div className="flex justify-between items-end">
-                    <span className="text-gray-600 font-medium">Total HT</span>
+                    <span className="text-gray-600 font-medium">Total HT (produits)</span>
                     <span className="text-2xl font-bold text-[#4A90D9]">{formatPrice(total)}</span>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg border border-blue-100 mb-6">
-                  <strong>Note :</strong> Les frais de transport seront calculés et communiqués dans le devis final selon la destination.
-                </div>
+                {/* Shipping Estimator */}
+                {items.length > 0 && (
+                  <div className="mb-6">
+                    <CartShippingEstimator
+                      cartTotal={total}
+                      items={items.map((item) => ({
+                        id: item.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        type: item.type as "machine" | "accessory" | "solar",
+                      }))}
+                      onShippingChange={(price) => setShippingPrice(price)}
+                    />
+                  </div>
+                )}
 
                 <Button
                   onClick={handleRequestQuote}

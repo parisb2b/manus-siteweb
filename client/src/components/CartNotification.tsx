@@ -21,14 +21,14 @@ export const showCartNotification = (productName: string) => {
       <div className="flex gap-3 mt-2">
         <button 
           onClick={() => toast.dismiss(t)}
-          className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm transition-colors"
+          className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-colors"
         >
           Continuer mes achats
         </button>
         <Link href="/cart">
           <button 
             onClick={() => toast.dismiss(t)}
-            className="flex-1 px-4 py-2.5 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart className="h-4 w-4" />
             Voir mon panier

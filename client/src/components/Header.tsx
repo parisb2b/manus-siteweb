@@ -99,7 +99,7 @@ export default function Header() {
 
               {/* User dropdown */}
               {showUserMenu && user && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-bold text-gray-900">
                       {profile?.prenom} {profile?.nom}

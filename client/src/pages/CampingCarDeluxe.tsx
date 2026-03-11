@@ -200,7 +200,7 @@ export default function CampingCarDeluxe() {
                   <div className="mb-4">
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Destination</label>
                     <select 
-                      className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#4A90D9]"
+                      className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#4A90D9]"
                       value={selectedDestination.id}
                       onChange={(e) => setSelectedDestination(DESTINATIONS.find(d => d.id === e.target.value) || DESTINATIONS[0])}
                     >

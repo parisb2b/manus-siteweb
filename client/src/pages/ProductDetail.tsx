@@ -376,7 +376,7 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
             {/* Image Gallery */}
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-8 aspect-[4/3] flex items-center justify-center border border-gray-100 relative overflow-hidden group">
+              <div className="bg-gray-50 rounded-2xl p-8 aspect-[4/3] flex items-center justify-center border border-gray-100 relative overflow-hidden group">
                 <img 
                   src={galleryImages[activeImage]} 
                   alt={`${product.name} vue ${activeImage + 1}`}
@@ -389,7 +389,7 @@ export default function ProductDetail() {
                     <button 
                       key={index}
                       onClick={() => setActiveImage(index)}
-                      className={`bg-gray-50 rounded-lg p-2 aspect-square border transition-all ${
+                      className={`bg-gray-50 rounded-xl p-2 aspect-square border transition-all ${
                         activeImage === index ? "border-[#4A90D9] ring-1 ring-[#4A90D9]" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
@@ -416,19 +416,19 @@ export default function ProductDetail() {
 
               {/* Key Specs Grid */}
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-gray-50 p-4 rounded border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Poids</span>
                   <span className="block font-bold text-[#4A90D9]">{product.specs.weight}</span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Puissance</span>
                   <span className="block font-bold text-[#4A90D9]">{product.specs.power}</span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Profondeur Max</span>
                   <span className="block font-bold text-[#4A90D9]">{product.specs.depth}</span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <span className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Moteur</span>
                   <span className="block font-bold text-[#4A90D9]">{product.specs.engine}</span>
                 </div>
@@ -443,7 +443,7 @@ export default function ProductDetail() {
                 </Button>
                 {product.pdf && (
                   <a href={product.pdf} target="_blank" rel="noopener noreferrer" className="flex-1">
-                    <Button variant="outline" className="w-full h-14 px-8 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white rounded-none uppercase font-bold tracking-wider">
+                    <Button variant="outline" className="w-full h-14 px-8 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white rounded-xl uppercase font-bold tracking-wider">
                       <FileText className="mr-2 h-4 w-4" /> FICHE TECHNIQUE
                     </Button>
                   </a>
@@ -488,7 +488,7 @@ export default function ProductDetail() {
           )}
 
           {/* Financing Banner */}
-          <div className="mt-20 bg-[#4A90D9] rounded-lg p-8 md:p-12 text-white text-center">
+          <div className="mt-20 bg-[#4A90D9] rounded-2xl p-8 md:p-12 text-white text-center">
             <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">Besoin d'un financement ?</h2>
             <p className="text-white/80 mb-8 max-w-2xl mx-auto">
               Nous proposons des solutions de financement adaptées aux professionnels. Contactez nos experts pour obtenir une simulation personnalisée.

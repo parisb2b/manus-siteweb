@@ -1,4 +1,5 @@
 import { Switch, Route } from "wouter";
+import ScrollToTop from "./components/ScrollToTop";
 import MiniPelles from "./pages/MiniPelles";
 import PortalHome from "./pages/PortalHome";
 import ModularHomes from "./pages/ModularHomes";
@@ -6,6 +7,7 @@ import ModularStandard from "@/pages/ModularStandard";
 import ModularPremium from "./pages/ModularPremium";
 import CampingCarDeluxe from "./pages/CampingCarDeluxe";
 import Solar from "./pages/Solar";
+import SolarKitDetail from "./pages/SolarKitDetail";
 import Agriculture from "./pages/Agriculture";
 import ProductDetail from "./pages/ProductDetail";
 import Accessories from "@/pages/Accessories";
@@ -18,7 +20,9 @@ import Cart from "./pages/Cart";
 
 function App() {
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       <Route path="/" component={PortalHome} />
       <Route path="/minipelles" component={MiniPelles} />
       <Route path="/maisons" component={ModularHomes} />
@@ -26,6 +30,7 @@ function App() {
       <Route path="/maisons/premium" component={ModularPremium} />
       <Route path="/maisons/camping-car-deluxe" component={CampingCarDeluxe} />
       <Route path="/solaire" component={Solar} />
+      <Route path="/solaire/:slug" component={SolarKitDetail} />
       <Route path="/agricole" component={Agriculture} />
       <Route path="/products/:id" component={ProductDetail} />
       <Route path="/accessoires" component={Accessories} />
@@ -36,6 +41,7 @@ function App() {
       <Route path="/legal" component={Legal} />
       <Route path="/services" component={Services} />
     </Switch>
+    </>
   );
 }
 

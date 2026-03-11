@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch user profile from profiles table
   const fetchProfile = async (userId: string) => {
+    if (!supabase) return null;
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -53,6 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -85,6 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     metadata: { nom: string; prenom: string; telephone: string }
   ) => {
+    if (!supabase) {
+      return { error: { message: "Supabase non configuré" } };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -116,6 +126,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { error: { message: "Supabase non configuré" } };
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -125,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     setProfile(null);
   };

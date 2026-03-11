@@ -2,14 +2,12 @@ import { Truck, CreditCard, Wrench, MessageCircle, CheckCircle2, Camera, Clock, 
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import ScrollToTop from "@/components/ScrollToTop";
 
 export default function Services() {
   const whatsappLink = "https://wa.me/33663284908";
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <ScrollToTop />
       <Header />
 
       {/* Hero Section */}
