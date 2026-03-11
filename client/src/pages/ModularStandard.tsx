@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info } from "lucide-react";
+import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { showCartNotification } from "@/components/CartNotification";
 import {
   Carousel,
   CarouselContent,
@@ -101,6 +104,8 @@ export default function ModularStandard() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const { addToCart } = useCart();
+  const { user, setShowAuthModal } = useAuth();
 
   useEffect(() => {
     let price = selectedSize.price;
@@ -126,6 +131,31 @@ export default function ModularStandard() {
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+  };
+
+  const handleAddToCart = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const selectedOptionNames = selectedOptions.map(optId => {
+      const opt = OPTIONS.find(o => o.id === optId);
+      return opt?.name || optId;
+    });
+
+    addToCart({
+      id: `maison-standard-${selectedSize.id}`,
+      name: `Maison Modulaire Standard - ${selectedSize.name}`,
+      price: formatPrice(totalPrice),
+      image: IMAGES.find(img => img.type === 'image')?.src || "",
+      type: "house",
+      houseConfig: {
+        size: selectedSize.name,
+        options: selectedOptionNames,
+      },
+    });
+    showCartNotification(`Maison Modulaire Standard - ${selectedSize.name}`);
   };
 
   return (
@@ -266,6 +296,7 @@ export default function ModularStandard() {
                   <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(totalPrice)}
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Prix de base hors taxes et hors livraison</p>
                 </div>
 
                 <Separator className="my-6" />
@@ -336,11 +367,13 @@ export default function ModularStandard() {
 
                 {/* CTA */}
                 <div className="space-y-4">
-                  <a href="https://wa.me/33663284908" target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20 rounded-xl">
-                      Demander un Devis Complet <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </a>
+                  <Button
+                    onClick={handleAddToCart}
+                    className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20 rounded-xl"
+                  >
+                    <ShoppingCart className="mr-2 w-5 h-5" />
+                    Ajouter dans le panier
+                  </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     *Ce configurateur fournit une estimation. Le prix final sera confirmé par devis officiel.
                   </p>

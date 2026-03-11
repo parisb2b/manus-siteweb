@@ -139,7 +139,7 @@ const SOLAR_KITS: Record<string, any> = {
 };
 
 const GALLERY_IMAGES = [
-  "/images/products/solar_kits/jinko_600w_bifacial.webp",
+  "/images/products/solar_kits/tiger_neo_585w.avif",
   "/images/products/solar_kits/jinko_tiger_neo_fiche.webp",
   "/images/products/solar_kits/jinko_panels_pair.webp",
   "/images/products/solar_kits/jinko_panel_layers.png",
@@ -202,7 +202,7 @@ export default function SolarKitDetail() {
       id: kit.id,
       name: kit.name,
       price: kit.price,
-      image: "/images/products/solar_kits/jinko_600w_bifacial.webp",
+      image: "/images/products/solar_kits/tiger_neo_585w.avif",
       type: "solar",
     });
     showCartNotification(kit.name);
@@ -307,8 +307,8 @@ export default function SolarKitDetail() {
               <div className="text-2xl font-bold text-[#4A90D9] mb-2">
                 {kit.price}
               </div>
-              <p className="text-xs text-gray-400 mb-6">
-                Livraison non incluse — Hors frais de port
+              <p className="text-xs text-gray-500 mb-6">
+                Prix de base hors taxes et hors livraison
               </p>
 
               <p className="text-gray-600 mb-8 leading-relaxed">
@@ -548,12 +548,12 @@ export default function SolarKitDetail() {
             </div>
           </div>
 
-          {/* Financing Banner */}
-          <div className="mt-20 bg-[#4A90D9] rounded-lg p-8 md:p-12 text-white text-center">
-            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
+          {/* Financing Banner — bloc bien visible */}
+          <div className="mt-20 bg-gradient-to-br from-[#4A90D9] to-[#3570b8] rounded-2xl p-10 md:p-14 text-white text-center shadow-2xl shadow-blue-900/30 border border-blue-400/30">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-white">
               Besoin d'un financement ?
             </h2>
-            <p className="text-white/80 mb-8 max-w-2xl mx-auto">
+            <p className="text-white/90 mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
               Nous proposons des solutions de financement adaptées aux
               professionnels et aux particuliers. Contactez nos experts pour
               obtenir une simulation personnalisée.
@@ -565,7 +565,7 @@ export default function SolarKitDetail() {
             >
               <Button
                 variant="outline"
-                className="bg-transparent border-white text-white hover:bg-white hover:text-[#4A90D9] h-12 px-8"
+                className="bg-white text-[#4A90D9] border-white hover:bg-white/90 hover:text-[#3570b8] h-14 px-10 text-lg font-bold shadow-lg"
               >
                 Contacter un conseiller
               </Button>

@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, Play, Info } from "lucide-react";
+import { Check, Truck, ArrowRight, ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, Play, Info, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { showCartNotification } from "@/components/CartNotification";
 import {
   Carousel,
   CarouselContent,
@@ -40,9 +43,26 @@ const IMAGES = [
 
 export default function CampingCarDeluxe() {
   const [selectedDestination, setSelectedDestination] = useState(DESTINATIONS[0]);
+  const { addToCart } = useCart();
+  const { user, setShowAuthModal } = useAuth();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+  };
+
+  const handleAddToCart = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    addToCart({
+      id: "camping-car-deluxe",
+      name: "Camping Car Deluxe Hybride",
+      price: formatPrice(BASE_PRICE),
+      image: "/images/products/camping_car/exterior_main.webp",
+      type: "machine",
+    });
+    showCartNotification("Camping Car Deluxe Hybride");
   };
 
   return (
@@ -186,78 +206,22 @@ export default function CampingCarDeluxe() {
                   <div className="text-4xl font-bold text-[#4A90D9]">
                     {formatPrice(BASE_PRICE)}
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Prix de base hors taxes et hors livraison</p>
                 </div>
 
                 <Separator className="my-6" />
 
-                {/* Shipping Estimator */}
-                <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                  <h4 className="font-bold text-gray-900 mb-4 flex items-center">
-                    <Truck className="w-5 h-5 mr-2 text-blue-600" />
-                    Estimation Livraison (Conteneur 40')
-                  </h4>
-                  
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Destination</label>
-                    <select 
-                      className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#4A90D9]"
-                      value={selectedDestination.id}
-                      onChange={(e) => setSelectedDestination(DESTINATIONS.find(d => d.id === e.target.value) || DESTINATIONS[0])}
-                    >
-                      {DESTINATIONS.map(d => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                    <span className="text-gray-600 text-sm">Frais de port estimés :</span>
-                    <span className="font-bold text-lg text-[#4A90D9]">
-                      {selectedDestination.price !== null ? formatPrice(selectedDestination.price) : "Sur devis"}
-                    </span>
-                  </div>
-                  
-                  {selectedDestination.price === null && (
-                     <div className="mt-3">
-                        <Button variant="outline" className="w-full text-xs h-8 border-blue-200 text-blue-700 hover:bg-blue-50">
-                          Demander une tarification pour {selectedDestination.name.split(' ')[0]}
-                        </Button>
-                     </div>
-                  )}
-
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-start p-2 bg-blue-50 rounded-lg border border-blue-100">
-                        <Info className="w-4 h-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-blue-800 leading-tight">
-                          <strong>Transport Sécurisé :</strong> Le véhicule voyage dans un conteneur 40 pieds dédié, assurant une protection maximale durant le transit maritime.
-                        </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Total & CTA */}
+                {/* CTA */}
                 <div className="space-y-4">
-                  <div className="flex justify-between items-end mb-4">
-                    <span className="text-gray-600 font-medium">Total Estimé (HT)</span>
-                    <div className="text-right">
-                      <span className="block text-3xl font-bold text-[#4A90D9]">
-                        {formatPrice(BASE_PRICE + (selectedDestination.price || 0))}
-                      </span>
-                      {selectedDestination.price === null && (
-                        <span className="text-xs text-orange-500 font-medium block mt-1">
-                          *Hors frais de livraison
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <a href="mailto:contact@import97.com?subject=Devis%20Camping%20Car%20Deluxe%20Hybride">
-                    <Button className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20">
-                      Demander un Devis Officiel <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </a>
+                  <Button
+                    onClick={handleAddToCart}
+                    className="w-full h-14 text-lg font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] shadow-lg shadow-blue-900/20"
+                  >
+                    <ShoppingCart className="mr-2 w-5 h-5" />
+                    Ajouter dans le panier
+                  </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
-                    *Ce configurateur fournit une estimation. Le prix final sera confirmé par devis officiel. Garantie constructeur incluse.
+                    *Le prix final sera confirmé par devis officiel. Garantie constructeur incluse.
                   </p>
                 </div>
 

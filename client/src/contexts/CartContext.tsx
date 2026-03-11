@@ -6,7 +6,11 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
-  type: "machine" | "accessory" | "solar";
+  type: "machine" | "accessory" | "solar" | "house";
+  houseConfig?: {
+    size: string;
+    options: string[];
+  };
 };
 
 type CartContextType = {

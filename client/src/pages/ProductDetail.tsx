@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useRoute, useLocation } from "wouter";
 import { useState } from "react";
-import { Minus, Plus, Check, FileText, ShoppingCart, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Minus, Plus, Check, FileText, ShoppingCart, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
@@ -374,27 +374,64 @@ export default function ProductDetail() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-            {/* Image Gallery */}
+            {/* Image Gallery — CARROUSEL MANUEL (flèches + points) */}
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-2xl p-8 aspect-[4/3] flex items-center justify-center border border-gray-100 relative overflow-hidden group">
-                <img 
-                  src={galleryImages[activeImage]} 
+                <img
+                  src={galleryImages[activeImage]}
                   alt={`${product.name} vue ${activeImage + 1}`}
                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                 />
+                {/* Flèche gauche */}
+                {galleryImages.length > 1 && (
+                  <button
+                    onClick={() => setActiveImage((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                    aria-label="Image précédente"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-[#4A90D9]" />
+                  </button>
+                )}
+                {/* Flèche droite */}
+                {galleryImages.length > 1 && (
+                  <button
+                    onClick={() => setActiveImage((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                    aria-label="Image suivante"
+                  >
+                    <ChevronRight className="h-5 w-5 text-[#4A90D9]" />
+                  </button>
+                )}
+                {/* Points indicateurs */}
+                {galleryImages.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                    {galleryImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveImage(index)}
+                        className={`w-2.5 h-2.5 rounded-full transition-all ${
+                          activeImage === index
+                            ? "bg-[#4A90D9] scale-110"
+                            : "bg-gray-300 hover:bg-gray-400"
+                        }`}
+                        aria-label={`Image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
               {galleryImages.length > 1 && (
                 <div className="grid grid-cols-4 gap-4">
                   {galleryImages.map((img, index) => (
-                    <button 
+                    <button
                       key={index}
                       onClick={() => setActiveImage(index)}
                       className={`bg-gray-50 rounded-xl p-2 aspect-square border transition-all ${
                         activeImage === index ? "border-[#4A90D9] ring-1 ring-[#4A90D9]" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
-                      <img 
-                        src={img} 
+                      <img
+                        src={img}
                         alt={`${product.name} miniature ${index + 1}`}
                         className="w-full h-full object-contain"
                       />
@@ -408,7 +445,8 @@ export default function ProductDetail() {
             <div>
               <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
-              <div className="text-2xl font-bold text-[#4A90D9] mb-6">{product.price}</div>
+              <div className="text-2xl font-bold text-[#4A90D9] mb-2">{product.price}</div>
+              <p className="text-xs text-gray-500 mb-6">Prix de base hors taxes et hors livraison</p>
               
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {product.description}
@@ -489,7 +527,7 @@ export default function ProductDetail() {
 
           {/* Financing Banner */}
           <div className="mt-20 bg-[#4A90D9] rounded-2xl p-8 md:p-12 text-white text-center">
-            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">Besoin d'un financement ?</h2>
+            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4 text-white">Besoin d'un financement ?</h2>
             <p className="text-white/80 mb-8 max-w-2xl mx-auto">
               Nous proposons des solutions de financement adaptées aux professionnels. Contactez nos experts pour obtenir une simulation personnalisée.
             </p>

@@ -3,7 +3,6 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartShippingEstimator from "@/components/CartShippingEstimator";
 import { Button } from "@/components/ui/button";
 import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package } from "lucide-react";
 import { Link } from "wouter";
@@ -11,9 +10,6 @@ import { Link } from "wouter";
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user, profile } = useAuth();
-
-  // Shipping estimate
-  const [shippingPrice, setShippingPrice] = useState<number | null>(null);
 
   // Custom product form
   const [customProduct, setCustomProduct] = useState({
@@ -68,11 +64,7 @@ export default function Cart() {
         }
         message += "\n";
       });
-      message += `\nTOTAL PRODUITS : ${formatPrice(total)}\n`;
-      if (shippingPrice !== null) {
-        message += `LIVRAISON ESTIMÉE : ${formatPrice(shippingPrice)}\n`;
-        message += `TOTAL ESTIMÉ (HT) : ${formatPrice(total + shippingPrice)}\n`;
-      }
+      message += `\nTOTAL PRODUITS (HT, hors livraison) : ${formatPrice(total)}\n`;
     }
 
     if (customProduct.name) {
@@ -83,7 +75,7 @@ export default function Cart() {
       if (customProduct.hasFile) message += `(Image/vidéo jointe séparément)\n`;
     }
 
-    message += "\nMerci de me recontacter pour finaliser la commande et les frais de transport.";
+    message += "\nMerci de me recontacter pour finaliser la commande et les frais de livraison.";
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/33663284908?text=${encodedMessage}`, "_blank");
@@ -137,7 +129,7 @@ export default function Cart() {
                         <div>
                           <h3 className="font-bold text-gray-900 text-sm">{item.name}</h3>
                           <p className="text-xs text-gray-400 capitalize">
-                            {item.type === "machine" ? "Machine" : item.type === "solar" ? "Kit Solaire" : "Accessoire"}
+                            {item.type === "machine" ? "Machine" : item.type === "solar" ? "Kit Solaire" : item.type === "house" ? "Maison Modulaire" : "Accessoire"}
                           </p>
                         </div>
                       </div>
@@ -287,23 +279,8 @@ export default function Cart() {
                     <span className="text-gray-600 font-medium">Total HT (produits)</span>
                     <span className="text-2xl font-bold text-[#4A90D9]">{formatPrice(total)}</span>
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">Prix hors taxes et hors livraison</p>
                 </div>
-
-                {/* Shipping Estimator */}
-                {items.length > 0 && (
-                  <div className="mb-6">
-                    <CartShippingEstimator
-                      cartTotal={total}
-                      items={items.map((item) => ({
-                        id: item.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        type: item.type as "machine" | "accessory" | "solar",
-                      }))}
-                      onShippingChange={(price) => setShippingPrice(price)}
-                    />
-                  </div>
-                )}
 
                 <Button
                   onClick={handleRequestQuote}
