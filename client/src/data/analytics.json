@@ -2197,5 +2197,104 @@
       "url": "/solaire/kit-20kw",
       "lang": "fr"
     }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:29.258Z",
+    "data": {
+      "route": "/solaire/kit-20kw",
+      "url": "/solaire/kit-20kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:31.074Z",
+    "data": {
+      "route": "/solaire/kit-20kw",
+      "url": "/solaire/kit-20kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:31.888Z",
+    "data": {
+      "route": "/solaire/kit-20kw",
+      "url": "/solaire/kit-20kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:32.324Z",
+    "data": {
+      "route": "/solaire/kit-20kw",
+      "url": "/solaire/kit-20kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:38.934Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:42.116Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:51.483Z",
+    "data": {
+      "route": "/solaire/kit-10kw",
+      "url": "/solaire/kit-10kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:58:54.418Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:59:02.043Z",
+    "data": {
+      "route": "/solaire/kit-10kw",
+      "url": "/solaire/kit-10kw",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:59:21.265Z",
+    "data": {
+      "route": "/maisons",
+      "url": "/maisons",
+      "lang": "fr"
+    }
+  },
+  {
+    "type": "page_view",
+    "timestamp": "2026-03-10T15:59:24.181Z",
+    "data": {
+      "route": "/solaire",
+      "url": "/solaire",
+      "lang": "fr"
+    }
   }
 ]

@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useRoute, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -13,6 +13,8 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -305,6 +307,28 @@ export default function SolarKitDetail() {
   const { page } = usePageContent("solaire");
   const GALLERY_IMAGES = (page?.galleryImages as string[] | undefined)?.length ? (page.galleryImages as string[]) : DEFAULT_GALLERY;
 
+  // Auto-play carousel every 5 seconds
+  const goNext = useCallback(() => {
+    setActiveImage((prev) => (prev >= GALLERY_IMAGES.length - 1 ? 0 : prev + 1));
+  }, [GALLERY_IMAGES.length]);
+
+  useEffect(() => {
+    if (GALLERY_IMAGES.length <= 1) return;
+    const timer = setInterval(goNext, 5000);
+    return () => clearInterval(timer);
+  }, [goNext, GALLERY_IMAGES.length, activeImage]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (GALLERY_IMAGES.length <= 1) return;
+      if (e.key === "ArrowLeft") setActiveImage((p) => (p === 0 ? GALLERY_IMAGES.length - 1 : p - 1));
+      if (e.key === "ArrowRight") setActiveImage((p) => (p >= GALLERY_IMAGES.length - 1 ? 0 : p + 1));
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [GALLERY_IMAGES.length]);
+
   if (!kit) {
     return (
       <div className="min-h-screen flex flex-col font-sans">
@@ -365,31 +389,73 @@ export default function SolarKitDetail() {
           {/* EN-TÊTE PRODUIT : Image + Info           */}
           {/* ═══════════════════════════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-            {/* Image Gallery */}
+            {/* Image Carousel */}
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-8 aspect-[4/3] flex items-center justify-center border border-gray-100 relative overflow-hidden group">
-                <img
-                  src={GALLERY_IMAGES[activeImage]}
-                  alt={`${kit.name} vue ${activeImage + 1}`}
-                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                />
+              {/* Main image with nav arrows */}
+              <div className="relative bg-gray-50 rounded-xl border border-gray-100 overflow-hidden group">
+                <div className="aspect-[4/3] flex items-center justify-center p-6">
+                  <img
+                    src={GALLERY_IMAGES[activeImage]}
+                    alt={`${kit.name} vue ${activeImage + 1}`}
+                    className="w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
+                  />
+                </div>
+
+                {GALLERY_IMAGES.length > 1 && (
+                  <>
+                    {/* Left arrow */}
+                    <button
+                      onClick={() => setActiveImage((prev) => (prev === 0 ? GALLERY_IMAGES.length - 1 : prev - 1))}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-700" />
+                    </button>
+                    {/* Right arrow */}
+                    <button
+                      onClick={() => setActiveImage((prev) => (prev === GALLERY_IMAGES.length - 1 ? 0 : prev + 1))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-700" />
+                    </button>
+                    {/* Counter badge */}
+                    <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full">
+                      {activeImage + 1} / {GALLERY_IMAGES.length}
+                    </div>
+                    {/* Dots */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                      {GALLERY_IMAGES.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setActiveImage(index)}
+                          className={`rounded-full transition-all ${
+                            activeImage === index
+                              ? "w-6 h-2 bg-[#4A90D9]"
+                              : "w-2 h-2 bg-white/70 hover:bg-white"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
+
+              {/* Thumbnail strip */}
               {GALLERY_IMAGES.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
                   {GALLERY_IMAGES.map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setActiveImage(index)}
-                      className={`bg-gray-50 rounded-lg p-2 aspect-square border transition-all ${
+                      className={`flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg border-2 overflow-hidden transition-all ${
                         activeImage === index
-                          ? "border-[#4A90D9] ring-1 ring-[#4A90D9]"
-                          : "border-gray-100 hover:border-gray-300"
+                          ? "border-[#4A90D9] ring-1 ring-[#4A90D9]/30"
+                          : "border-transparent hover:border-gray-300"
                       }`}
                     >
                       <img
                         src={img}
                         alt={`${kit.name} miniature ${index + 1}`}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain p-1"
                       />
                     </button>
                   ))}
