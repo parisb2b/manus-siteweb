@@ -62,6 +62,7 @@ export default function Footer() {
               <li><Link href="/terms" className="hover:text-white transition-colors">Conditions Générales de Vente</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Politique de Confidentialité</Link></li>
               <li><Link href="/legal" className="hover:text-white transition-colors">Mentions Légales</Link></li>
+              <li><Link href="/delivery" className="hover:text-white transition-colors">Livraison DOM-TOM</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
             </ul>
           </div>
