@@ -15,9 +15,9 @@ export default function Footer() {
     : "Import 97 simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.";
 
   // Use the new logos
-  const logoSrc = isRippaPage 
-    ? "/images/rippa-dom-tom-white.png" 
-    : "/images/logo/logo_import97_footer.png";
+  const logoSrc = isRippaPage
+    ? "/images/logo_rippa_domtom_transparent.png"
+    : "/images/logo_import97_footer_transparent.png";
 
   return (
     <footer className="bg-[#4A90D9] text-white pt-16 pb-8 font-sans">
@@ -61,8 +61,8 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-blue-100">
               <li><Link href="/terms" className="hover:text-white transition-colors">Conditions Générales de Vente</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Politique de Confidentialité</Link></li>
-              <li><Link href="/delivery" className="hover:text-white transition-colors">Livraison DOM TOM</Link></li>
               <li><Link href="/legal" className="hover:text-white transition-colors">Mentions Légales</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
             </ul>
           </div>
 

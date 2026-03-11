@@ -56,10 +56,6 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
     title: "Mentions Légales | 97 import",
     description: "Mentions légales du site 97 import : informations sur l'entreprise, hébergeur, directeur de la publication.",
   },
-  "/delivery": {
-    title: "Livraison DOM-TOM | 97 import",
-    description: "Informations sur la livraison vers les DOM-TOM : délais, ports desservis, dédouanement, transport maritime sécurisé.",
-  },
 };
 
 export default function SEO({ title, description, image }: SEOProps) {

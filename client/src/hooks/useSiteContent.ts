@@ -90,7 +90,6 @@ const PATH_TO_PAGE_KEY: Record<string, string> = {
   "/agricole": "agricole",
   "/accessoires": "accessoires",
   "/services": "services",
-  "/delivery": "delivery",
   "/contact": "contact",
   "/about": "about",
   "/terms": "terms",

@@ -13,10 +13,10 @@ import ProductDetail from "./pages/ProductDetail";
 import Accessories from "@/pages/Accessories";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
-import Delivery from "./pages/Delivery";
 import Legal from "./pages/Legal";
 import Services from "./pages/Services";
 import Cart from "./pages/Cart";
+import Contact from "./pages/Contact";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 
@@ -39,9 +39,9 @@ function App() {
       <Route path="/cart" component={Cart} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
-      <Route path="/delivery" component={Delivery} />
       <Route path="/legal" component={Legal} />
       <Route path="/services" component={Services} />
+      <Route path="/contact" component={Contact} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>
