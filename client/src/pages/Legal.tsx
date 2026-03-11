@@ -49,8 +49,8 @@ export default function Legal() {
                     <User className="w-5 h-5" /> 2. Directeur de la Publication
                   </h3>
                   <div className="bg-green-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
-                    <p><strong>Directeur de la Publication :</strong> [NOM ET PRÉNOM — À COMPLÉTER]</p>
-                    <p><strong>Qualité :</strong> [FONCTION — À COMPLÉTER] (ex : Gérant, Président)</p>
+                    <p><strong>Directeur de la Publication :</strong> CHEN Michel</p>
+                    <p><strong>Qualité :</strong> Président</p>
                   </div>
                 </div>
 
@@ -62,7 +62,7 @@ export default function Legal() {
                   <div className="bg-blue-50/50 p-6 rounded-xl text-sm text-gray-700 space-y-2">
                     <p><strong>Email :</strong> info@97import.com</p>
                     <p><strong>Téléphone :</strong> +33 6 63 28 49 08 / +33 6 20 60 74 48</p>
-                    <p><strong>WhatsApp :</strong> +33 6 63 28 49 08</p>
+                    <p><strong>WhatsApp :</strong> +33 6 63 28 49 08 / +33 6 20 60 74 48</p>
                   </div>
                 </div>
 
