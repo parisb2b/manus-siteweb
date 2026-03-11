@@ -1,49 +1,43 @@
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Home } from "lucide-react";
-import { useLocation } from "wouter";
+import { Link } from "wouter";
+import { Home, ShoppingBag } from "lucide-react";
 
 export default function NotFound() {
-  const [, setLocation] = useLocation();
-
-  const handleGoHome = () => {
-    setLocation("/");
-  };
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-      <Card className="w-full max-w-lg mx-4 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-        <CardContent className="pt-8 pb-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-red-100 rounded-full animate-pulse" />
-              <AlertCircle className="relative h-16 w-16 text-red-500" />
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col font-sans bg-gray-50">
+      <Header />
 
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">404</h1>
-
-          <h2 className="text-xl font-semibold text-slate-700 mb-4">
-            Page Not Found
+      <main className="flex-grow flex items-center justify-center py-20">
+        <div className="text-center px-4 max-w-lg">
+          <h1 className="text-[120px] md:text-[160px] font-bold text-[#4A90D9] leading-none mb-2 font-serif">
+            404
+          </h1>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            Page introuvable
           </h2>
-
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            Sorry, the page you are looking for doesn't exist.
-            <br />
-            It may have been moved or deleted.
+          <p className="text-gray-500 text-lg mb-10 leading-relaxed">
+            La page que vous cherchez n'existe pas ou a été déplacée.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              onClick={handleGoHome}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/">
+              <Button className="bg-[#4A90D9] hover:bg-[#3A7BC8] text-white font-bold px-8 py-6 text-base rounded-xl w-full sm:w-auto">
+                <Home className="mr-2 h-5 w-5" />
+                Retour à l'accueil
+              </Button>
+            </Link>
+            <Link href="/minipelles">
+              <Button variant="outline" className="border-2 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white font-bold px-8 py-6 text-base rounded-xl w-full sm:w-auto">
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                Voir nos produits
+              </Button>
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

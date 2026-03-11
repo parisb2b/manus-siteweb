@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { Search, User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
+import { User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteContent, getPageKeyFromPath } from "@/hooks/useSiteContent";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,9 @@ export default function Header() {
   const [location] = useLocation();
   const { cartCount } = useCart();
   const { user, profile, signOut, setShowAuthModal } = useAuth();
+  const { content } = useSiteContent();
+
+  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("preview");
 
   const isActive = (path: string) => location === path;
 
@@ -19,7 +23,7 @@ export default function Header() {
     ? "/images/logo_rippa_new.png"
     : "/images/logo_import97_large.png";
 
-  const logoAlt = isRippaPage ? "Rippa DOM TOM" : "Import 97";
+  const logoAlt = isRippaPage ? "Rippa DOM TOM" : "97 import";
 
   const handleUserClick = () => {
     if (user) {
@@ -36,9 +40,15 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-sm font-sans">
+      {isPreview && (
+        <div className="bg-amber-400 text-black text-center py-2 text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2">
+          <span>⚠️</span> MODE APERÇU — Modifications non publiées <span>⚠️</span>
+        </div>
+      )}
+
       {/* Top Bar - Promotion */}
       <div className="bg-[#4A90D9] text-white text-center py-2 text-xs font-bold tracking-wider uppercase">
-        Expédition sous 45 jours dans les DOM TOM
+        {content?.siteSettings?.topBanner || "-50% PAR RAPPORT AU PRIX DE VENTE EN MARTINIQUE"}
       </div>
 
       <div className="container mx-auto px-4 py-4">
@@ -50,37 +60,20 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
-            <Link href="/">
-              <span className={`nav-link ${isActive('/') ? 'text-[#4A90D9]' : ''}`}>Accueil</span>
-            </Link>
-            <Link href="/minipelles">
-              <span className={`nav-link ${isActive('/minipelles') ? 'text-[#4A90D9]' : ''}`}>Mini-pelles</span>
-            </Link>
-            <Link href="/accessoires">
-              <span className={`nav-link ${isActive('/accessoires') ? 'text-[#4A90D9]' : ''}`}>Accessoires</span>
-            </Link>
-            <Link href="/maisons">
-              <span className={`nav-link ${isActive('/maisons') ? 'text-[#4A90D9]' : ''}`}>Maisons</span>
-            </Link>
-            <Link href="/solaire">
-              <span className={`nav-link ${isActive('/solaire') ? 'text-[#4A90D9]' : ''}`}>Solaire</span>
-            </Link>
-            <Link href="/agricole">
-              <span className={`nav-link ${isActive('/agricole') ? 'text-[#4A90D9]' : ''}`}>Agricole</span>
-            </Link>
-            <Link href="/services">
-              <span className={`nav-link ${isActive('/services') ? 'text-[#4A90D9]' : ''}`}>Services</span>
-            </Link>
+            {content?.navigation?.menuItems?.filter(item => {
+              if (!item.visible) return false;
+              const pk = getPageKeyFromPath(item.path);
+              if (pk && content?.pagesConfig?.[pk]?.enabled === false) return false;
+              return true;
+            }).map((item) => (
+              <Link key={item.path} href={item.path}>
+                <span className={`nav-link ${isActive(item.path) ? 'text-[#4A90D9]' : ''}`}>{item.label}</span>
+              </Link>
+            ))}
           </nav>
 
           {/* Icons */}
           <div className="hidden lg:flex items-center space-x-6 text-gray-600">
-            <div className="flex items-center space-x-1 text-xs font-bold uppercase cursor-pointer hover:text-[#4A90D9]">
-              <span>Français</span>
-              <span className="text-[10px]">▼</span>
-            </div>
-            <Search className="h-5 w-5 cursor-pointer hover:text-[#4A90D9]" />
-
             {/* Auth Button */}
             <div className="relative">
               <button
@@ -142,27 +135,16 @@ export default function Header() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg py-4 px-4 flex flex-col space-y-4">
-          <Link href="/" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Accueil</span>
-          </Link>
-          <Link href="/minipelles" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Mini-pelles</span>
-          </Link>
-          <Link href="/accessoires" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Accessoires</span>
-          </Link>
-          <Link href="/maisons" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Maisons Modulaires</span>
-          </Link>
-          <Link href="/solaire" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Panneaux Solaires</span>
-          </Link>
-          <Link href="/agricole" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Machines Agricoles</span>
-          </Link>
-          <Link href="/services" onClick={() => setIsMenuOpen(false)}>
-            <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">Services</span>
-          </Link>
+          {content?.navigation?.menuItems?.filter(item => {
+              if (!item.visible) return false;
+              const pk = getPageKeyFromPath(item.path);
+              if (pk && content?.pagesConfig?.[pk]?.enabled === false) return false;
+              return true;
+            }).map((item) => (
+            <Link key={item.path} href={item.path} onClick={() => setIsMenuOpen(false)}>
+              <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">{item.label}</span>
+            </Link>
+          ))}
 
           {/* Mobile Auth & Cart */}
           <div className="pt-4 border-t border-gray-100 flex flex-col space-y-3">
@@ -175,7 +157,7 @@ export default function Header() {
                   onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
                   className="text-sm text-red-600 font-bold"
                 >
-                  Déconnexion
+                  Se déconnecter
                 </button>
               </div>
             ) : (
@@ -184,11 +166,10 @@ export default function Header() {
                 className="flex items-center gap-2 py-2 text-sm font-bold uppercase text-[#4A90D9]"
               >
                 <User className="h-5 w-5" />
-                Se connecter
+Se connecter
               </button>
             )}
             <div className="flex items-center space-x-6 text-gray-600">
-              <Search className="h-5 w-5" />
               <Link href="/cart" onClick={() => setIsMenuOpen(false)}>
                 <div className="relative">
                   <ShoppingBag className="h-5 w-5" />

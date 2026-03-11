@@ -1,10 +1,10 @@
 import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
-import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -150,7 +150,496 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+// =============================================================================
+// API Routes Plugin - Enables /api/products and /api/settings for admin back-office
+// =============================================================================
+function viteApiPlugin(): Plugin {
+  const dataDir = path.resolve(import.meta.dirname, "client", "src", "data");
+  return {
+    name: "api-routes",
+    configureServer(server: ViteDevServer) {
+      // JSON body parser for /api/ POST
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith("/api/") && (req.method === "POST" || req.method === "PUT" || req.method === "DELETE")) {
+          let body = "";
+          req.on("data", (chunk) => { body += chunk.toString(); });
+          req.on("end", () => {
+            try { (req as any).body = JSON.parse(body); } catch { (req as any).body = {}; }
+            next();
+          });
+        } else {
+          next();
+        }
+      });
+
+      server.middlewares.use("/api/products", (req, res, next) => {
+        const filePath = path.join(dataDir, "products.json");
+        const urlPath = req.url || "";
+        const idMatch = urlPath.match(/^\/([^/?]+)/);
+        const productId = idMatch ? idMatch[1] : null;
+
+        if (productId) {
+          // Individual product: GET /api/products/:id, PUT /api/products/:id
+          if (req.method === "GET") {
+            try {
+              const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+              const product = data.find((p: any) => p.id === productId);
+              if (product) {
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify(product));
+              } else {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Not found" }));
+              }
+            } catch {
+              res.writeHead(404, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Not found" }));
+            }
+          } else if (req.method === "PUT") {
+            try {
+              const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+              const index = data.findIndex((p: any) => p.id === productId);
+              if (index >= 0) {
+                data[index] = (req as any).body;
+                fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ success: true }));
+              } else {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Not found" }));
+              }
+            } catch (e) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: false, error: String(e) }));
+            }
+          } else {
+            next();
+          }
+        } else {
+          // Collection: GET /api/products, POST /api/products
+          if (req.method === "GET") {
+            try {
+              const data = fs.readFileSync(filePath, "utf-8");
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(data);
+            } catch {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end("[]");
+            }
+          } else if (req.method === "POST") {
+            try {
+              if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+              fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: false, error: String(e) }));
+            }
+          } else {
+            next();
+          }
+        }
+      });
+
+      server.middlewares.use("/api/settings", (req, res, next) => {
+        const filePath = path.join(dataDir, "settings.json");
+        if (req.method === "GET") {
+          try {
+            const data = fs.readFileSync(filePath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(data);
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+        } else if (req.method === "POST") {
+          try {
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+            fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Site content API
+      server.middlewares.use("/api/site-content", (req, res, next) => {
+        const filePath = path.join(dataDir, "site-content.json");
+        if (req.method === "GET") {
+          try {
+            const data = fs.readFileSync(filePath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(data);
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+        } else if (req.method === "POST") {
+          try {
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+            fs.writeFileSync(filePath, JSON.stringify((req as any).body, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Publish API - git add, commit, push
+      server.middlewares.use("/api/publish", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const projectRoot = path.resolve(import.meta.dirname);
+            const now = new Date();
+            const dateStr = now.toLocaleString("fr-FR", { timeZone: "Europe/Paris" });
+            const commitMsg = `Mise à jour depuis le back-office [${dateStr}]`;
+            execSync("git add -A", { cwd: projectRoot, stdio: "pipe" });
+            execSync(`git commit -m "${commitMsg}"`, { cwd: projectRoot, stdio: "pipe" });
+            execSync("git push origin main", { cwd: projectRoot, stdio: "pipe" });
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true, message: "Site mis à jour avec succès" }));
+          } catch (e: any) {
+            const stderr = e.stderr ? e.stderr.toString() : String(e);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: stderr }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Analytics API
+      server.middlewares.use("/api/analytics", (req, res, next) => {
+        const analyticsPath = path.join(dataDir, "analytics.json");
+        const urlPath = req.url || "";
+
+        // POST /api/analytics/event - track an event
+        if (urlPath === "/event" && req.method === "POST") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            events.push((req as any).body);
+            // Keep max 10000 events
+            if (events.length > 10000) events = events.slice(-10000);
+            fs.writeFileSync(analyticsPath, JSON.stringify(events, null, 2), "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+          return;
+        }
+
+        // GET /api/analytics/events?days=7 - get events for last N days
+        if (urlPath.startsWith("/events") && req.method === "GET") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            const urlParams = new URL(`http://localhost${req.url}`).searchParams;
+            const days = parseInt(urlParams.get("days") || "7", 10);
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            const filtered = events.filter((e: any) => new Date(e.timestamp) >= cutoff);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(filtered));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("[]");
+          }
+          return;
+        }
+
+        // GET /api/analytics/summary - aggregate stats
+        if (urlPath === "/summary" && req.method === "GET") {
+          try {
+            let events: any[] = [];
+            try { events = JSON.parse(fs.readFileSync(analyticsPath, "utf-8")); } catch {}
+            const now = new Date();
+            const todayStr = now.toISOString().split("T")[0];
+            const todayEvents = events.filter((e: any) => e.timestamp?.startsWith(todayStr));
+            const last7 = events.filter((e: any) => {
+              const d = new Date(e.timestamp);
+              return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+            });
+
+            // Daily breakdown for chart
+            const dailyCounts: Record<string, number> = {};
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(now);
+              d.setDate(d.getDate() - i);
+              dailyCounts[d.toISOString().split("T")[0]] = 0;
+            }
+            last7.filter((e: any) => e.type === "page_view").forEach((e: any) => {
+              const day = e.timestamp?.split("T")[0];
+              if (day && dailyCounts[day] !== undefined) dailyCounts[day]++;
+            });
+
+            // Top products
+            const productViews: Record<string, { name: string; views: number; carts: number }> = {};
+            last7.forEach((e: any) => {
+              if (e.type === "product_view" && e.data?.product_id) {
+                const id = e.data.product_id;
+                if (!productViews[id]) productViews[id] = { name: e.data.product_name || id, views: 0, carts: 0 };
+                productViews[id].views++;
+              }
+              if (e.type === "add_to_cart" && e.data?.product_id) {
+                const id = e.data.product_id;
+                if (!productViews[id]) productViews[id] = { name: e.data.product_name || id, views: 0, carts: 0 };
+                productViews[id].carts++;
+              }
+            });
+            const topProducts = Object.entries(productViews)
+              .map(([id, data]) => ({ id, ...data }))
+              .sort((a, b) => (b.views + b.carts) - (a.views + a.carts))
+              .slice(0, 10);
+
+            // Top pages
+            const pageCounts: Record<string, number> = {};
+            last7.filter((e: any) => e.type === "page_view").forEach((e: any) => {
+              const route = e.data?.route || "/";
+              pageCounts[route] = (pageCounts[route] || 0) + 1;
+            });
+            const topPages = Object.entries(pageCounts)
+              .map(([route, count]) => ({ route, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10);
+
+            // Funnel
+            const uniqueVisitors = new Set(last7.filter((e: any) => e.type === "page_view").map((e: any) => e.timestamp?.split("T")[0])).size || todayEvents.filter((e: any) => e.type === "page_view").length || 0;
+            const cartAdds = last7.filter((e: any) => e.type === "add_to_cart").length;
+            const quotes = last7.filter((e: any) => e.type === "quote_request").length;
+
+            const summary = {
+              today: {
+                visitors: todayEvents.filter((e: any) => e.type === "page_view").length,
+                pageViews: todayEvents.filter((e: any) => e.type === "page_view").length,
+                cartAdds: todayEvents.filter((e: any) => e.type === "add_to_cart").length,
+                quotes: todayEvents.filter((e: any) => e.type === "quote_request").length,
+              },
+              dailyChart: Object.entries(dailyCounts).map(([date, count]) => ({ date, count })),
+              topProducts,
+              topPages,
+              funnel: { visitors: uniqueVisitors, cartAdds, quotes },
+              recentEvents: events.slice(-20).reverse(),
+            };
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(summary));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+          }
+          return;
+        }
+
+        // DELETE /api/analytics/reset
+        if (urlPath === "/reset" && req.method === "DELETE") {
+          try {
+            fs.writeFileSync(analyticsPath, "[]", "utf-8");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+          return;
+        }
+
+        next();
+      });
+
+      // Backup API - create backup of products.json before changes
+      server.middlewares.use("/api/backup", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const productsPath = path.join(dataDir, "products.json");
+            const backupPath = path.join(dataDir, "products.backup.json");
+            if (fs.existsSync(productsPath)) {
+              fs.copyFileSync(productsPath, backupPath);
+            }
+            // Also backup site-content.json
+            const siteContentPath = path.join(dataDir, "site-content.json");
+            const siteContentBackup = path.join(dataDir, "site-content.backup.json");
+            if (fs.existsSync(siteContentPath)) {
+              fs.copyFileSync(siteContentPath, siteContentBackup);
+            }
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // Backup status - check if backup exists
+      server.middlewares.use("/api/backup/status", (req, res, next) => {
+        if (req.method === "GET") {
+          const backupPath = path.join(dataDir, "products.backup.json");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ hasBackup: fs.existsSync(backupPath) }));
+        } else {
+          next();
+        }
+      });
+
+      // Restore API - restore from backup
+      server.middlewares.use("/api/restore", (req, res, next) => {
+        if (req.method === "POST") {
+          try {
+            const productsPath = path.join(dataDir, "products.json");
+            const backupPath = path.join(dataDir, "products.backup.json");
+            if (fs.existsSync(backupPath)) {
+              fs.copyFileSync(backupPath, productsPath);
+              fs.unlinkSync(backupPath);
+            }
+            // Also restore site-content.json
+            const siteContentPath = path.join(dataDir, "site-content.json");
+            const siteContentBackup = path.join(dataDir, "site-content.backup.json");
+            if (fs.existsSync(siteContentBackup)) {
+              fs.copyFileSync(siteContentBackup, siteContentPath);
+              fs.unlinkSync(siteContentBackup);
+            }
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (e) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: String(e) }));
+          }
+        } else {
+          next();
+        }
+      });
+
+      // GET /api/images - list all images by folder
+      server.middlewares.use("/api/images", (req, res, next) => {
+        if (req.url === "/upload" && req.method === "POST") return next();
+        if (req.url === "/delete" && req.method === "POST") return next();
+        if (req.method !== "GET") return next();
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const folders: Record<string, string[]> = {};
+        const validExts = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+        function scan(dir: string, prefix: string) {
+          if (!fs.existsSync(dir)) return;
+          for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (entry.isDirectory()) {
+              scan(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name);
+            } else if (validExts.includes(path.extname(entry.name).toLowerCase())) {
+              const folder = prefix || "(racine)";
+              if (!folders[folder]) folders[folder] = [];
+              folders[folder].push(`/images/${prefix ? prefix + "/" : ""}${entry.name}`);
+            }
+          }
+        }
+        try {
+          scan(imagesDir, "");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ folders }));
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
+      // POST /api/images/upload - upload image as base64
+      server.middlewares.use("/api/images/upload", (req, res, next) => {
+        if (req.method !== "POST") return next();
+        const { folder, filename, data } = (req as any).body || {};
+        if (!filename || !data) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "filename and data required" }));
+          return;
+        }
+        const validExts = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+        const ext = path.extname(filename).toLowerCase();
+        if (!validExts.includes(ext)) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid file type. Allowed: " + validExts.join(", ") }));
+          return;
+        }
+        const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const safeFolder = (folder || "").replace(/[^a-zA-Z0-9_-]/g, "_").replace(/^\.+/, "");
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const targetDir = safeFolder ? path.join(imagesDir, safeFolder) : imagesDir;
+        try {
+          if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+          const buffer = Buffer.from(data, "base64");
+          fs.writeFileSync(path.join(targetDir, safeName), buffer);
+          const publicPath = `/images/${safeFolder ? safeFolder + "/" : ""}${safeName}`;
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ success: true, path: publicPath }));
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
+      // POST /api/images/delete - delete an image
+      server.middlewares.use("/api/images/delete", (req, res, next) => {
+        if (req.method !== "POST") return next();
+        const { path: imgPath } = (req as any).body || {};
+        if (!imgPath) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "path required" }));
+          return;
+        }
+        const imagesDir = path.resolve(import.meta.dirname, "client", "public", "images");
+        const relativePath = imgPath.replace(/^\/images\//, "");
+        const fullPath = path.resolve(imagesDir, relativePath);
+        // Security: ensure file is inside imagesDir
+        if (!fullPath.startsWith(imagesDir)) {
+          res.writeHead(403, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Access denied" }));
+          return;
+        }
+        try {
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } else {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "File not found" }));
+          }
+        } catch (e) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: String(e) }));
+        }
+      });
+
+      // Publish status - check for uncommitted changes
+      server.middlewares.use("/api/publish-status", (req, res, next) => {
+        if (req.method === "GET") {
+          try {
+            const projectRoot = path.resolve(import.meta.dirname);
+            const status = execSync("git status --porcelain", { cwd: projectRoot, stdio: "pipe" }).toString().trim();
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ hasChanges: status.length > 0, details: status }));
+          } catch {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ hasChanges: false }));
+          }
+        } else {
+          next();
+        }
+      });
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusDebugCollector(), viteApiPlugin()];
 
 export default defineConfig({
   plugins,
