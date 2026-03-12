@@ -20,6 +20,7 @@ import {
   Eye,
   Image as ImageIcon,
   Layout,
+  Inbox,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -32,6 +33,7 @@ import AdminNavigation from "./AdminNavigation";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminMedia from "./AdminMedia";
 import AdminHeaderFooter from "./AdminHeaderFooter";
+import AdminLeads from "./AdminLeads";
 
 interface NavItem {
   label: string;
@@ -50,6 +52,7 @@ const navItems: NavItem[] = [
   { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing },
   { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping },
   { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics },
+  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads },
   { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
   { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings },
 ];

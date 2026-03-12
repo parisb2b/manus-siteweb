@@ -14,6 +14,8 @@ import {
   Loader2,
   Check,
   AlertCircle,
+  Copy,
+  Search,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════
@@ -38,6 +40,8 @@ export default function AdminMedia() {
   const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -85,6 +89,15 @@ export default function AdminMedia() {
   const showStatus = (type: "success" | "error", text: string) => {
     setStatusMsg({ type, text });
     setTimeout(() => setStatusMsg(null), 3000);
+  };
+
+  const copyPath = (imgPath: string) => {
+    navigator.clipboard.writeText(imgPath).then(() => {
+      setCopiedPath(imgPath);
+      setTimeout(() => setCopiedPath(null), 2000);
+    }).catch(() => {
+      showStatus("error", "Impossible de copier dans le presse-papier");
+    });
   };
 
   // ──────────────────────────────────────
@@ -499,10 +512,31 @@ export default function AdminMedia() {
       {/* SECTION 3: Image Library                     */}
       {/* ═══════════════════════════════════════════ */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <FolderOpen className="w-5 h-5 text-[#4A90D9]" />
-          Bibliothèque d'images
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-[#4A90D9]" />
+            Bibliothèque d'images
+          </h2>
+          {/* Search filter */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher par nom..."
+              className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4A90D9] focus:border-[#4A90D9] outline-none w-56"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12 text-gray-400">
@@ -513,54 +547,89 @@ export default function AdminMedia() {
           <p className="text-gray-400 text-center py-12">Aucune image trouvée.</p>
         ) : (
           <div className="space-y-2">
-            {folderNames.map((folder) => (
-              <div key={folder} className="border border-gray-100 rounded-lg overflow-hidden">
-                {/* Folder header */}
-                <button
-                  onClick={() => toggleFolder(folder)}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                >
-                  {openFolders.has(folder) ? (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  )}
-                  <FolderOpen className="w-4 h-4 text-[#4A90D9]" />
-                  <span className="font-medium text-gray-800">{folder}</span>
-                  <span className="text-xs text-gray-400 ml-auto">
-                    {folders[folder].length} image{folders[folder].length !== 1 ? "s" : ""}
-                  </span>
-                </button>
+            {folderNames.map((folder) => {
+              const filteredImages = searchQuery
+                ? folders[folder].filter((img) =>
+                    img.split("/").pop()?.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                : folders[folder];
 
-                {/* Folder content */}
-                {openFolders.has(folder) && (
-                  <div className="px-4 pb-4 pt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {folders[folder].map((img) => (
-                      <div key={img} className="group relative">
-                        <div className="aspect-square rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
-                          <img
-                            src={img}
-                            alt={img.split("/").pop()}
-                            className="w-full h-full object-contain p-1"
-                          />
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 truncate" title={img}>
-                          {img.split("/").pop()}
-                        </p>
-                        {/* Delete button */}
-                        <button
-                          onClick={() => setDeleteConfirm(img)}
-                          className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              if (searchQuery && filteredImages.length === 0) return null;
+
+              return (
+                <div key={folder} className="border border-gray-100 rounded-lg overflow-hidden">
+                  {/* Folder header */}
+                  <button
+                    onClick={() => toggleFolder(folder)}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    {openFolders.has(folder) || searchQuery ? (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    )}
+                    <FolderOpen className="w-4 h-4 text-[#4A90D9]" />
+                    <span className="font-medium text-gray-800">{folder}</span>
+                    <span className="text-xs text-gray-400 ml-auto">
+                      {filteredImages.length} image{filteredImages.length !== 1 ? "s" : ""}
+                      {searchQuery && folders[folder].length !== filteredImages.length && (
+                        <span className="ml-1 text-[#4A90D9]">(filtré)</span>
+                      )}
+                    </span>
+                  </button>
+
+                  {/* Folder content */}
+                  {(openFolders.has(folder) || !!searchQuery) && (
+                    <div className="px-4 pb-4 pt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {filteredImages.map((img) => {
+                        const filename = img.split("/").pop() || img;
+                        const isCopied = copiedPath === img;
+                        return (
+                          <div key={img} className="group relative">
+                            {/* Thumbnail */}
+                            <div className="aspect-square rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center relative">
+                              <img
+                                src={img}
+                                alt={filename}
+                                className="w-full h-full object-contain p-1 transition-transform group-hover:scale-110"
+                              />
+                              {/* Hover overlay with full preview */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 truncate" title={img}>
+                              {filename}
+                            </p>
+                            {/* Action buttons on hover */}
+                            <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {/* Copy path */}
+                              <button
+                                onClick={() => copyPath(img)}
+                                className={`p-1.5 rounded-lg shadow-sm transition-colors ${
+                                  isCopied
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-white text-gray-600 hover:bg-[#4A90D9] hover:text-white"
+                                }`}
+                                title="Copier le chemin"
+                              >
+                                {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                              {/* Delete */}
+                              <button
+                                onClick={() => setDeleteConfirm(img)}
+                                className="p-1.5 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

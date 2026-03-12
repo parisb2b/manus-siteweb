@@ -1,10 +1,43 @@
-import { Truck, CreditCard, Wrench, MessageCircle, CheckCircle2, Camera, Clock, PackageCheck, FileCheck } from "lucide-react";
+import { useState } from "react";
+import {
+  Truck,
+  CreditCard,
+  Wrench,
+  MessageCircle,
+  CheckCircle2,
+  Camera,
+  Clock,
+  PackageCheck,
+  FileCheck,
+  Send,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { useContactForm } from "@/hooks/useContactForm";
 
 export default function Services() {
   const whatsappLink = "https://wa.me/33663284908";
+
+  // Contact form state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const { submitting, success, error, submit } = useContactForm();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submit({
+      name,
+      email,
+      phone: phone || undefined,
+      message,
+      source: "services",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -21,7 +54,7 @@ export default function Services() {
       </div>
 
       <div className="container mx-auto px-4 py-12 -mt-8">
-        
+
         {/* Livraison */}
         <section id="livraison" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12 scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
@@ -30,15 +63,15 @@ export default function Services() {
             </div>
             <h2 className="text-3xl font-bold text-[#4A90D9]">Livraison DOM TOM</h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <p className="text-lg text-gray-700 leading-relaxed">
-                Nous assurons une logistique maîtrisée vers l'ensemble des territoires d'Outre-mer. 
-                Que vous soyez en <strong>Martinique, Guadeloupe, Guyane, La Réunion</strong> ou ailleurs, 
+                Nous assurons une logistique maîtrisée vers l'ensemble des territoires d'Outre-mer.
+                Que vous soyez en <strong>Martinique, Guadeloupe, Guyane, La Réunion</strong> ou ailleurs,
                 nous organisons le transport de votre commande en toute sécurité.
               </p>
-              
+
               <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 space-y-4">
                 <div>
                   <h3 className="font-bold text-[#4A90D9] mb-2 flex items-center gap-2">
@@ -48,7 +81,7 @@ export default function Services() {
                     Selon le produit commandé et le stock disponible à l'usine, la préparation peut prendre <strong>entre 2 et 30 jours</strong>.
                   </p>
                 </div>
-                
+
                 <div>
                   <h3 className="font-bold text-[#4A90D9] mb-2 flex items-center gap-2">
                     <Clock className="h-5 w-5" /> Transport Maritime
@@ -60,7 +93,7 @@ export default function Services() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <a 
+                <a
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -72,26 +105,26 @@ export default function Services() {
                 </a>
               </div>
             </div>
-            
+
             <div className="bg-gray-100 rounded-xl p-6 h-full flex flex-col justify-center">
-               <ul className="space-y-4">
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
-                   <span className="text-gray-700">Transport maritime sécurisé (Conteneur)</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
-                   <span className="text-gray-700">Suivi logistique personnalisé</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
-                   <span className="text-gray-700">Gestion des documents d'export</span>
-                 </li>
-                 <li className="flex items-start gap-3">
-                   <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
-                   <span className="text-gray-700">Livraison port à port</span>
-                 </li>
-               </ul>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Transport maritime sécurisé (Conteneur)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Suivi logistique personnalisé</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Gestion des documents d'export</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Livraison port à port</span>
+                </li>
+              </ul>
             </div>
           </div>
         </section>
@@ -150,7 +183,7 @@ export default function Services() {
                 <div>
                   <h3 className="font-bold text-[#4A90D9] mb-2">Suivi Visuel Complet</h3>
                   <p className="text-gray-700 text-sm">
-                    Pour votre tranquillité d'esprit, <strong>des photos et vidéos vous sont envoyées à chaque étape</strong> (fabrication, chargement, expédition). 
+                    Pour votre tranquillité d'esprit, <strong>des photos et vidéos vous sont envoyées à chaque étape</strong> (fabrication, chargement, expédition).
                     Vous recevez également toutes les informations de tracking du conteneur.
                   </p>
                 </div>
@@ -173,7 +206,7 @@ export default function Services() {
         </section>
 
         {/* SAV & Contact */}
-        <section id="sav" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 scroll-mt-24">
+        <section id="sav" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12 scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-blue-100 p-4 rounded-full">
               <Wrench className="h-8 w-8 text-[#4A90D9]" />
@@ -186,7 +219,7 @@ export default function Services() {
               <p className="text-lg text-gray-700 mb-6">
                 Notre engagement ne s'arrête pas à la livraison. Nous assurons un suivi technique réactif pour garantir la disponibilité de votre matériel.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="bg-green-100 p-3 rounded-lg h-fit">
@@ -231,7 +264,7 @@ export default function Services() {
               <p className="text-blue-200 mb-8">
                 Notre équipe technique est disponible pour répondre à toutes vos questions.
               </p>
-              <a 
+              <a
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -244,6 +277,125 @@ export default function Services() {
               </a>
             </div>
           </div>
+        </section>
+
+        {/* Demande de renseignements / Devis rapide */}
+        <section id="devis" className="bg-white rounded-2xl shadow-xl p-8 md:p-12 scroll-mt-24">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="bg-blue-100 p-4 rounded-full">
+              <Send className="h-8 w-8 text-[#4A90D9]" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-[#4A90D9]">Demander un devis</h2>
+              <p className="text-gray-500 text-sm mt-1">Nous vous répondons sous 24 à 48 heures ouvrées.</p>
+            </div>
+          </div>
+
+          {success ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="bg-green-100 p-5 rounded-full mb-6">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Demande envoyée !</h3>
+              <p className="text-gray-600 max-w-md">
+                Merci pour votre demande. Notre équipe vous contactera dans les plus brefs délais.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6">
+
+              {/* Error banner */}
+              {error && (
+                <div className="md:col-span-2 flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="sav-name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nom complet
+                </label>
+                <input
+                  id="sav-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={submitting}
+                  placeholder="Votre nom et prénom"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="sav-email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="sav-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={submitting}
+                  placeholder="votre@email.com"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="sav-phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+                </label>
+                <input
+                  id="sav-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={submitting}
+                  placeholder="+33 6 00 00 00 00"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="sav-message" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Votre demande
+                </label>
+                <textarea
+                  id="sav-message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required
+                  disabled={submitting}
+                  rows={4}
+                  placeholder="Décrivez votre projet : produit souhaité, quantité, destination de livraison, questions particulières…"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 resize-none disabled:bg-gray-50 disabled:opacity-60"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="bg-[#4A90D9] hover:bg-[#3a7bc8] text-white font-bold py-6 px-8 text-base disabled:opacity-70"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Envoi en cours…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-5 w-5" />
+                      Envoyer ma demande
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
         </section>
 
       </div>

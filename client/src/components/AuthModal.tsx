@@ -109,11 +109,9 @@ export default function AuthModal() {
     if (error) {
       setError(error.message || "Erreur lors de l'inscription.");
     } else {
-      setSuccess("Compte créé avec succès ! Vous êtes maintenant connecté.");
-      setTimeout(() => {
-        setShowAuthModal(false);
-        setSuccess(null);
-      }, 1500);
+      setSuccess(
+        `Un email de confirmation a été envoyé à ${registerForm.email}. Cliquez sur le lien pour activer votre compte.`
+      );
     }
     setLoading(false);
   };

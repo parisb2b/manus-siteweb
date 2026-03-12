@@ -17,7 +17,10 @@ export default function Header() {
 
   const isActive = (path: string) => location === path;
 
-  const logoSrc = "/images/logo_import97_large.png";
+  const logoSrc =
+    content?.siteSettings?.headerLogo ||
+    content?.siteSettings?.logo ||
+    "/images/logo_import97_large.png";
 
   const logoAlt = "97 import";
 

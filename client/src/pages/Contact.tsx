@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { MessageCircle, Mail, Send, Phone, Truck, ShieldCheck, HeadphonesIcon } from "lucide-react";
+import {
+  MessageCircle,
+  Mail,
+  Send,
+  Phone,
+  Truck,
+  ShieldCheck,
+  HeadphonesIcon,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import { useContactForm } from "@/hooks/useContactForm";
 
 export default function Contact() {
   const [nom, setNom] = useState("");
@@ -12,17 +24,21 @@ export default function Contact() {
   const [telephone, setTelephone] = useState("");
   const [message, setMessage] = useState("");
 
+  const { submitting, success, error, submit } = useContactForm();
+
   const whatsappNumber = "33663284908";
   const contactEmail = "info@97import.com";
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=Bonjour%2C%20je%20souhaite%20obtenir%20des%20informations%20sur%20vos%20produits.`;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Contact 97 import - ${prenom} ${nom}`);
-    const body = encodeURIComponent(
-      `Nom : ${nom}\nPrénom : ${prenom}\nEmail : ${email}\nTéléphone : ${telephone}\n\nMessage :\n${message}`
-    );
-    window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
+    await submit({
+      name: `${prenom} ${nom}`.trim(),
+      email,
+      phone: telephone || undefined,
+      message,
+      source: "contact",
+    });
   };
 
   return (
@@ -49,91 +65,139 @@ export default function Contact() {
             {/* Form - 2 columns */}
             <div className="md:col-span-2">
               <h2 className="text-3xl font-bold text-[#4A90D9] mb-8">Envoyez-nous un message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="nom" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nom
-                    </label>
-                    <input
-                      id="nom"
-                      type="text"
-                      value={nom}
-                      onChange={(e) => setNom(e.target.value)}
-                      required
-                      placeholder="Votre nom"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="prenom" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Prénom
-                    </label>
-                    <input
-                      id="prenom"
-                      type="text"
-                      value={prenom}
-                      onChange={(e) => setPrenom(e.target.value)}
-                      required
-                      placeholder="Votre prénom"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+              {/* Success state */}
+              {success ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="bg-green-100 p-5 rounded-full mb-6">
+                    <CheckCircle2 className="h-12 w-12 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Message envoyé !</h3>
+                  <p className="text-gray-600 max-w-md mb-8">
+                    Merci pour votre message. Notre équipe vous répondra dans les plus brefs délais,
+                    généralement sous 24 à 48 heures.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setNom(""); setPrenom(""); setEmail(""); setTelephone(""); setMessage("");
+                    }}
+                    variant="outline"
+                    className="border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white"
+                  >
+                    Envoyer un autre message
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+
+                  {/* Error banner */}
+                  {error && (
+                    <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700">
+                      <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm">{error}</p>
+                    </div>
+                  )}
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="nom" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Nom
+                      </label>
+                      <input
+                        id="nom"
+                        type="text"
+                        value={nom}
+                        onChange={(e) => setNom(e.target.value)}
+                        required
+                        disabled={submitting}
+                        placeholder="Votre nom"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="prenom" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Prénom
+                      </label>
+                      <input
+                        id="prenom"
+                        type="text"
+                        value={prenom}
+                        onChange={(e) => setPrenom(e.target.value)}
+                        required
+                        disabled={submitting}
+                        placeholder="Votre prénom"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={submitting}
+                        placeholder="votre@email.com"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="telephone" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+                      </label>
+                      <input
+                        id="telephone"
+                        type="tel"
+                        value={telephone}
+                        onChange={(e) => setTelephone(e.target.value)}
+                        disabled={submitting}
+                        placeholder="+33 6 00 00 00 00"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 disabled:bg-gray-50 disabled:opacity-60"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email
+                    <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Message
                     </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                    <textarea
+                      id="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                       required
-                      placeholder="votre@email.com"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
+                      disabled={submitting}
+                      rows={5}
+                      placeholder="Décrivez votre projet ou posez-nous vos questions..."
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 resize-none disabled:bg-gray-50 disabled:opacity-60"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="telephone" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Téléphone
-                    </label>
-                    <input
-                      id="telephone"
-                      type="tel"
-                      value={telephone}
-                      onChange={(e) => setTelephone(e.target.value)}
-                      placeholder="+33 6 00 00 00 00"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    required
-                    rows={5}
-                    placeholder="Décrivez votre projet ou posez-nous vos questions..."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900 resize-none"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="bg-[#4A90D9] hover:bg-[#3a7bc8] text-white font-bold py-6 px-8 text-lg"
-                >
-                  <Send className="mr-2 h-5 w-5" />
-                  Envoyer le message
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-[#4A90D9] hover:bg-[#3a7bc8] text-white font-bold py-6 px-8 text-lg disabled:opacity-70"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Envoi en cours…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-5 w-5" />
+                        Envoyer le message
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
             </div>
 
             {/* Sidebar - Contact Cards */}

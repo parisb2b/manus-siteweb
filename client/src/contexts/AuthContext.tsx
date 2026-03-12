@@ -100,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: metadata,
+        emailRedirectTo: window.location.origin + "/confirmation",
       },
     });
 

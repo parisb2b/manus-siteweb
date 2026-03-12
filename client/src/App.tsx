@@ -20,6 +20,7 @@ import Contact from "./pages/Contact";
 import Delivery from "./pages/Delivery";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
+import Confirmation from "./pages/Confirmation";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
       <Route path="/services" component={Services} />
       <Route path="/contact" component={Contact} />
       <Route path="/delivery" component={Delivery} />
+      <Route path="/confirmation" component={Confirmation} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>
