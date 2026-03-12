@@ -17,13 +17,9 @@ export default function Header() {
 
   const isActive = (path: string) => location === path;
 
-  const isRippaPage = location.startsWith('/minipelles') || location.startsWith('/accessoires');
+  const logoSrc = "/images/logo_import97_large.png";
 
-  const logoSrc = isRippaPage
-    ? "/images/logo_rippa_new.png"
-    : "/images/logo_import97_large.png";
-
-  const logoAlt = isRippaPage ? "Rippa DOM TOM" : "97 import";
+  const logoAlt = "97 import";
 
   const handleUserClick = () => {
     if (user) {

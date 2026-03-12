@@ -14,10 +14,7 @@ export default function Footer() {
     ? "Rippa DOM TOM est votre partenaire de confiance pour les mini-pelles de haute qualité dans les DOM TOM. Performance, fiabilité et service local."
     : "Import 97 simplifie l'importation de produits de qualité (maisons, solaire, agricole) depuis la Chine vers les Antilles. Service clé en main.";
 
-  // Use the new logos
-  const logoSrc = isRippaPage
-    ? "/images/logo_rippa_domtom_transparent.png"
-    : "/images/logo_import97_footer_transparent.png";
+  const logoSrc = "/images/logo_import97_footer_transparent.png";
 
   return (
     <footer className="bg-[#4A90D9] text-white pt-16 pb-8 font-sans">
