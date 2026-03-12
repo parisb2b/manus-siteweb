@@ -1,4 +1,3 @@
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { execSync } from "node:child_process";
@@ -639,7 +638,7 @@ function viteApiPlugin(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusDebugCollector(), viteApiPlugin()];
+const plugins = [react(), tailwindcss(), vitePluginManusDebugCollector(), viteApiPlugin()];
 
 export default defineConfig({
   plugins,
