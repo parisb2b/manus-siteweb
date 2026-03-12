@@ -1,11 +1,36 @@
-import { useState, useEffect } from "react";
-import { Save, Settings, Palette, Globe, Type } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Save, Settings, Palette, Globe, Type, Upload } from "lucide-react";
 
 export default function AdminSettings() {
   const [siteContent, setSiteContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadLogo = async (file: File) => {
+    setUploadingLogo(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = (e.target?.result as string).split(",")[1];
+        const ext = file.name.split(".").pop() || "png";
+        const filename = `logo_site_${Date.now()}.${ext}`;
+        const res = await fetch("/api/images/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageData: base64, filename, folder: "" }),
+        });
+        const data = await res.json();
+        if (data.path) updateSetting("logo", data.path);
+        setUploadingLogo(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setUploadingLogo(false);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/site-content")
@@ -206,21 +231,42 @@ export default function AdminSettings() {
 
           {/* Logo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Logo (URL)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Logo du site</label>
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-32 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 p-1 flex items-center justify-center">
+                {getSetting("logo") ? (
+                  <img src={getSetting("logo")} alt="Logo preview" className="w-full h-full object-contain" onError={e => (e.target as HTMLImageElement).style.display = "none"} />
+                ) : (
+                  <span className="text-xs text-gray-400">Aucun logo</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f); }}
+                />
+                <button
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingLogo ? "Upload..." : "Téléverser"}
+                </button>
+                <p className="text-xs text-gray-400">PNG, JPG, SVG recommandé</p>
+              </div>
+            </div>
             <input
               type="text"
               value={getSetting("logo")}
               onChange={(e) => updateSetting("logo", e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent outline-none text-gray-800"
-              placeholder="https://exemple.com/logo.png"
+              placeholder="/images/logo_import97_large.png"
             />
-            {getSetting("logo") && (
-              <div className="mt-2 w-32 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 p-1">
-                <img src={getSetting("logo")} alt="Logo preview" className="w-full h-full object-contain" onError={e => (e.target as HTMLImageElement).style.display = "none"} />
-              </div>
-            )}
+            <p className="text-xs text-gray-400 mt-1">💡 Pour gérer séparément le logo header et footer, utilisez la section <strong>Header & Footer</strong></p>
           </div>
 
           {/* Favicon URL */}

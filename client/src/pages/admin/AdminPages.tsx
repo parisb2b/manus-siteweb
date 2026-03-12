@@ -219,6 +219,7 @@ export default function AdminPages() {
       {renderInputField("Titre Hero", "heroTitle")}
       {renderInputField("Sous-titre Hero", "heroSubtitle")}
       {renderInputField("Texte du bouton Hero", "heroButtonText")}
+      {renderInputField("Lien du bouton Hero", "heroButtonLink", "/minipelles")}
 
       <div className="pt-4 border-t border-gray-100">
         <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">
@@ -312,6 +313,7 @@ export default function AdminPages() {
     <>
       {renderInputField("Titre de la page", "pageTitle")}
       {renderInputField("Sous-titre de la page", "pageSubtitle")}
+      {renderInputField("Description courte", "description")}
     </>
   );
 

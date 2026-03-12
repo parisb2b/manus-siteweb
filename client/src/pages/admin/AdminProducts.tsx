@@ -359,10 +359,32 @@ export default function AdminProducts() {
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="/documents/fiche_technique.pdf" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Galerie</label>
-                <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Galerie</label>
+                <p className="text-xs text-gray-400 mb-3 flex items-center gap-1">
+                  <span>⠿</span> Glissez-déposez les éléments pour les réorganiser
+                </p>
+                <div className="space-y-2">
                   {(editingProduct.gallery || []).map((item, idx) => (
-                    <div key={idx} className="flex gap-2 items-center bg-gray-50 p-3 rounded-lg">
+                    <div
+                      key={idx}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("galleryDragIdx", String(idx));
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const from = parseInt(e.dataTransfer.getData("galleryDragIdx"));
+                        if (from === idx) return;
+                        const g = [...(editingProduct.gallery || [])];
+                        const [moved] = g.splice(from, 1);
+                        g.splice(idx, 0, moved);
+                        updateField("gallery", g);
+                      }}
+                      className="flex gap-2 items-center bg-gray-50 p-3 rounded-lg cursor-grab active:cursor-grabbing border border-transparent hover:border-[#4A90D9]/30 transition-colors"
+                    >
+                      <span className="text-gray-300 select-none mr-1">⠿</span>
                       <select value={item.type} onChange={e => {
                         const g = [...(editingProduct.gallery || [])];
                         g[idx] = { ...g[idx], type: e.target.value as "image" | "video" };
@@ -380,13 +402,13 @@ export default function AdminProducts() {
                         const g = [...(editingProduct.gallery || [])];
                         g[idx] = { ...g[idx], alt: e.target.value };
                         updateField("gallery", g);
-                      }} className="w-40 px-3 py-1.5 border rounded-lg text-sm" placeholder="Texte alt" />
+                      }} className="w-32 px-3 py-1.5 border rounded-lg text-sm" placeholder="Texte alt" />
                       <button onClick={() => updateField("gallery", (editingProduct.gallery || []).filter((_, i) => i !== idx))}
-                        className="text-red-500 hover:text-red-700"><X className="w-4 h-4" /></button>
+                        className="text-red-500 hover:text-red-700 p-1"><X className="w-4 h-4" /></button>
                     </div>
                   ))}
                   <button onClick={() => updateField("gallery", [...(editingProduct.gallery || []), { type: "image", src: "", alt: "" }])}
-                    className="text-sm text-[#4A90D9] hover:underline">+ Ajouter un média</button>
+                    className="text-sm text-[#4A90D9] hover:underline font-medium">+ Ajouter un média</button>
                 </div>
               </div>
             </div>

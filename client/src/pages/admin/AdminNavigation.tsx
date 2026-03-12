@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Navigation,
   Save,
@@ -23,6 +23,9 @@ export default function AdminNavigation() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetch("/api/site-content")
@@ -86,6 +89,28 @@ export default function AdminNavigation() {
     const updated = menuItems.filter((_, i) => i !== index);
     updateMenuItems(updated);
     setDeleteConfirm(null);
+  };
+
+  // Drag-and-drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnter = (index: number) => {
+    if (dragIndex === null || dragIndex === index) return;
+    setDragOver(index);
+  };
+
+  const handleDragEnd = () => {
+    if (dragIndex !== null && dragOver !== null && dragIndex !== dragOver) {
+      const updated = [...menuItems];
+      const [moved] = updated.splice(dragIndex, 1);
+      updated.splice(dragOver, 0, moved);
+      updateMenuItems(updated);
+    }
+    setDragIndex(null);
+    setDragOver(null);
   };
 
   const handleSave = async () => {
@@ -213,13 +238,20 @@ export default function AdminNavigation() {
             menuItems.map((item, index) => (
               <div
                 key={index}
-                className={`px-6 py-4 flex flex-col lg:flex-row lg:items-center gap-4 transition-colors ${
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragEnter={() => handleDragEnter(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnd={handleDragEnd}
+                className={`px-6 py-4 flex flex-col lg:flex-row lg:items-center gap-4 transition-all cursor-grab active:cursor-grabbing select-none ${
+                  dragOver === index ? "border-t-2 border-[#4A90D9] bg-blue-50/30" :
+                  dragIndex === index ? "opacity-40 bg-gray-50" :
                   !item.visible ? "bg-gray-50/50" : ""
                 }`}
               >
                 {/* Grip + Index */}
                 <div className="flex items-center gap-2 lg:w-8 shrink-0">
-                  <GripVertical className="w-4 h-4 text-gray-300" />
+                  <GripVertical className="w-4 h-4 text-gray-400" />
                   <span className="text-xs text-gray-400 font-mono lg:hidden">
                     #{index + 1}
                   </span>

@@ -19,6 +19,7 @@ import {
   BarChart3,
   Eye,
   Image as ImageIcon,
+  Layout,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -30,6 +31,7 @@ import AdminPages from "./AdminPages";
 import AdminNavigation from "./AdminNavigation";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminMedia from "./AdminMedia";
+import AdminHeaderFooter from "./AdminHeaderFooter";
 
 interface NavItem {
   label: string;
@@ -41,13 +43,14 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard },
   { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts },
-  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia },
   { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages },
+  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter },
   { label: "Navigation", icon: Navigation, path: "/admin/navigation", component: AdminNavigation },
+  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia },
   { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing },
   { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping },
-  { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
   { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics },
+  { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
   { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings },
 ];
 
