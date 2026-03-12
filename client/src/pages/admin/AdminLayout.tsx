@@ -98,17 +98,24 @@ export default function AdminLayout() {
   const handlePublish = async () => {
     setPublishState("publishing");
     try {
-      const res = await fetch("/api/publish", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        setPublishState("success");
-        setHasChanges(false);
-        setTimeout(() => setPublishState("idle"), 3000);
+      const deployHook = import.meta.env.VITE_VERCEL_DEPLOY_HOOK;
+      if (deployHook) {
+        // Production (Vercel) : déclenche un redéploiement via Deploy Hook
+        await fetch(deployHook, { method: "POST" });
       } else {
-        setPublishError(data.error || "Erreur inconnue");
-        setPublishState("error");
-        setTimeout(() => setPublishState("idle"), 5000);
+        // Fallback local : git add + commit + push via API dev server
+        const res = await fetch("/api/publish", { method: "POST" });
+        const data = await res.json();
+        if (!data.success) {
+          setPublishError(data.error || "Erreur inconnue");
+          setPublishState("error");
+          setTimeout(() => setPublishState("idle"), 5000);
+          return;
+        }
       }
+      setPublishState("success");
+      setHasChanges(false);
+      setTimeout(() => setPublishState("idle"), 3000);
     } catch (e) {
       setPublishError(String(e));
       setPublishState("error");
