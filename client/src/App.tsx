@@ -21,6 +21,7 @@ import Delivery from "./pages/Delivery";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Confirmation from "./pages/Confirmation";
+import MonCompte from "./pages/MonCompte";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
       <Route path="/contact" component={Contact} />
       <Route path="/delivery" component={Delivery} />
       <Route path="/confirmation" component={Confirmation} />
+      <Route path="/mon-compte" component={MonCompte} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>

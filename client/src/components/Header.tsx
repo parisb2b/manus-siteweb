@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
+import { User, ShoppingBag, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,8 +82,8 @@ export default function Header() {
                 }`}
               >
                 <User className="h-5 w-5" />
-                {user && profile ? (
-                  <span className="hidden xl:inline text-xs">{profile.prenom}</span>
+                {user ? (
+                  <span className="hidden xl:inline text-xs">Mon compte</span>
                 ) : (
                   <span className="hidden xl:inline text-xs">Connexion</span>
                 )}
@@ -98,6 +98,12 @@ export default function Header() {
                     </p>
                     <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
                   </div>
+                  <Link href="/mon-compte" onClick={() => setShowUserMenu(false)}>
+                    <span className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <LayoutDashboard className="w-4 h-4 text-[#4A90D9]" />
+                      Mon espace
+                    </span>
+                  </Link>
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -148,14 +154,21 @@ export default function Header() {
           {/* Mobile Auth & Cart */}
           <div className="pt-4 border-t border-gray-100 flex flex-col space-y-3">
             {user ? (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col space-y-2">
                 <span className="text-sm font-bold text-[#4A90D9]">
                   {profile?.prenom} {profile?.nom}
                 </span>
+                <Link href="/mon-compte" onClick={() => setIsMenuOpen(false)}>
+                  <span className="flex items-center gap-2 py-2 text-sm font-bold text-gray-700 hover:text-[#4A90D9]">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Mon espace
+                  </span>
+                </Link>
                 <button
                   onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
-                  className="text-sm text-red-600 font-bold"
+                  className="flex items-center gap-2 py-2 text-sm text-red-600 font-bold text-left"
                 >
+                  <LogOut className="h-4 w-4" />
                   Se déconnecter
                 </button>
               </div>
