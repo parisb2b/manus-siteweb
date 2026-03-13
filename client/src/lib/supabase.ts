@@ -1,5 +1,10 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+// --- DEBUG TEMPORAIRE ---
+console.log('[Supabase] URL:', import.meta.env.VITE_SUPABASE_URL ? 'présent' : 'absent');
+console.log('[Supabase] KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'présent' : 'absent');
+// --- FIN DEBUG ---
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
