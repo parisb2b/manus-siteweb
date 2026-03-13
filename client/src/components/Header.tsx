@@ -94,7 +94,7 @@ export default function Header() {
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-bold text-gray-900">
-                      {profile?.prenom} {profile?.nom}
+                      {profile?.first_name} {profile?.last_name}
                     </p>
                     <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
                   </div>
@@ -156,7 +156,7 @@ export default function Header() {
             {user ? (
               <div className="flex flex-col space-y-2">
                 <span className="text-sm font-bold text-[#4A90D9]">
-                  {profile?.prenom} {profile?.nom}
+                  {profile?.first_name} {profile?.last_name}
                 </span>
                 <Link href="/mon-compte" onClick={() => setIsMenuOpen(false)}>
                   <span className="flex items-center gap-2 py-2 text-sm font-bold text-gray-700 hover:text-[#4A90D9]">

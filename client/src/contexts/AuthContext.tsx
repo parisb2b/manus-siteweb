@@ -4,10 +4,10 @@ import type { User, Session } from "@supabase/supabase-js";
 
 export type Profile = {
   id: string;
-  nom: string;
-  prenom: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  telephone: string;
+  phone: string;
   created_at: string;
 };
 
@@ -16,7 +16,7 @@ type AuthContextType = {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata: { nom: string; prenom: string; telephone: string }) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata: { first_name: string; last_name: string; phone: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   showAuthModal: boolean;
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    metadata: { nom: string; prenom: string; telephone: string }
+    metadata: { first_name: string; last_name: string; phone: string }
   ) => {
     if (!supabase) {
       return { error: { message: "Supabase non configuré" } };
@@ -105,17 +105,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!error && data.user) {
-      // Create profile in profiles table
-      const { error: profileError } = await supabase.from("profiles").insert({
+      // Upsert profile in profiles table (avoids duplicate errors)
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: data.user.id,
-        nom: metadata.nom,
-        prenom: metadata.prenom,
+        first_name: metadata.first_name,
+        last_name: metadata.last_name,
         email: email,
-        telephone: metadata.telephone,
+        phone: metadata.phone,
       });
 
       if (profileError) {
-        console.error("Error creating profile:", profileError);
+        console.error("Error upserting profile:", profileError);
       }
 
       // Fetch and set profile

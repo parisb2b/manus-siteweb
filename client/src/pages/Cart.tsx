@@ -48,9 +48,9 @@ export default function Cart() {
     let message = "Bonjour, je souhaite obtenir un devis pour :\n\n";
 
     if (user && profile) {
-      message += `CLIENT : ${profile.prenom} ${profile.nom}\n`;
+      message += `CLIENT : ${profile.first_name} ${profile.last_name}\n`;
       message += `Email : ${profile.email}\n`;
-      if (profile.telephone) message += `Tél : ${profile.telephone}\n`;
+      if (profile.phone) message += `Tél : ${profile.phone}\n`;
       message += "\n";
     }
 

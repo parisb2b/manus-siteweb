@@ -46,10 +46,10 @@ export default function AuthModal() {
 
   // Register form
   const [registerForm, setRegisterForm] = useState({
-    nom: "",
-    prenom: "",
+    last_name: "",
+    first_name: "",
     email: "",
-    telephone: "",
+    phone: "",
     password: "",
   });
 
@@ -88,7 +88,7 @@ export default function AuthModal() {
     setSuccess(null);
     setLoading(true);
 
-    if (!registerForm.nom || !registerForm.prenom || !registerForm.email || !registerForm.password) {
+    if (!registerForm.last_name || !registerForm.first_name || !registerForm.email || !registerForm.password) {
       setError("Veuillez remplir tous les champs obligatoires.");
       setLoading(false);
       return;
@@ -101,9 +101,9 @@ export default function AuthModal() {
     }
 
     const { error } = await signUp(registerForm.email, registerForm.password, {
-      nom: registerForm.nom,
-      prenom: registerForm.prenom,
-      telephone: registerForm.telephone,
+      first_name: registerForm.first_name,
+      last_name: registerForm.last_name,
+      phone: registerForm.phone,
     });
 
     if (error) {
@@ -265,8 +265,8 @@ export default function AuthModal() {
                     <input
                       type="text"
                       placeholder="Dupont"
-                      value={registerForm.nom}
-                      onChange={(e) => setRegisterForm({ ...registerForm, nom: e.target.value })}
+                      value={registerForm.last_name}
+                      onChange={(e) => setRegisterForm({ ...registerForm, last_name: e.target.value })}
                       className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                     />
                   </div>
@@ -280,8 +280,8 @@ export default function AuthModal() {
                     <input
                       type="text"
                       placeholder="Jean"
-                      value={registerForm.prenom}
-                      onChange={(e) => setRegisterForm({ ...registerForm, prenom: e.target.value })}
+                      value={registerForm.first_name}
+                      onChange={(e) => setRegisterForm({ ...registerForm, first_name: e.target.value })}
                       className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                     />
                   </div>
@@ -313,8 +313,8 @@ export default function AuthModal() {
                   <input
                     type="tel"
                     placeholder="0696 12 34 56"
-                    value={registerForm.telephone}
-                    onChange={(e) => setRegisterForm({ ...registerForm, telephone: e.target.value })}
+                    value={registerForm.phone}
+                    onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
                     className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
                   />
                 </div>

@@ -41,10 +41,10 @@ COMMENT ON COLUMN contacts.source IS 'Page d origine : contact, devis, produit, 
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  nom TEXT,
-  prenom TEXT,
+  first_name TEXT,
+  last_name TEXT,
   email TEXT,
-  telephone TEXT,
+  phone TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -70,6 +70,9 @@ CREATE POLICY "Insertion profil personnel" ON profiles
   WITH CHECK (auth.uid() = id);
 
 COMMENT ON TABLE profiles IS 'Profils des clients connectés sur 97import.com';
+COMMENT ON COLUMN profiles.first_name IS 'Prénom du client';
+COMMENT ON COLUMN profiles.last_name IS 'Nom de famille du client';
+COMMENT ON COLUMN profiles.phone IS 'Numéro de téléphone du client';
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Table orders (historique des commandes)
