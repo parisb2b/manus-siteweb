@@ -1,30 +1,43 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
-/**
- * Page de callback OAuth (Google, Facebook, etc.)
- * Supabase redirige ici après l'authentification sociale avec ?code=xxx.
- * Le client Supabase JS détecte et échange automatiquement le code
- * lors de l'initialisation (detectSessionInUrl: true par défaut).
- * AuthContext met à jour user/session via onAuthStateChange.
- * Cette page attend la résolution et redirige vers /mon-compte ou /.
- */
 export default function AuthCallback() {
   const [, setLocation] = useLocation();
-  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
+    const handleCallback = async () => {
+      if (!supabase) {
+        setLocation("/");
+        return;
+      }
+
+      // Récupérer le code PKCE depuis l'URL
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (code) {
+        // Échanger le code contre une session
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("[AuthCallback] Erreur échange code:", error);
+          setLocation("/");
+          return;
+        }
+      }
+
+      // Vérifier la session résultante
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         setLocation("/mon-compte");
       } else {
-        // Échange du code non résolu ou erreur → retour à l'accueil
         setLocation("/");
       }
-    }
-  }, [user, loading, setLocation]);
+    };
+
+    handleCallback();
+  }, [setLocation]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans">
