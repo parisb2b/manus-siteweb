@@ -40,15 +40,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error("Error fetching profile:", error);
+        console.warn("[AuthContext] fetchProfile non bloquant:", error.message);
         return null;
       }
-      return data as Profile;
-    } catch (err) {
-      console.error("Error fetching profile:", err);
+      return data as Profile | null;
+    } catch {
       return null;
     }
   };

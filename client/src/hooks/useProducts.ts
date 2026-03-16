@@ -112,14 +112,17 @@ export function useProducts(category?: string) {
           : data.filter((p) => p.active);
         setProducts(filtered);
       })
-      .catch(() => {
-        import("@/data/products.json").then((mod) => {
+      .catch(async () => {
+        try {
+          const mod = await import("@/data/products.json");
           const data = mod.default as Product[];
           const filtered = category
             ? data.filter((p) => p.category === category && p.active)
             : data.filter((p) => p.active);
           setProducts(filtered);
-        });
+        } catch {
+          // JSON fallback also failed — leave products empty
+        }
       })
       .finally(() => setLoading(false));
   }, [category]);
@@ -143,15 +146,16 @@ export function useProduct(id: string | null) {
         return res.json();
       })
       .then((data: Product) => setProduct(data))
-      .catch(() => {
-        // Fallback: search in full list
-        fetch("/api/products")
-          .then((res) => res.json())
-          .then((data: Product[]) => {
-            const found = data.find((p) => p.id === id) || null;
-            setProduct(found);
-          })
-          .catch(() => {});
+      .catch(async () => {
+        // Fallback: search directly in bundled JSON
+        try {
+          const mod = await import("@/data/products.json");
+          const data = mod.default as Product[];
+          const found = data.find((p) => p.id === id) || null;
+          setProduct(found);
+        } catch {
+          setProduct(null);
+        }
       })
       .finally(() => setLoading(false));
   }, [id]);
