@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import {
   User, Mail, Phone, Lock, Eye, EyeOff,
   Save, Loader2, CheckCircle2, AlertCircle,
-  ShoppingBag, FileText, Shield, ChevronRight, X, LogOut,
+  ShoppingBag, FileText, Shield, ChevronRight, LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
@@ -36,25 +36,13 @@ export default function MonCompte() {
   const [activeTab, setActiveTab] = useState<Tab>("infos");
 
   // ── Redirection si non connecté ─────────────────────────────────
+  // loading=false vient d'AuthContext dès que la session est résolue (max 3s)
   useEffect(() => {
     if (!loading && !user) {
       setShowAuthModal(true);
       setLocation("/");
     }
   }, [user, loading]);
-
-  // ── profileReady : attend que le profil soit chargé (max 1.5s) ──
-  const [profileReady, setProfileReady] = useState(false);
-
-  useEffect(() => {
-    if (loading || !user) return;
-    if (profile) {
-      setProfileReady(true);
-      return;
-    }
-    const t = setTimeout(() => setProfileReady(true), 3000);
-    return () => clearTimeout(t);
-  }, [loading, user, profile]);
 
   // ── Helpers prénom / nom ─────────────────────────────────────────
   const getFirstName = (): string => {
@@ -77,8 +65,9 @@ export default function MonCompte() {
   };
 
   // ── Modal complétion profil obligatoire ─────────────────────────
+  // Affiche seulement si profil chargé (non-null) et incomplet
   const isProfileIncomplete =
-    profileReady && user && (!profile?.first_name || !profile?.last_name || !profile?.phone);
+    !loading && user && profile !== null && (!profile?.first_name || !profile?.last_name || !profile?.phone);
 
   const [modalFirstName, setModalFirstName] = useState("");
   const [modalLastName, setModalLastName] = useState("");
@@ -256,8 +245,8 @@ export default function MonCompte() {
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────
-  if (loading || (user && !profileReady)) {
+  // ── Loading state — spinner max 3s (timeout dans AuthContext) ──────
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
         <Header />

@@ -12,10 +12,13 @@ export type Profile = {
   created_at: string;
 };
 
+export type Role = "admin" | "partenaire" | "client" | "visitor";
+
 type AuthContextType = {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  role: Role;
   loading: boolean;
   signUp: (email: string, password: string, metadata: { first_name: string; last_name: string; phone: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -34,8 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Fetch user profile from profiles table
-  const fetchProfile = async (userId: string) => {
+  // Role computed from profile — never blocks UI rendering
+  const role: Role =
+    !user
+      ? "visitor"
+      : profile?.role === "admin" || profile?.role === "partenaire" || profile?.role === "client"
+      ? profile.role
+      : "client";
+
+  // Fetch existing profile — purely non-blocking
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     if (!supabase) return null;
     try {
       const { data, error } = await supabase
@@ -43,9 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select("*")
         .eq("id", userId)
         .maybeSingle();
-
       if (error) {
-        console.warn("[AuthContext] fetchProfile non bloquant:", error.message);
+        console.warn("[AuthContext] fetchProfile:", error.message);
         return null;
       }
       return data as Profile | null;
@@ -54,34 +64,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // For OAuth users (Google, Apple…): upsert profile from metadata if missing
+  const ensureProfile = async (u: User) => {
+    if (!supabase) return;
+    const existing = await fetchProfile(u.id);
+    if (existing) {
+      setProfile(existing);
+      return;
+    }
+    // New OAuth user — create profile from user_metadata
+    const meta = u.user_metadata || {};
+    const firstName = (meta.given_name as string) || (meta.full_name as string)?.split(" ")[0] || "";
+    const lastName  = (meta.family_name as string) || (meta.full_name as string)?.split(" ").slice(1).join(" ") || "";
+    const { data } = await supabase
+      .from("profiles")
+      .upsert({
+        id: u.id,
+        first_name: firstName,
+        last_name: lastName,
+        email: u.email || "",
+        phone: (meta.phone as string) || "",
+        role: "client",
+      })
+      .select()
+      .maybeSingle();
+    if (data) setProfile(data as Profile);
+  };
+
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
       return;
     }
 
-    // Safety timeout — loading never stays true more than 5s
-    const loadingTimeout = setTimeout(() => setLoading(false), 5000);
+    // Safety net — loading never stays true more than 3s
+    const loadingTimeout = setTimeout(() => setLoading(false), 3000);
 
-    // Get initial session
+    // Initial session check — loading = false IMMEDIATELY after session resolves
     supabase.auth.getSession().then(({ data: { session } }) => {
       clearTimeout(loadingTimeout);
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false); // ← unblocks UI right away, profile loads in background
       if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
+        ensureProfile(session.user).catch(() => {});
       }
-      setLoading(false);
     });
 
-    // Listen for auth changes
+    // Real-time auth changes (sign-in, sign-out, token refresh, OAuth callback…)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false); // always unblock on any auth state change
         if (session?.user) {
-          const p = await fetchProfile(session.user.id);
-          setProfile(p);
+          ensureProfile(session.user).catch(() => {});
         } else {
           setProfile(null);
         }
@@ -99,9 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     metadata: { first_name: string; last_name: string; phone: string }
   ) => {
-    if (!supabase) {
-      return { error: { message: "Supabase non configuré" } };
-    }
+    if (!supabase) return { error: { message: "Supabase non configuré" } };
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -117,15 +152,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
         first_name: metadata.first_name,
         last_name: metadata.last_name,
-        email: email,
+        email,
         phone: metadata.phone,
         role: "client",
       });
-
-      if (profileError) {
-        console.error("Error upserting profile:", profileError);
-      }
-
+      if (profileError) console.warn("Profile upsert:", profileError);
       const p = await fetchProfile(data.user.id);
       setProfile(p);
     }
@@ -134,21 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    if (!supabase) {
-      return { error: { message: "Supabase non configuré" } };
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    if (!supabase) return { error: { message: "Supabase non configuré" } };
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
   const signOut = async () => {
     if (!supabase) return;
-    // Clear state immediately — don't wait for onAuthStateChange
     setUser(null);
     setSession(null);
     setProfile(null);
@@ -157,9 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPasswordForEmail = async (email: string) => {
-    if (!supabase) {
-      return { error: { message: "Supabase non configuré" } };
-    }
+    if (!supabase) return { error: { message: "Supabase non configuré" } };
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + "/reset-password",
     });
@@ -172,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         profile,
+        role,
         loading,
         signUp,
         signIn,
