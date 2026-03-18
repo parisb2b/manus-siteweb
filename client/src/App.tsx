@@ -23,6 +23,8 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Confirmation from "./pages/Confirmation";
 import MonCompte from "./pages/MonCompte";
 import AuthCallback from "./pages/AuthCallback";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -50,6 +52,8 @@ function App() {
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/mon-compte" component={MonCompte} />
       <Route path="/auth/callback" component={AuthCallback} />
+      <Route path="/mot-de-passe-oublie" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>

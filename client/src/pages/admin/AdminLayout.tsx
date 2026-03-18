@@ -34,6 +34,7 @@ import AdminAnalytics from "./AdminAnalytics";
 import AdminMedia from "./AdminMedia";
 import AdminHeaderFooter from "./AdminHeaderFooter";
 import AdminLeads from "./AdminLeads";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItem {
   label: string;
@@ -59,6 +60,7 @@ const navItems: NavItem[] = [
 
 export default function AdminLayout() {
   const [location, setLocation] = useLocation();
+  const { user, profile, loading: authLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [publishState, setPublishState] = useState<"idle" | "confirm" | "publishing" | "success" | "error">("idle");
@@ -70,6 +72,14 @@ export default function AdminLayout() {
       setLocation("/admin");
     }
   }, [setLocation]);
+
+  // Supabase role check — if user is loaded and role is not admin, redirect home
+  useEffect(() => {
+    if (authLoading) return;
+    if (user && profile && profile.role !== "admin") {
+      setLocation("/");
+    }
+  }, [authLoading, user, profile, setLocation]);
 
   // Check for unpublished changes
   const checkPublishStatus = useCallback(() => {

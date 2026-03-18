@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "wouter";
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -37,12 +38,14 @@ const MicrosoftIcon = () => (
 
 export default function AuthModal() {
   const { showAuthModal, setShowAuthModal, signUp, signIn } = useAuth();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("register");
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Register form
   const [registerForm, setRegisterForm] = useState({
@@ -51,6 +54,8 @@ export default function AuthModal() {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
+    acceptCgv: false,
   });
 
   // Login form
@@ -94,8 +99,27 @@ export default function AuthModal() {
       return;
     }
 
-    if (registerForm.password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerForm.email)) {
+      setError("Adresse email invalide.");
+      setLoading(false);
+      return;
+    }
+
+    if (registerForm.password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      setLoading(false);
+      return;
+    }
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
+      setLoading(false);
+      return;
+    }
+
+    if (!registerForm.acceptCgv) {
+      setError("Vous devez accepter les Conditions Générales de Vente.");
       setLoading(false);
       return;
     }
@@ -345,7 +369,51 @@ export default function AuthModal() {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Minimum 6 caractères</p>
+                <p className="text-xs text-gray-400 mt-1">Minimum 8 caractères</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
+                  Confirmer le mot de passe *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={registerForm.confirmPassword}
+                    onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                    className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="acceptCgv"
+                  checked={registerForm.acceptCgv}
+                  onChange={(e) => setRegisterForm({ ...registerForm, acceptCgv: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#4A90D9] focus:ring-[#4A90D9]"
+                />
+                <label htmlFor="acceptCgv" className="text-xs text-gray-600">
+                  J'accepte les{" "}
+                  <Link href="/terms" onClick={() => setShowAuthModal(false)}>
+                    <span className="text-[#4A90D9] underline cursor-pointer">Conditions Générales de Vente</span>
+                  </Link>{" "}
+                  *
+                </label>
               </div>
 
               <Button
@@ -379,9 +447,18 @@ export default function AuthModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-                  Mot de passe
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Mot de passe
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAuthModal(false); setLocation("/mot-de-passe-oublie"); }}
+                    className="text-xs text-[#4A90D9] hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input

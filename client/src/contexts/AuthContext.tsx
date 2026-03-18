@@ -20,6 +20,7 @@ type AuthContextType = {
   signUp: (email: string, password: string, metadata: { first_name: string; last_name: string; phone: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resetPasswordForEmail: (email: string) => Promise<{ error: any }>;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
 };
@@ -59,8 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Safety timeout — loading never stays true more than 5s
+    const loadingTimeout = setTimeout(() => setLoading(false), 5000);
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(loadingTimeout);
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -83,7 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (
@@ -105,20 +113,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!error && data.user) {
-      // Upsert profile in profiles table (avoids duplicate errors)
       const { error: profileError } = await supabase.from("profiles").upsert({
         id: data.user.id,
         first_name: metadata.first_name,
         last_name: metadata.last_name,
         email: email,
         phone: metadata.phone,
+        role: "client",
       });
 
       if (profileError) {
         console.error("Error upserting profile:", profileError);
       }
 
-      // Fetch and set profile
       const p = await fetchProfile(data.user.id);
       setProfile(p);
     }
@@ -141,8 +148,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     if (!supabase) return;
-    await supabase.auth.signOut();
+    // Clear state immediately — don't wait for onAuthStateChange
+    setUser(null);
+    setSession(null);
     setProfile(null);
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
+  const resetPasswordForEmail = async (email: string) => {
+    if (!supabase) {
+      return { error: { message: "Supabase non configuré" } };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password",
+    });
+    return { error };
   };
 
   return (
@@ -155,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         signOut,
+        resetPasswordForEmail,
         showAuthModal,
         setShowAuthModal,
       }}

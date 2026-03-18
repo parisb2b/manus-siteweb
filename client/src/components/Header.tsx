@@ -3,6 +3,7 @@ import { User, ShoppingBag, Menu, X, LogOut, LayoutDashboard } from "lucide-reac
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useSiteContent, getPageKeyFromPath } from "@/hooks/useSiteContent";
 
 export default function Header() {
@@ -11,6 +12,7 @@ export default function Header() {
   const [location] = useLocation();
   const { cartCount } = useCart();
   const { user, profile, signOut, setShowAuthModal } = useAuth();
+  const { role } = useRole();
   const { content } = useSiteContent();
 
   const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("preview");
@@ -93,9 +95,16 @@ export default function Header() {
               {showUserMenu && user && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-bold text-gray-900">
-                      {profile?.first_name} {profile?.last_name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-gray-900">
+                        {profile?.first_name} {profile?.last_name}
+                      </p>
+                      {role === "admin" && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase">
+                          Admin
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
                   </div>
                   <Link href="/mon-compte" onClick={() => setShowUserMenu(false)}>

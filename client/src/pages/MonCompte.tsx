@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import {
   User, Mail, Phone, Lock, Eye, EyeOff,
   Save, Loader2, CheckCircle2, AlertCircle,
-  ShoppingBag, FileText, Shield, ChevronRight, X,
+  ShoppingBag, FileText, Shield, ChevronRight, X, LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
@@ -32,7 +32,7 @@ type Devis = {
 
 export default function MonCompte() {
   const [, setLocation] = useLocation();
-  const { user, profile, loading, setShowAuthModal } = useAuth();
+  const { user, profile, loading, setShowAuthModal, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("infos");
 
   // ── Redirection si non connecté ─────────────────────────────────
@@ -52,7 +52,7 @@ export default function MonCompte() {
       setProfileReady(true);
       return;
     }
-    const t = setTimeout(() => setProfileReady(true), 1500);
+    const t = setTimeout(() => setProfileReady(true), 3000);
     return () => clearTimeout(t);
   }, [loading, user, profile]);
 
@@ -360,21 +360,52 @@ export default function MonCompte() {
       {/* Hero */}
       <div className="bg-white py-12 md:py-16 border-b border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-[#4A90D9]/10 p-4 rounded-full">
-              <User className="h-8 w-8 text-[#4A90D9]" />
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              <div className="bg-[#4A90D9]/10 p-4 rounded-full">
+                <User className="h-8 w-8 text-[#4A90D9]" />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">
+                  Mon espace
+                </h1>
+                <p className="text-gray-500 mt-1">
+                  Bonjour,{" "}
+                  <span className="font-semibold text-[#4A90D9]">
+                    {getFirstName()} {getLastName()}
+                  </span>
+                </p>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {profile?.role && (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                      profile.role === "admin"
+                        ? "bg-red-100 text-red-700"
+                        : profile.role === "partenaire"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {profile.role}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">
+                    {user.app_metadata?.provider === "google"
+                      ? "Connecté via Google"
+                      : user.app_metadata?.provider === "facebook"
+                      ? "Connecté via Facebook"
+                      : user.app_metadata?.provider === "apple"
+                      ? "Connecté via Apple"
+                      : "Connecté par email"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">
-                Mon espace
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Bonjour,{" "}
-                <span className="font-semibold text-[#4A90D9]">
-                  {getFirstName()} {getLastName()}
-                </span>
-              </p>
-            </div>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Se déconnecter
+            </button>
           </div>
         </div>
       </div>
