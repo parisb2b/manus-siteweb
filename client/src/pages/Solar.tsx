@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import PrixOuDevis from "@/components/PrixOuDevis";
 import ScrollToTop from "@/components/ScrollToTop";
 
 export default function Solar() {
@@ -8,21 +9,21 @@ export default function Solar() {
     {
       id: "kit-solaire-10kw",
       name: "Kit Solaire 10 kW",
-      price: "7 990 € HT",
+      priceElement: <PrixOuDevis prix="7 990 € HT" />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-10kw",
     },
     {
       id: "kit-solaire-12kw",
       name: "Kit Solaire 12 kW",
-      price: "8 990 € HT",
+      priceElement: <PrixOuDevis prix="8 990 € HT" />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-12kw",
     },
     {
       id: "kit-solaire-20kw",
       name: "Kit Solaire 20 kW",
-      price: "18 990 € HT",
+      priceElement: <PrixOuDevis prix="18 990 € HT" />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-20kw",
     },

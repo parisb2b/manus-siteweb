@@ -8,6 +8,7 @@ export type Profile = {
   last_name: string;
   email: string;
   phone: string;
+  role?: "admin" | "partenaire" | "client";
   created_at: string;
 };
 

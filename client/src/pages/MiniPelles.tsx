@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import PrixOuDevis from "@/components/PrixOuDevis";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
 import { usePageContent } from "@/hooks/useSiteContent";
@@ -12,7 +13,7 @@ export default function Home() {
   const proProducts = products.map((p) => ({
     id: p.id,
     name: p.name,
-    price: p.priceDisplay,
+    priceElement: <PrixOuDevis prix={p.priceDisplay} />,
     image: p.image,
     link: p.link,
   }));

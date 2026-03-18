@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PrixOuDevis from "@/components/PrixOuDevis";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ShoppingCart, Check } from "lucide-react";
@@ -383,7 +384,7 @@ export default function Accessories() {
                               <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 px-3 py-2 rounded group/option hover:bg-gray-100 transition-colors">
                                 <span className="text-gray-600">{option.size}</span>
                                 <div className="flex items-center gap-3">
-                                  <span className="font-bold text-[#4A90D9]">{option.price}</span>
+                                  <PrixOuDevis prix={option.price} compact />
                                   <Button 
                                     size="sm" 
                                     variant="ghost" 
