@@ -96,7 +96,7 @@
       "ctaTitle": "Besoin d'accessoires ?",
       "ctaDescription": "Optimisez votre mini-pelle avec notre gamme complète d'accessoires : godets, marteaux, tarières et plus encore.",
       "ctaButtonText": "Voir tous les accessoires",
-      "ctaButtonLink": "/accessoires",
+      "ctaButtonLink": "97import.com/accessoires",
       "bottomSections": [
         {
           "icon": "truck",
@@ -150,13 +150,13 @@
       "ctaButtonLink": "https://wa.me/33663284908",
       "ctaButtonExternal": true,
       "galleryImages": [
+        "/images/solar/solar_installations.jpg",
         "/images/solar/jinko_600w_tiger_neo.jpg",
         "/images/solar/deye_inverter.webp",
         "/images/solar/battery_6fm250.webp",
         "/images/solar/solar_cables.webp",
-        "/images/solar/solar_installations.jpg",
-        "/images/solar/jinko_truck_delivery.jpg",
-        "/images/solar/jinko_warehouse.jpg"
+        "/images/solar/jinko_warehouse.jpg",
+        "/images/solar/jinko_truck_delivery.jpg"
       ],
       "bottomSections": [
         {
