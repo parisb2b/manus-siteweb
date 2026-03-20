@@ -98,6 +98,7 @@ export default function MonCompte() {
         last_name: modalLastName.trim(),
         phone: modalPhone.trim(),
         email: user.email,
+        role: profile?.role ?? "user",
       });
       if (error) throw error;
       // Reload the page to refresh profile from AuthContext
@@ -369,11 +370,19 @@ export default function MonCompte() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
                       profile.role === "admin"
                         ? "bg-red-100 text-red-700"
-                        : profile.role === "partenaire"
+                        : profile.role === "collaborateur"
+                        ? "bg-blue-100 text-blue-700"
+                        : profile.role === "partner"
+                        ? "bg-orange-100 text-orange-700"
+                        : profile.role === "vip"
                         ? "bg-purple-100 text-purple-700"
-                        : "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600"
                     }`}>
-                      {profile.role}
+                      {profile.role === "admin" ? "Admin"
+                        : profile.role === "collaborateur" ? "Collaborateur"
+                        : profile.role === "partner" ? "Partenaire"
+                        : profile.role === "vip" ? "VIP"
+                        : "Utilisateur"}
                     </span>
                   )}
                   <span className="text-xs text-gray-400">
