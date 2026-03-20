@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
 import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Receipt, Handshake, CheckCircle2 } from "lucide-react";
-import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
-import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
-import { generateCommissionPDF, type CommissionData } from "@/utils/generateCommissionPDF";
+// PDF via moteur mutualisé features/pdf
+import { generateDevisPDF, type DevisData } from "@/features/pdf/templates/quote-pdf";
+import { generateFacturePDF, type FactureData } from "@/features/pdf/templates/invoice-pdf";
+import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templates/commission-pdf";
+// Calcul commission depuis source unique features/pricing
+import { prixPartenaire as calcPrixPartenaire } from "@/features/pricing/model/pricing";
 
 const ADMIN_PARTNER_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -117,13 +120,14 @@ function buildFactureData(q: Quote): FactureData {
 
 // Commission = prix_negocie - prix_partenaire (prix_achat × 1.2)
 // prix_achat ≈ prix_total_calcule / 1.5 (public price)
+// Utilise calcPrixPartenaire() depuis features/pricing — source unique du multiplicateur ×1.2
 function calcCommission(q: Quote): { prixPartenaire: number; commission: number } {
   const prixNegocie = q.prix_negocie ?? q.prix_total_calcule ?? 0;
   const prixPublic = q.prix_total_calcule ?? 0;
   const prixAchat = prixPublic > 0 ? prixPublic / 1.5 : prixNegocie / 1.3;
-  const prixPartenaire = Math.round(prixAchat * 1.2);
-  const commission = Math.max(0, Math.round(prixNegocie - prixPartenaire));
-  return { prixPartenaire, commission };
+  const prixPartenaireVal = calcPrixPartenaire(prixAchat);
+  const commission = Math.max(0, Math.round(prixNegocie - prixPartenaireVal));
+  return { prixPartenaire: prixPartenaireVal, commission };
 }
 
 export default function AdminQuotes() {
