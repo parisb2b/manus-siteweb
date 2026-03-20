@@ -3,8 +3,11 @@ import { useLocation } from "wouter";
 import {
   User, Mail, Phone, Lock, Eye, EyeOff,
   Save, Loader2, CheckCircle2, AlertCircle,
-  ShoppingBag, FileText, Shield, ChevronRight, LogOut,
+  ShoppingBag, FileText, Shield, ChevronRight, LogOut, Download,
 } from "lucide-react";
+import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
+import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
+import { formatEur } from "@/utils/calculPrix";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,10 +27,14 @@ type Commande = {
 type Devis = {
   id: string;
   created_at: string;
-  subject?: string;
-  message?: string;
-  read: boolean;
-  archived: boolean;
+  numero_devis?: string;
+  produits?: any[];
+  prix_total_calcule?: number;
+  prix_negocie?: number;
+  statut: string;
+  facture_generee?: boolean;
+  adresse_client?: string;
+  ville_client?: string;
 };
 
 export default function MonCompte() {
@@ -186,18 +193,12 @@ export default function MonCompte() {
     if (activeTab !== "devis" || !supabase || !user) return;
     setDevisLoading(true);
 
-    const timer = setTimeout(() => {
-      setDevisLoading(false);
-    }, 5000);
-
     supabase
-      .from("contacts")
-      .select("*")
-      .eq("email", user.email!)
-      .in("source", ["services", "cart"])
+      .from("quotes")
+      .select("id,created_at,numero_devis,produits,prix_total_calcule,prix_negocie,statut,facture_generee,adresse_client,ville_client")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        clearTimeout(timer);
         if (error) {
           console.error("Devis error:", error);
           setDevis([]);
@@ -206,8 +207,6 @@ export default function MonCompte() {
         }
         setDevisLoading(false);
       });
-
-    return () => clearTimeout(timer);
   }, [activeTab, user]);
 
   // ── Onglet 4 : Sécurité ──────────────────────────────────────────
@@ -632,7 +631,7 @@ export default function MonCompte() {
             {/* ── Onglet 3 : Mes devis ── */}
             {activeTab === "devis" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Mes demandes de devis</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-8">Mes devis</h2>
                 {devisLoading ? (
                   <div className="flex justify-center py-16">
                     <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" />
@@ -640,50 +639,151 @@ export default function MonCompte() {
                 ) : devis.length === 0 ? (
                   <div className="text-center py-16">
                     <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 font-medium">
-                      Aucune demande de devis pour le moment
-                    </p>
+                    <p className="text-gray-500 font-medium">Aucun devis pour le moment</p>
                     <p className="text-gray-400 text-sm mt-1">
-                      Vos demandes de devis apparaîtront ici.
+                      Ajoutez des produits au panier et générez votre premier devis.
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-left border-b border-gray-100">
-                          <th className="pb-3 font-semibold text-gray-600">Date</th>
-                          <th className="pb-3 font-semibold text-gray-600">Sujet</th>
-                          <th className="pb-3 font-semibold text-gray-600">Statut</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {devis.map((d) => (
-                          <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50">
-                            <td className="py-4 text-gray-600 whitespace-nowrap">
-                              {new Date(d.created_at).toLocaleDateString("fr-FR")}
-                            </td>
-                            <td className="py-4 text-gray-900 font-medium">
-                              {d.subject ||
-                                (d.message
-                                  ? d.message.substring(0, 60) + (d.message.length > 60 ? "…" : "")
-                                  : "—")}
-                            </td>
-                            <td className="py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                d.archived
-                                  ? "bg-gray-100 text-gray-600"
-                                  : d.read
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-yellow-100 text-yellow-700"
-                              }`}>
-                                {d.archived ? "Archivé" : d.read ? "Vu" : "En attente"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-4">
+                    {devis.map((d) => {
+                      const statutColors: Record<string, string> = {
+                        nouveau: "bg-blue-100 text-blue-700",
+                        en_cours: "bg-orange-100 text-orange-700",
+                        negociation: "bg-purple-100 text-purple-700",
+                        accepte: "bg-emerald-100 text-emerald-700",
+                        refuse: "bg-red-100 text-red-700",
+                      };
+                      const statutLabels: Record<string, string> = {
+                        nouveau: "Nouveau",
+                        en_cours: "En cours",
+                        negociation: "Négociation",
+                        accepte: "Accepté",
+                        refuse: "Refusé",
+                      };
+
+                      const handleDownloadDevis = () => {
+                        const today = new Date(d.created_at).toLocaleDateString("fr-FR", {
+                          day: "2-digit", month: "long", year: "numeric",
+                        });
+                        const lignes = (d.produits || []).map((p: any) => ({
+                          nom: p.nom || p.name || p.id,
+                          prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
+                          quantite: p.quantite ?? 1,
+                          total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
+                        }));
+                        const devisData: DevisData = {
+                          numeroDevis: d.numero_devis || d.id.slice(0, 8).toUpperCase(),
+                          date: today,
+                          client: {
+                            nom: profile ? `${profile.first_name} ${profile.last_name}`.trim() : user?.email ?? "",
+                            adresse: d.adresse_client || "",
+                            ville: d.ville_client || "",
+                            pays: "France",
+                            email: user?.email ?? "",
+                            telephone: profile?.phone || undefined,
+                          },
+                          produits: lignes,
+                          totalHT: d.prix_negocie ?? d.prix_total_calcule ?? 0,
+                          role: role ?? "user",
+                        };
+                        const blob = generateDevisPDF(devisData);
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url; a.download = `Devis_${devisData.numeroDevis}.pdf`;
+                        document.body.appendChild(a); a.click();
+                        document.body.removeChild(a); URL.revokeObjectURL(url);
+                      };
+
+                      const handleDownloadFacture = () => {
+                        const today = new Date().toLocaleDateString("fr-FR", {
+                          day: "2-digit", month: "long", year: "numeric",
+                        });
+                        const dateDevis = new Date(d.created_at).toLocaleDateString("fr-FR", {
+                          day: "2-digit", month: "long", year: "numeric",
+                        });
+                        const lignes = (d.produits || []).map((p: any) => ({
+                          nom: p.nom || p.name || p.id,
+                          prixUnitaire: p.prixAffiche ?? 0,
+                          quantite: p.quantite ?? 1,
+                          total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
+                        }));
+                        const factureNum = (d.numero_devis || "D00001").replace("D", "F");
+                        const factureData: FactureData = {
+                          numeroFacture: factureNum,
+                          dateFacture: today,
+                          numeroDevis: d.numero_devis,
+                          dateDevis,
+                          client: {
+                            nom: profile ? `${profile.first_name} ${profile.last_name}`.trim() : user?.email ?? "",
+                            adresse: d.adresse_client || "",
+                            ville: d.ville_client || "",
+                            pays: "France",
+                            email: user?.email ?? "",
+                            telephone: profile?.phone || undefined,
+                          },
+                          produits: lignes,
+                          totalHT: d.prix_negocie ?? d.prix_total_calcule ?? 0,
+                        };
+                        const blob = generateFacturePDF(factureData);
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url; a.download = `Facture_${factureNum}.pdf`;
+                        document.body.appendChild(a); a.click();
+                        document.body.removeChild(a); URL.revokeObjectURL(url);
+                      };
+
+                      return (
+                        <div key={d.id} className="border border-gray-100 rounded-xl p-5 hover:shadow-sm transition-shadow">
+                          <div className="flex items-start justify-between gap-4 flex-wrap">
+                            <div>
+                              <div className="flex items-center gap-3 mb-1">
+                                <span className="font-bold text-gray-900 text-sm">
+                                  {d.numero_devis || `#${d.id.slice(0, 8).toUpperCase()}`}
+                                </span>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statutColors[d.statut] ?? "bg-gray-100 text-gray-600"}`}>
+                                  {statutLabels[d.statut] ?? d.statut}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-400 mb-2">
+                                {new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                              </p>
+                              {(d.produits || []).length > 0 && (
+                                <ul className="text-xs text-gray-500 space-y-0.5">
+                                  {(d.produits || []).slice(0, 3).map((p: any, i: number) => (
+                                    <li key={i}>• {p.nom || p.name || p.id}</li>
+                                  ))}
+                                  {(d.produits || []).length > 3 && (
+                                    <li className="text-gray-400">+{(d.produits || []).length - 3} autre(s)</li>
+                                  )}
+                                </ul>
+                              )}
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-2">
+                              {(d.prix_negocie ?? d.prix_total_calcule) != null && (
+                                <p className="font-bold text-[#4A90D9] text-base">
+                                  {formatEur(d.prix_negocie ?? d.prix_total_calcule ?? 0)}
+                                </p>
+                              )}
+                              <button
+                                onClick={handleDownloadDevis}
+                                className="flex items-center gap-1.5 text-xs text-[#4A90D9] font-medium hover:underline"
+                              >
+                                <Download className="h-3.5 w-3.5" /> Devis PDF
+                              </button>
+                              {d.facture_generee && (
+                                <button
+                                  onClick={handleDownloadFacture}
+                                  className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium hover:underline"
+                                >
+                                  <Download className="h-3.5 w-3.5" /> Facture PDF
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

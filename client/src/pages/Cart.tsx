@@ -4,12 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Trash2, Minus, Plus, ArrowLeft, MessageCircle, Upload, Link as LinkIcon, Package } from "lucide-react";
+import { Trash2, Minus, Plus, ArrowLeft, FileText, Upload, Link as LinkIcon, Package, X } from "lucide-react";
 import { Link } from "wouter";
+import DevisForm, { type DevisProduit } from "@/components/DevisForm";
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, role } = useAuth();
+
+  const [showDevisModal, setShowDevisModal] = useState(false);
 
   // Custom product form
   const [customProduct, setCustomProduct] = useState({
@@ -42,48 +45,42 @@ export default function Cart() {
 
   const total = subtotals.reduce((acc, item) => acc + item.subtotal, 0);
 
-  const handleRequestQuote = () => {
-    if (items.length === 0 && !customProduct.name) return;
-
-    let message = "Bonjour, je souhaite obtenir un devis pour :\n\n";
-
-    if (user && profile) {
-      message += `CLIENT : ${profile.first_name} ${profile.last_name}\n`;
-      message += `Email : ${profile.email}\n`;
-      if (profile.phone) message += `Tél : ${profile.phone}\n`;
-      message += "\n";
-    }
-
-    if (items.length > 0) {
-      message += "=== PANIER ===\n";
-      items.forEach((item) => {
-        const subtotal = parsePrice(item.price) * item.quantity;
-        message += `- ${item.name} x${item.quantity} — ${item.price}`;
-        if (item.quantity > 1) {
-          message += ` (sous-total: ${formatPrice(subtotal)})`;
-        }
-        message += "\n";
-      });
-      message += `\nTOTAL PRODUITS (HT, hors livraison) : ${formatPrice(total)}\n`;
-    }
-
-    if (customProduct.name) {
-      message += "\n=== PRODUIT PERSONNALISÉ ===\n";
-      message += `Nom : ${customProduct.name}\n`;
-      if (customProduct.specs) message += `Spécifications : ${customProduct.specs}\n`;
-      if (customProduct.url) message += `Lien : ${customProduct.url}\n`;
-      if (customProduct.hasFile) message += `(Image/vidéo jointe séparément)\n`;
-    }
-
-    message += "\nMerci de me recontacter pour finaliser la commande et les frais de livraison.";
-
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/33663284908?text=${encodedMessage}`, "_blank");
-  };
+  // Produits formatés pour DevisForm
+  const devisProduits: DevisProduit[] = items.map((item) => ({
+    id: item.id,
+    nom: item.name,
+    quantite: item.quantity,
+    prixAffiche: parsePrice(item.price),
+    prixUnitaire: parsePrice(item.price),
+  }));
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <Header />
+
+      {/* Modal DevisForm */}
+      {showDevisModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-800">Générer mon devis</h2>
+              <button
+                onClick={() => setShowDevisModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <DevisForm
+                produits={devisProduits}
+                prixTotalCalcule={total}
+                onSuccess={() => setShowDevisModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-grow container mx-auto px-4 py-12">
         <h1 className="text-3xl font-serif font-bold text-[#4A90D9] mb-8">
@@ -283,16 +280,16 @@ export default function Cart() {
                 </div>
 
                 <Button
-                  onClick={handleRequestQuote}
+                  onClick={() => setShowDevisModal(true)}
                   disabled={items.length === 0 && !customProduct.name}
-                  className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full h-14 text-base font-bold bg-[#4A90D9] hover:bg-[#3A7BC8] text-white rounded-xl flex items-center justify-center gap-2 shadow-lg"
                 >
-                  <MessageCircle className="h-5 w-5" />
+                  <FileText className="h-5 w-5" />
                   Je veux un devis
                 </Button>
 
                 <p className="text-xs text-gray-400 text-center mt-4">
-                  Vous serez redirigé vers WhatsApp pour envoyer votre demande à notre équipe commerciale.
+                  Votre devis PDF sera généré et téléchargé instantanément.
                 </p>
               </div>
             </div>
