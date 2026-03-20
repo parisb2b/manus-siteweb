@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export interface SiteContent {
   siteSettings: {
@@ -40,19 +41,29 @@ async function loadSiteContent(): Promise<SiteContent> {
   if (cachedContent && now - cacheTimestamp < CACHE_TTL) {
     return cachedContent;
   }
+  // 1. Essayer Supabase (production)
   try {
-    const res = await fetch("/api/site-content");
-    if (res.ok) {
-      const data = await res.json();
-      cachedContent = data;
-      cacheTimestamp = Date.now();
-      return data;
+    if (supabase) {
+      const { data: row } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "site_content")
+        .maybeSingle();
+      if (row?.value) {
+        cachedContent = row.value as SiteContent;
+        cacheTimestamp = Date.now();
+        return cachedContent;
+      }
     }
   } catch {}
-  const { default: fallback } = await import("@/data/site-content.json");
-  cachedContent = fallback as SiteContent;
-  cacheTimestamp = Date.now();
-  return cachedContent;
+  // 2. Fallback JSON local
+  try {
+    const { default: fallback } = await import("@/data/site-content.json");
+    cachedContent = fallback as SiteContent;
+    cacheTimestamp = Date.now();
+    return cachedContent;
+  } catch {}
+  return cachedContent!;
 }
 
 export function useSiteContent() {

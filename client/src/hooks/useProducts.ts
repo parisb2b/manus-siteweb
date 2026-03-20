@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 // === Full Product Interface ===
 export interface GalleryItem {
@@ -102,29 +103,52 @@ export function useProducts(category?: string) {
       return;
     }
 
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data: Product[]) => {
+    (async () => {
+      try {
+        // 1. Essayer Supabase products table (production)
+        if (supabase) {
+          const query = supabase.from("products").select("*").eq("actif", true);
+          if (category) query.eq("categorie", category);
+          const { data: rows } = await query;
+          if (rows && rows.length > 0) {
+            // Mapper les champs Supabase vers l'interface Product
+            const mapped: Product[] = rows.map((r: any) => ({
+              id: r.id,
+              name: r.nom,
+              description: r.description || "",
+              price: r.prix_achat ?? 0,
+              priceDisplay: "",
+              category: r.categorie,
+              active: r.actif,
+              reference: r.reference,
+              ...(r.data || {}),
+            }));
+            cachedProducts = mapped;
+            cacheTimestamp = Date.now();
+            const filtered = category
+              ? mapped.filter((p) => p.category === category && p.active)
+              : mapped.filter((p) => p.active);
+            setProducts(filtered);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+      // 2. Fallback JSON local
+      try {
+        const mod = await import("@/data/products.json");
+        const data = mod.default as Product[];
         cachedProducts = data;
         cacheTimestamp = Date.now();
         const filtered = category
           ? data.filter((p) => p.category === category && p.active)
           : data.filter((p) => p.active);
         setProducts(filtered);
-      })
-      .catch(async () => {
-        try {
-          const mod = await import("@/data/products.json");
-          const data = mod.default as Product[];
-          const filtered = category
-            ? data.filter((p) => p.category === category && p.active)
-            : data.filter((p) => p.active);
-          setProducts(filtered);
-        } catch {
-          // JSON fallback also failed — leave products empty
-        }
-      })
-      .finally(() => setLoading(false));
+      } catch {
+        // JSON fallback also failed — leave products empty
+      }
+      setLoading(false);
+    })();
   }, [category]);
 
   return { products, loading };
