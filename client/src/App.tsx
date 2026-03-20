@@ -22,6 +22,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Confirmation from "./pages/Confirmation";
 import MonCompte from "./pages/MonCompte";
+import Connexion from "./pages/Connexion";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,6 +52,7 @@ function App() {
       <Route path="/delivery" component={Delivery} />
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/mon-compte" component={MonCompte} />
+      <Route path="/connexion" component={Connexion} />
       <Route path="/auth/callback" component={AuthCallback} />
       <Route path="/mot-de-passe-oublie" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
