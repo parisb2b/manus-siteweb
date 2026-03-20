@@ -12,6 +12,8 @@ export interface DevisProduit {
   quantite?: number;
   prixAffiche?: number;
   prixUnitaire?: number;
+  prixAchat?: number;    // prix d'achat brut (pour calculer prixPublic ×1.5)
+  prixPublic?: number;   // prix référence ×1.5 (pour barré VIP)
 }
 
 interface DevisFormProps {
@@ -92,15 +94,23 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       const lignes: DevisData["produits"] = produits.map((p) => {
         const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
         const qty = p.quantite ?? 1;
+        // Prix référence ×1.5 pour affichage barré VIP
+        const prixPublic = p.prixPublic ?? (p.prixAchat ? Math.round(p.prixAchat * 1.5) : undefined);
+        const remise = prixPublic && prixPublic > pu
+          ? Math.round((1 - pu / prixPublic) * 100)
+          : undefined;
         return {
           nom: p.nom,
           prixUnitaire: pu,
+          prixPublic,
+          remise,
           quantite: qty,
-          total: pu * qty,
+          total: Math.round(pu * qty),
         };
       });
 
-      const totalHT = prixTotalCalcule ?? lignes.reduce((s, l) => s + l.total, 0);
+      // Total = somme exacte des lignes (jamais prixTotalCalcule séparé)
+      const totalHT = lignes.reduce((s, l) => s + l.total, 0);
 
       const devisData: DevisData = {
         numeroDevis: numero,

@@ -1,11 +1,13 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-// jsPDF ne supporte pas les espaces insécables de Intl.NumberFormat("fr-FR")
-// On formate manuellement pour éviter les caractères U+202F
-function pdfEur(n: number): string {
-  const parts = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return parts + " EUR";
+// Formatage prix compatible jsPDF (pas d'espaces insécables)
+// Exemple : 15795.5 → "15 795,00 €"
+function formatPrix(n: number): string {
+  const abs = Math.abs(n);
+  const entier = Math.floor(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const cents = Math.round((abs % 1) * 100).toString().padStart(2, "0");
+  return (n < 0 ? "-" : "") + entier + "," + cents + " \u20AC";
 }
 
 export interface DevisData {
@@ -22,27 +24,29 @@ export interface DevisData {
   produits: Array<{
     nom: string;
     description?: string;
-    prixUnitaire: number;
+    prixUnitaire: number;   // prix final client (selon son rôle)
+    prixPublic?: number;    // prix référence ×1.5 (affiché barré pour VIP)
+    remise?: number;        // % remise (ex: 13 pour "−13%")
     quantite: number;
-    total: number;
+    total: number;          // prixUnitaire × quantite
   }>;
-  totalHT: number;
+  totalHT: number;          // somme des totaux lignes
   role: string;
 }
 
 const PRIMARY = [74, 144, 217] as [number, number, number]; // #4A90D9
-const DARK    = [26, 26, 46] as [number, number, number];   // #1A1A2E
+const DARK    = [26, 26, 46]  as [number, number, number];  // #1A1A2E
 const GRAY    = [100, 100, 100] as [number, number, number];
 const LIGHT   = [245, 245, 245] as [number, number, number];
 
 function addPage1(doc: jsPDF, data: DevisData) {
   const W = doc.internal.pageSize.getWidth();
+  const isVip = data.role === "vip";
 
   // ── Header strip ──────────────────────────────────────────────────
   doc.setFillColor(...DARK);
   doc.rect(0, 0, W, 28, "F");
 
-  // Titre devis (gauche)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(255, 255, 255);
@@ -53,7 +57,6 @@ function addPage1(doc: jsPDF, data: DevisData) {
   doc.setTextColor(200, 210, 230);
   doc.text(`Date : ${data.date}`, 14, 20);
 
-  // Logo (droite)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(...PRIMARY);
@@ -84,7 +87,7 @@ function addPage1(doc: jsPDF, data: DevisData) {
     "2ND FLOOR COLLEGE HOUSE",
     "17 KING EDWARDS ROAD RUISLIP",
     "HA4 7AE LONDON, Royaume-Uni",
-    "N° entreprise : 14852122",
+    "N\u00B0 entreprise : 14852122",
     "Email : luxent@ltd-uk.eu",
   ];
   emetteurLines.forEach((line) => {
@@ -116,7 +119,7 @@ function addPage1(doc: jsPDF, data: DevisData) {
   if (data.client.ville) clientLines.push(data.client.ville);
   if (data.client.pays) clientLines.push(data.client.pays);
   clientLines.push(`Email : ${data.client.email}`);
-  if (data.client.telephone) clientLines.push(`Tél : ${data.client.telephone}`);
+  if (data.client.telephone) clientLines.push(`T\u00E9l : ${data.client.telephone}`);
   clientLines.forEach((line) => {
     doc.text(line, rx, ry);
     ry += 5;
@@ -131,18 +134,20 @@ function addPage1(doc: jsPDF, data: DevisData) {
   // ── Tableau produits ─────────────────────────────────────────────
   const tableY = sepY + 6;
 
+  // Pour VIP : colonne prix laissée vide → dessinée dans didDrawCell
   const rows = data.produits.map((p) => [
     p.nom,
-    p.description || p.nom,
-    pdfEur(p.prixUnitaire),
+    p.description || "",
+    isVip ? "" : formatPrix(p.prixUnitaire),
     String(p.quantite),
-    pdfEur(p.total),
+    formatPrix(p.total),
   ]);
 
-  // Largeur utile A4 = 210 - 14 - 14 = 182mm
+  // Largeur utile A4 = 210 − 14 − 14 = 182 mm
+  // Colonnes : 48 + 58 + 34 + 12 + 30 = 182
   autoTable(doc, {
     startY: tableY,
-    head: [["Désignation", "Description", "Prix HT", "Qté", "Total HT"]],
+    head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
     body: rows,
     theme: "grid",
     styles: { fontSize: 8.5, cellPadding: 3, textColor: DARK, overflow: "linebreak" },
@@ -155,8 +160,8 @@ function addPage1(doc: jsPDF, data: DevisData) {
     },
     columnStyles: {
       0: { fontStyle: "bold", cellWidth: 48 },
-      1: { cellWidth: 62 },
-      2: { halign: "right", cellWidth: 30 },
+      1: { cellWidth: 58 },
+      2: { halign: "right", cellWidth: 34, minCellHeight: isVip ? 18 : 0 },
       3: { halign: "center", cellWidth: 12 },
       4: { halign: "right", fontStyle: "bold", cellWidth: 30 },
     },
@@ -164,18 +169,63 @@ function addPage1(doc: jsPDF, data: DevisData) {
     margin: { left: 14, right: 14 },
     tableLineColor: [220, 220, 220],
     tableLineWidth: 0.2,
+
+    // Prix barré pour VIP dessiné après le rendu de chaque cellule prix
+    didDrawCell: (hookData: any) => {
+      if (!isVip) return;
+      if (hookData.section !== "body") return;
+      if (hookData.column.index !== 2) return;
+
+      const produit = data.produits[hookData.row.index];
+      if (!produit) return;
+
+      const { x, y: cy, width, height } = hookData.cell;
+      const prixRef = produit.prixPublic ?? produit.prixUnitaire;
+      const prixNegocie = produit.prixUnitaire;
+      const rightX = x + width - 3;
+
+      // 1. Prix référence en gris clair (barré)
+      const refStr = formatPrix(prixRef);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(180, 180, 180);
+      const refY = cy + height * 0.35;
+      doc.text(refStr, rightX, refY, { align: "right" });
+
+      // 2. Ligne de barré horizontale au-dessus du texte gris
+      const textW = doc.getTextWidth(refStr);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.5);
+      doc.line(rightX - textW, refY - 1, rightX, refY - 1);
+
+      // 3. Prix négocié en bleu PRIMARY
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...PRIMARY);
+      doc.text(formatPrix(prixNegocie), rightX, cy + height * 0.68, { align: "right" });
+
+      // 4. % remise si disponible
+      if (produit.remise && produit.remise > 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...PRIMARY);
+        doc.text(`-${produit.remise}%`, rightX, cy + height * 0.88, { align: "right" });
+      }
+    },
   });
 
   const afterTable = (doc as any).lastAutoTable.finalY + 6;
 
   // ── Ligne Total ───────────────────────────────────────────────────
+  // totalHT = somme exacte des lignes (prixUnitaire × quantite)
+  const totalReel = data.produits.reduce((s, p) => s + p.total, 0);
   doc.setFillColor(...DARK);
   doc.roundedRect(W - 85, afterTable, 71, 14, 2, 2, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
   doc.text("TOTAL HT :", W - 80, afterTable + 9);
-  doc.text(pdfEur(data.totalHT), W - 14, afterTable + 9, { align: "right" });
+  doc.text(formatPrix(totalReel), W - 14, afterTable + 9, { align: "right" });
 
   // ── Mention TVA ───────────────────────────────────────────────────
   const mentionY = afterTable + 22;
@@ -191,7 +241,7 @@ function addPage1(doc: jsPDF, data: DevisData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(160, 160, 160);
-  doc.text(`Devis ${data.numeroDevis} — 97import.com / LUXENT LIMITED`, W / 2, pageH - 8, { align: "center" });
+  doc.text(`Devis ${data.numeroDevis} \u2014 97import.com / LUXENT LIMITED`, W / 2, pageH - 8, { align: "center" });
   doc.setDrawColor(220, 220, 220);
   doc.line(14, pageH - 12, W - 14, pageH - 12);
 }
@@ -207,7 +257,7 @@ function addPage2(doc: jsPDF, data: DevisData) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(255, 255, 255);
-  doc.text("Conditions générales & Bon pour accord", 14, 12);
+  doc.text("Conditions g\u00E9n\u00E9rales & Bon pour accord", 14, 12);
 
   // ── Conditions ────────────────────────────────────────────────────
   let y = 30;
@@ -233,20 +283,20 @@ function addPage2(doc: jsPDF, data: DevisData) {
     y += 4;
   };
 
-  sectionTitle("Conditions de règlement");
-  bodyText(["À réception de la facture."]);
+  sectionTitle("Conditions de r\u00E8glement");
+  bodyText(["\u00C0 r\u00E9ception de la facture."]);
 
-  sectionTitle("Mode de règlement");
-  bodyText(["Virement bancaire — coordonnées fournies sur la facture."]);
+  sectionTitle("Mode de r\u00E8glement");
+  bodyText(["Virement bancaire \u2014 coordonn\u00E9es fournies sur la facture."]);
 
   sectionTitle("Livraison");
   bodyText([
-    "Les délais de livraison sont donnés à titre indicatif.",
-    "Frais de livraison et douane non inclus dans ce devis, calculés séparément.",
+    "Les d\u00E9lais de livraison sont donn\u00E9s \u00E0 titre indicatif.",
+    "Frais de livraison et douane non inclus dans ce devis, calcul\u00E9s s\u00E9par\u00E9ment.",
   ]);
 
-  sectionTitle("Validité");
-  bodyText([`Ce devis est valable 30 jours à compter du ${data.date}.`]);
+  sectionTitle("Validit\u00E9");
+  bodyText([`Ce devis est valable 30 jours \u00E0 compter du ${data.date}.`]);
 
   // ── Bon pour accord ───────────────────────────────────────────────
   y += 4;
@@ -265,34 +315,30 @@ function addPage2(doc: jsPDF, data: DevisData) {
   doc.setFontSize(9);
   doc.setTextColor(...GRAY);
   doc.text(
-    "En signant ce devis, le client accepte les conditions générales de vente et le montant ci-dessus.",
+    "En signant ce devis, le client accepte les conditions g\u00E9n\u00E9rales de vente et le montant ci-dessus.",
     W / 2, y + 18, { align: "center", maxWidth: W - 50 }
   );
 
   const fieldY = y + 30;
   const fieldW = (W - 28 - 10) / 2;
 
-  // Champ lieu
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(...DARK);
-  doc.text("Fait à :", 18, fieldY);
+  doc.text("Fait \u00E0 :", 18, fieldY);
   doc.setDrawColor(180, 180, 180);
   doc.line(18, fieldY + 10, 18 + fieldW - 4, fieldY + 10);
 
-  // Champ date
   doc.text("Le :", 18 + fieldW + 6, fieldY);
   doc.line(18 + fieldW + 6, fieldY + 10, 18 + fieldW * 2 + 6, fieldY + 10);
 
-  // Signature
   const sigY = fieldY + 20;
   doc.text("Signature :", 18, sigY);
   doc.setDrawColor(200, 200, 200);
   doc.setFillColor(255, 255, 255);
   doc.roundedRect(18, sigY + 4, fieldW - 4, 22, 1.5, 1.5, "FD");
 
-  // Qualité
-  doc.text("Qualité du signataire :", 18 + fieldW + 6, sigY);
+  doc.text("Qualit\u00E9 du signataire :", 18 + fieldW + 6, sigY);
   doc.line(18 + fieldW + 6, sigY + 14, 18 + fieldW * 2 + 6, sigY + 14);
   doc.line(18 + fieldW + 6, sigY + 26, 18 + fieldW * 2 + 6, sigY + 26);
 
@@ -302,15 +348,13 @@ function addPage2(doc: jsPDF, data: DevisData) {
   doc.setTextColor(160, 160, 160);
   doc.setDrawColor(220, 220, 220);
   doc.line(14, pageH - 12, W - 14, pageH - 12);
-  doc.text(`Devis N° ${data.numeroDevis} — 97import.com`, 14, pageH - 6);
+  doc.text(`Devis N\u00B0 ${data.numeroDevis} \u2014 97import.com`, 14, pageH - 6);
   doc.text("Page 2 / 2", W - 14, pageH - 6, { align: "right" });
 }
 
 export function generateDevisPDF(data: DevisData): Blob {
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-
   addPage1(doc, data);
   addPage2(doc, data);
-
   return doc.output("blob");
 }

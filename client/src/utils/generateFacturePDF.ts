@@ -1,9 +1,11 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-function pdfEur(n: number): string {
-  const parts = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return parts + " EUR";
+function formatPrix(n: number): string {
+  const abs = Math.abs(n);
+  const entier = Math.floor(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const cents = Math.round((abs % 1) * 100).toString().padStart(2, "0");
+  return (n < 0 ? "-" : "") + entier + "," + cents + " \u20AC";
 }
 
 export interface FactureData {
@@ -135,9 +137,9 @@ function addPage1(doc: jsPDF, data: FactureData) {
   const rows = data.produits.map((p) => [
     p.nom,
     p.description || p.nom,
-    pdfEur(p.prixUnitaire),
+    formatPrix(p.prixUnitaire),
     String(p.quantite),
-    pdfEur(p.total),
+    formatPrix(p.total),
   ]);
 
   autoTable(doc, {
@@ -175,7 +177,7 @@ function addPage1(doc: jsPDF, data: FactureData) {
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
   doc.text("TOTAL HT :", W - 80, afterTable + 9);
-  doc.text(pdfEur(data.totalHT), W - 14, afterTable + 9, { align: "right" });
+  doc.text(formatPrix(data.totalHT), W - 14, afterTable + 9, { align: "right" });
 
   // ── Date de paiement ─────────────────────────────────────────────
   const mentionY = afterTable + 22;
