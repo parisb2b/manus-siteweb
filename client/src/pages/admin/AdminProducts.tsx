@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2, Database, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from "lucide-react";
 import { invalidateProductsCache } from "@/hooks/useProducts";
 import { supabase } from "@/lib/supabase";
-import { formatEur } from "@/utils/calculPrix";
+import { formatEur, calculerPrix } from "@/utils/calculPrix";
 
 interface SupabaseProduit {
   id: string;
@@ -723,8 +723,8 @@ export default function AdminProducts() {
                                 className="w-28 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
                               />
                             </td>
-                            <td className="px-4 py-3 font-semibold text-[#4A90D9]">{formatEur(Math.round(prixAchat * 1.5))}</td>
-                            <td className="px-4 py-3 font-semibold text-orange-500">{formatEur(Math.round(prixAchat * 1.2))}</td>
+                            <td className="px-4 py-3 font-semibold text-[#4A90D9]">{formatEur(calculerPrix(prixAchat, "user").prixAffiche!)}</td>
+                            <td className="px-4 py-3 font-semibold text-orange-500">{formatEur(calculerPrix(prixAchat, "partner").prixAffiche!)}</td>
                             <td className="px-4 py-3">
                               <button onClick={() => toggleActif(prod)} className="text-gray-400 hover:text-[#4A90D9]">
                                 {prod.actif ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-gray-300" />}

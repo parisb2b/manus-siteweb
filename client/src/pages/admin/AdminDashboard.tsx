@@ -55,13 +55,7 @@ export default function AdminDashboard() {
   const [lastQuotes, setLastQuotes] = useState<QuoteRow[]>([]);
   const [lastUsers, setLastUsers] = useState<UserRow[]>([]);
   const [supabaseLoading, setSupabaseLoading] = useState(true);
-  const [apiStatus, setApiStatus] = useState<"checking" | "ok" | "error">("checking");
-
   const supabaseConfigured = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-  useEffect(() => {
-    fetch("/api/products").then(() => setApiStatus("ok")).catch(() => setApiStatus("error"));
-  }, []);
 
   useEffect(() => {
     if (!supabase) { setSupabaseLoading(false); return; }
@@ -241,14 +235,8 @@ export default function AdminDashboard() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600">API locale</span>
-            {apiStatus === "checking" ? (
-              <span className="text-gray-400 text-xs">Vérification...</span>
-            ) : apiStatus === "ok" ? (
-              <span className="flex items-center gap-1.5 text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> OK</span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-red-600 font-medium"><AlertCircle className="w-3.5 h-3.5" /> Erreur</span>
-            )}
+            <span className="text-gray-600">Déploiement</span>
+            <span className="flex items-center gap-1.5 text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> Vercel SPA</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600">Supabase</span>

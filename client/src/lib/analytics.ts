@@ -25,12 +25,16 @@ export function trackEvent(type: EventType, data?: Record<string, any>) {
     },
   };
 
-  // Fire and forget
-  fetch("/api/analytics/event", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(event),
-  }).catch(() => {});
+  // NOTE: Analytics local désactivé sur Vercel (pas de serveur Node permanent).
+  // Les données réelles sont dans Supabase (tables quotes + profiles).
+  // L'appel /api/analytics/event est ignoré silencieusement en production.
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    fetch("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+    }).catch(() => {});
+  }
 }
 
 export function trackPageView(route: string) {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Save, Home, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { formatEur } from "@/utils/calculPrix";
+import { formatEur, calculerPrix } from "@/utils/calculPrix";
 
 interface HousePrice {
   type: string;
@@ -90,8 +90,8 @@ export default function AdminPricing() {
                     <span className="text-gray-400 text-xs">€</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-semibold text-[#4A90D9]">{formatEur(Math.round(item.prixAchat * 1.5))}</td>
-                <td className="px-6 py-4 font-semibold text-orange-500">{formatEur(Math.round(item.prixAchat * 1.2))}</td>
+                <td className="px-6 py-4 font-semibold text-[#4A90D9]">{formatEur(calculerPrix(item.prixAchat, "user").prixAffiche!)}</td>
+                <td className="px-6 py-4 font-semibold text-orange-500">{formatEur(calculerPrix(item.prixAchat, "partner").prixAffiche!)}</td>
               </tr>
             );
           })}
