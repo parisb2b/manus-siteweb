@@ -48,8 +48,12 @@ export default function PrixOuDevis({
   if (role === "admin" || role === "collaborateur") {
     if (compact) {
       return (
-        <span className={`font-bold text-[#4A90D9] ${className}`}>
-          Achat {formatEur(result.prixAchat!)} · Public {formatEur(result.prixUtilisateur!)}
+        <span className={`text-xs leading-tight ${className}`}>
+          <span className="font-bold text-emerald-600">A {formatEur(result.prixAchat!)}</span>
+          <span className="text-gray-400 mx-0.5">·</span>
+          <span className="font-bold text-[#4A90D9]">P {formatEur(result.prixUtilisateur!)}</span>
+          <span className="text-gray-400 mx-0.5">·</span>
+          <span className="font-bold text-orange-500">Par {formatEur(result.prixPartenaire!)}</span>
         </span>
       );
     }
