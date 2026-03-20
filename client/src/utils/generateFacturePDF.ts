@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { formatEur } from "./calculPrix";
 
 export interface FactureData {
@@ -136,7 +136,7 @@ function addPage1(doc: jsPDF, data: FactureData) {
     formatEur(p.total),
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: tableY,
     head: [["Désignation", "Description", "Prix unitaire HT", "Qté", "Total HT"]],
     body: rows,
