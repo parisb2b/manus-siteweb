@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Layout,
   Inbox,
+  Handshake,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -35,6 +36,7 @@ import AdminMedia from "./AdminMedia";
 import AdminHeaderFooter from "./AdminHeaderFooter";
 import AdminLeads from "./AdminLeads";
 import AdminQuotes from "./AdminQuotes";
+import AdminPartners from "./AdminPartners";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -57,6 +59,7 @@ const navItems: NavItem[] = [
   { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true },
   { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, adminOnly: true },
   { label: "Devis", icon: FileText, path: "/admin/quotes", component: AdminQuotes },
+  { label: "Partenaires", icon: Handshake, path: "/admin/partners", component: AdminPartners },
   { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads, adminOnly: true },
   { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
   { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings, adminOnly: true },

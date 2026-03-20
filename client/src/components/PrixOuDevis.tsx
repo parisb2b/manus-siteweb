@@ -35,8 +35,8 @@ export default function PrixOuDevis({
         onClick={() => setShowAuthModal(true)}
         className={
           compact
-            ? `text-xs font-bold text-[#4A90D9] border border-[#4A90D9] px-2 py-1 rounded-lg hover:bg-[#4A90D9] hover:text-white transition-colors whitespace-nowrap ${className}`
-            : `text-base font-bold text-[#4A90D9] border-2 border-[#4A90D9] px-5 py-2.5 rounded-xl hover:bg-[#4A90D9] hover:text-white transition-colors ${className}`
+            ? `text-xs font-bold text-white bg-[#EF4444] px-2 py-1 rounded-lg hover:bg-[#DC2626] transition-colors whitespace-nowrap ${className}`
+            : `text-base font-bold text-white bg-[#EF4444] px-5 py-2.5 rounded-xl hover:bg-[#DC2626] transition-colors ${className}`
         }
       >
         {compact ? "Connexion" : "Se connecter pour voir les prix"}

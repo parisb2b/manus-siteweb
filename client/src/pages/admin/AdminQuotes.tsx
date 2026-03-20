@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
-import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Receipt } from "lucide-react";
+import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Receipt, Handshake, CheckCircle2 } from "lucide-react";
 import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
+import { generateCommissionPDF, type CommissionData } from "@/utils/generateCommissionPDF";
+
+const ADMIN_PARTNER_ID = "00000000-0000-0000-0000-000000000001";
 
 type Statut = "nouveau" | "en_cours" | "negociation" | "accepte" | "refuse";
 
@@ -14,7 +17,6 @@ const STATUT_COLORS: Record<Statut, string> = {
   accepte: "bg-emerald-100 text-emerald-700",
   refuse: "bg-red-100 text-red-700",
 };
-
 const STATUT_LABELS: Record<Statut, string> = {
   nouveau: "Nouveau",
   en_cours: "En cours",
@@ -22,6 +24,13 @@ const STATUT_LABELS: Record<Statut, string> = {
   accepte: "Accepté",
   refuse: "Refusé",
 };
+
+interface Partner {
+  id: string;
+  nom: string;
+  email?: string;
+  telephone?: string;
+}
 
 interface Quote {
   id: string;
@@ -41,6 +50,11 @@ interface Quote {
   ville_client?: string;
   pays_client?: string;
   created_at: string;
+  // partenaire / commission
+  partner_id?: string;
+  commission_montant?: number;
+  commission_payee?: boolean;
+  commission_pdf_url?: string;
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -68,12 +82,9 @@ function buildDevisData(q: Quote): DevisData {
     numeroDevis: q.numero_devis || q.id.slice(0, 8).toUpperCase(),
     date: today,
     client: {
-      nom: q.nom,
-      adresse: q.adresse_client || "",
-      ville: q.ville_client || "",
-      pays: q.pays_client || "France",
-      email: q.email,
-      telephone: q.telephone,
+      nom: q.nom, adresse: q.adresse_client || "",
+      ville: q.ville_client || "", pays: q.pays_client || "France",
+      email: q.email, telephone: q.telephone,
     },
     produits: lignes,
     totalHT: q.prix_negocie ?? q.prix_total_calcule ?? 0,
@@ -82,12 +93,8 @@ function buildDevisData(q: Quote): DevisData {
 }
 
 function buildFactureData(q: Quote): FactureData {
-  const today = new Date().toLocaleDateString("fr-FR", {
-    day: "2-digit", month: "long", year: "numeric",
-  });
-  const dateDevis = new Date(q.created_at).toLocaleDateString("fr-FR", {
-    day: "2-digit", month: "long", year: "numeric",
-  });
+  const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+  const dateDevis = new Date(q.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
   const lignes = (q.produits || []).map((p: any) => ({
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
@@ -96,41 +103,50 @@ function buildFactureData(q: Quote): FactureData {
   }));
   const factureNum = (q.numero_devis || `D${q.id.slice(0, 5)}`).replace("D", "F");
   return {
-    numeroFacture: factureNum,
-    dateFacture: today,
-    numeroDevis: q.numero_devis,
-    dateDevis,
+    numeroFacture: factureNum, dateFacture: today,
+    numeroDevis: q.numero_devis, dateDevis,
     client: {
-      nom: q.nom,
-      adresse: q.adresse_client || "",
-      ville: q.ville_client || "",
-      pays: q.pays_client || "France",
-      email: q.email,
-      telephone: q.telephone,
+      nom: q.nom, adresse: q.adresse_client || "",
+      ville: q.ville_client || "", pays: q.pays_client || "France",
+      email: q.email, telephone: q.telephone,
     },
     produits: lignes,
     totalHT: q.prix_negocie ?? q.prix_total_calcule ?? 0,
   };
 }
 
+// Commission = prix_negocie - prix_partenaire (prix_achat × 1.2)
+// prix_achat ≈ prix_total_calcule / 1.5 (public price)
+function calcCommission(q: Quote): { prixPartenaire: number; commission: number } {
+  const prixNegocie = q.prix_negocie ?? q.prix_total_calcule ?? 0;
+  const prixPublic = q.prix_total_calcule ?? 0;
+  const prixAchat = prixPublic > 0 ? prixPublic / 1.5 : prixNegocie / 1.3;
+  const prixPartenaire = Math.round(prixAchat * 1.2);
+  const commission = Math.max(0, Math.round(prixNegocie - prixPartenaire));
+  return { prixPartenaire, commission };
+}
+
 export default function AdminQuotes() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatut, setFilterStatut] = useState<Statut | "tous">("tous");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [editData, setEditData] = useState<Record<string, Partial<Quote>>>({});
+  const [vipMsg, setVipMsg] = useState<Record<string, string>>({});
 
   const load = async () => {
     if (!supabase) return;
     setLoading(true);
-    const q = supabase
-      .from("quotes")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const q = supabase.from("quotes").select("*").order("created_at", { ascending: false });
     if (filterStatut !== "tous") q.eq("statut", filterStatut);
-    const { data } = await q;
+    const [{ data }, { data: pList }] = await Promise.all([
+      q,
+      supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom"),
+    ]);
     setQuotes((data as Quote[]) ?? []);
+    setPartners((pList as Partner[]) ?? []);
     setLoading(false);
   };
 
@@ -144,21 +160,77 @@ export default function AdminQuotes() {
     await load();
   };
 
-  const passerEnVip = async (email: string, quoteId: string) => {
+  // Passer en VIP : attribuer partenaire (défaut ADMINISTRATEUR) + calculer commission
+  const passerEnVip = async (q: Quote) => {
     if (!supabase) return;
-    setSaving(quoteId);
-    await supabase.from("profiles").update({ role: "vip" }).eq("email", email);
+    setSaving(q.id);
+    const ed = editData[q.id] ?? {};
+    const partnerId = ed.partner_id ?? q.partner_id ?? ADMIN_PARTNER_ID;
+    const { prixPartenaire, commission } = calcCommission(q);
+    const partner = partners.find((p) => p.id === partnerId);
+
+    // Mettre à jour profil + devis
+    await Promise.all([
+      supabase.from("profiles").update({ role: "vip" }).eq("email", q.email),
+      supabase.from("quotes").update({
+        role_client: "vip",
+        partner_id: partnerId,
+        commission_montant: commission,
+        statut: "accepte",
+      }).eq("id", q.id),
+    ]);
+
+    const msg = `✓ Client passé en VIP — attribué à "${partner?.nom ?? "ADMINISTRATEUR"}" — Commission : ${formatEur(commission)}`;
+    setVipMsg((prev) => ({ ...prev, [q.id]: msg }));
+    setTimeout(() => setVipMsg((prev) => { const n = { ...prev }; delete n[q.id]; return n; }), 5000);
     setSaving(null);
+    await load();
   };
 
   const genererFacture = async (q: Quote) => {
     if (!supabase) return;
     setSaving(q.id);
-    const factureData = buildFactureData(q);
-    const blob = generateFacturePDF(factureData);
-    // Marquer comme facturé dans Supabase
+    const blob = generateFacturePDF(buildFactureData(q));
     await supabase.from("quotes").update({ facture_generee: true }).eq("id", q.id);
-    downloadBlob(blob, `Facture_${factureData.numeroFacture}.pdf`);
+    downloadBlob(blob, `Facture_${(q.numero_devis || "D00001").replace("D", "F")}.pdf`);
+    setSaving(null);
+    await load();
+  };
+
+  const genererCommission = async (q: Quote) => {
+    if (!supabase) return;
+    setSaving("comm_" + q.id);
+    const partner = partners.find((p) => p.id === (q.partner_id ?? ADMIN_PARTNER_ID));
+    const { prixPartenaire, commission } = calcCommission(q);
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const commNum = "C" + (q.numero_devis || q.id.slice(0, 6)).replace(/^D/, "");
+    const nomsProduits = (q.produits || []).map((p: any) => p.nom || p.name || p.id).join(", ");
+    const commData: CommissionData = {
+      numeroCommission: commNum,
+      date: today,
+      partenaire: {
+        nom: partner?.nom ?? "ADMINISTRATEUR",
+        email: partner?.email ?? "parisb2b@gmail.com",
+        telephone: partner?.telephone,
+      },
+      devis: {
+        numeroDevis: q.numero_devis || q.id.slice(0, 8),
+        nomClient: q.nom,
+        produits: nomsProduits,
+        prixNegocie: q.prix_negocie ?? q.prix_total_calcule ?? 0,
+        prixPartenaire,
+        commission,
+      },
+    };
+    const blob = generateCommissionPDF(commData);
+    downloadBlob(blob, `Commission_${commNum}.pdf`);
+    setSaving(null);
+  };
+
+  const marquerCommissionPayee = async (q: Quote) => {
+    if (!supabase) return;
+    setSaving("pay_" + q.id);
+    await supabase.from("quotes").update({ commission_payee: true }).eq("id", q.id);
     setSaving(null);
     await load();
   };
@@ -166,7 +238,6 @@ export default function AdminQuotes() {
   const patch = (id: string, field: string, val: any) => {
     setEditData((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [field]: val } }));
   };
-
   const getEdit = (id: string) => editData[id] ?? {};
 
   return (
@@ -178,16 +249,14 @@ export default function AdminQuotes() {
         </button>
       </div>
 
-      {/* Filtres */}
+      {/* Filtres statut */}
       <div className="flex gap-2 flex-wrap">
         {(["tous", "nouveau", "en_cours", "negociation", "accepte", "refuse"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setFilterStatut(s)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filterStatut === s
-                ? "bg-[#4A90D9] text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              filterStatut === s ? "bg-[#4A90D9] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             {s === "tous" ? "Tous" : STATUT_LABELS[s]}
@@ -196,9 +265,7 @@ export default function AdminQuotes() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" />
-        </div>
+        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" /></div>
       ) : quotes.length === 0 ? (
         <div className="text-center py-12 text-gray-400">Aucun devis trouvé</div>
       ) : (
@@ -207,10 +274,14 @@ export default function AdminQuotes() {
             const ed = getEdit(q.id);
             const isOpen = expandedId === q.id;
             const statut = (ed.statut ?? q.statut) as Statut;
+            const { prixPartenaire, commission } = calcCommission(q);
+            const selectedPartnerId = ed.partner_id ?? q.partner_id ?? ADMIN_PARTNER_ID;
+            const selectedPartner = partners.find((p) => p.id === selectedPartnerId);
+            const isNotAdmin = selectedPartnerId !== ADMIN_PARTNER_ID;
 
             return (
               <div key={q.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                {/* Header */}
+                {/* Header ligne */}
                 <button
                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 text-left"
                   onClick={() => setExpandedId(isOpen ? null : q.id)}
@@ -222,9 +293,8 @@ export default function AdminQuotes() {
                     <div>
                       <p className="font-semibold text-gray-800">
                         {q.nom}
-                        {q.numero_devis && (
-                          <span className="ml-2 text-xs font-normal text-gray-400">#{q.numero_devis}</span>
-                        )}
+                        {q.numero_devis && <span className="ml-2 text-xs font-normal text-gray-400">#{q.numero_devis}</span>}
+                        {q.role_client === "vip" && <span className="ml-2 text-xs font-bold text-purple-600">VIP</span>}
                       </p>
                       <p className="text-xs text-gray-400">
                         {q.email} — {new Date(q.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -232,9 +302,8 @@ export default function AdminQuotes() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    {q.facture_generee && (
-                      <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">Facturé</span>
-                    )}
+                    {q.facture_generee && <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">Facturé</span>}
+                    {q.commission_payee && <span className="text-xs bg-orange-100 text-orange-700 font-semibold px-2 py-0.5 rounded-full">Comm. payée ✓</span>}
                     {(q.prix_negocie ?? q.prix_total_calcule) != null && (
                       <span className="text-sm font-bold text-[#4A90D9]">
                         {formatEur(q.prix_negocie ?? q.prix_total_calcule ?? 0)}
@@ -244,7 +313,14 @@ export default function AdminQuotes() {
                   </div>
                 </button>
 
-                {/* Détail */}
+                {/* VIP flash msg */}
+                {vipMsg[q.id] && (
+                  <div className="mx-5 mb-2 flex items-center gap-2 bg-purple-50 text-purple-700 text-sm font-medium rounded-lg px-4 py-2.5">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" /> {vipMsg[q.id]}
+                  </div>
+                )}
+
+                {/* Détail dépliable */}
                 {isOpen && (
                   <div className="px-5 pb-5 border-t border-gray-100 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
@@ -257,7 +333,7 @@ export default function AdminQuotes() {
                         <p><span className="font-medium">Rôle client :</span> {q.role_client || "—"}</p>
                         {q.message && <p><span className="font-medium">Message :</span> {q.message}</p>}
                       </div>
-                      {/* Produits demandés */}
+                      {/* Produits */}
                       <div>
                         <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Produits</p>
                         <ul className="space-y-1 text-sm text-gray-700">
@@ -268,27 +344,96 @@ export default function AdminQuotes() {
                             </li>
                           ))}
                         </ul>
-                        {/* Boutons PDF */}
-                        <div className="flex gap-2 mt-4">
+                        {/* PDF devis / facture */}
+                        <div className="flex gap-2 mt-4 flex-wrap">
                           <button
                             onClick={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${q.numero_devis || q.id.slice(0,8)}.pdf`)}
-                            className="flex items-center gap-1.5 text-xs text-[#4A90D9] font-medium border border-[#4A90D9] rounded-lg px-3 py-1.5 hover:bg-[#4A90D9]/10 transition-colors"
+                            className="flex items-center gap-1.5 text-xs text-[#4A90D9] font-medium border border-[#4A90D9] rounded-lg px-3 py-1.5 hover:bg-[#4A90D9]/10"
                           >
                             <Download className="h-3.5 w-3.5" /> Devis PDF
                           </button>
-                          {q.facture_generee && (
+                          {q.facture_generee ? (
                             <button
                               onClick={() => downloadBlob(generateFacturePDF(buildFactureData(q)), `Facture_${(q.numero_devis||"D00001").replace("D","F")}.pdf`)}
-                              className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium border border-emerald-500 rounded-lg px-3 py-1.5 hover:bg-emerald-50 transition-colors"
+                              className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium border border-emerald-500 rounded-lg px-3 py-1.5 hover:bg-emerald-50"
                             >
                               <Download className="h-3.5 w-3.5" /> Facture PDF
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => genererFacture(q)}
+                              disabled={saving === q.id}
+                              className="flex items-center gap-1.5 text-xs text-white bg-emerald-600 rounded-lg px-3 py-1.5 hover:bg-emerald-700 disabled:opacity-50"
+                            >
+                              <Receipt className="h-3.5 w-3.5" /> Générer facture
                             </button>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Édition admin */}
+                    {/* ── Section Partenaire & Commission ─────────────────── */}
+                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 space-y-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-orange-500 flex items-center gap-1.5">
+                        <Handshake className="h-3.5 w-3.5" /> Partenaire & Commission
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* Dropdown partenaire */}
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Attribuer à un partenaire</label>
+                          <select
+                            value={selectedPartnerId}
+                            onChange={(e) => patch(q.id, "partner_id", e.target.value)}
+                            className="w-full border border-orange-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
+                          >
+                            {partners.map((p) => (
+                              <option key={p.id} value={p.id}>{p.nom}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {/* Commission calculée */}
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Commission calculée</label>
+                          <div className="bg-white border border-orange-200 rounded-lg px-3 py-1.5 text-sm">
+                            <span className="font-bold text-orange-600">{formatEur(commission)}</span>
+                            <span className="text-xs text-gray-400 ml-2">
+                              (prix négocié − prix partenaire {formatEur(prixPartenaire)})
+                            </span>
+                          </div>
+                        </div>
+                        {/* Statut paiement */}
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Statut commission</label>
+                          {q.commission_payee ? (
+                            <div className="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-lg px-3 py-1.5">
+                              <CheckCircle2 className="h-4 w-4" /> Payée ✓
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => marquerCommissionPayee(q)}
+                              disabled={saving === "pay_" + q.id}
+                              className="w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg px-3 py-1.5 disabled:opacity-50"
+                            >
+                              {saving === "pay_" + q.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                              Marquer payée
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {/* Bouton note de commission (hors ADMINISTRATEUR) */}
+                      {isNotAdmin && (
+                        <button
+                          onClick={() => genererCommission(q)}
+                          disabled={saving === "comm_" + q.id}
+                          className="flex items-center gap-1.5 text-xs text-white bg-orange-500 hover:bg-orange-600 rounded-lg px-3 py-1.5 disabled:opacity-50"
+                        >
+                          {saving === "comm_" + q.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                          Générer note de commission PDF → {selectedPartner?.nom}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ── Actions admin ─────────────────────────────────── */}
                     <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Actions admin</p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -327,21 +472,12 @@ export default function AdminQuotes() {
                             Sauvegarder
                           </button>
                           <button
-                            onClick={() => passerEnVip(q.email, q.id)}
+                            onClick={() => passerEnVip(q)}
                             disabled={saving === q.id}
                             className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50"
                           >
                             <Crown className="h-4 w-4" /> Passer en VIP
                           </button>
-                          {!q.facture_generee && (
-                            <button
-                              onClick={() => genererFacture(q)}
-                              disabled={saving === q.id}
-                              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50"
-                            >
-                              <Receipt className="h-4 w-4" /> Générer la facture
-                            </button>
-                          )}
                         </div>
                       </div>
                       {/* Notes admin */}
