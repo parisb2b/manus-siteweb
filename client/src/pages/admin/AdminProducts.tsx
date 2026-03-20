@@ -149,8 +149,9 @@ export default function AdminProducts() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
-  // Check if backup exists
+  // Check if backup exists — /api/backup est dev-only, no-op sur Vercel SPA
   const checkBackupStatus = useCallback(() => {
+    if (!import.meta.env.DEV) { setCanRestore(false); return; }
     fetch("/api/backup/status").then(r => r.json()).then(data => setCanRestore(data.hasBackup)).catch(() => {});
   }, []);
 
@@ -184,7 +185,10 @@ export default function AdminProducts() {
     setSupabaseProds((prev) => prev.map((p) => p.id === prod.id ? { ...p, actif: !p.actif } : p));
   };
 
+  // /api/products (JSON local) — dev-only. Sur Vercel, l'éditeur JSON est désactivé ;
+  // utiliser le panneau Supabase ci-dessous pour gérer les produits.
   const fetchProducts = () => {
+    if (!import.meta.env.DEV) { setLoading(false); return; }
     fetch("/api/products").then(r => r.json()).then(data => { setProducts(data); setLoading(false); }).catch(() => setLoading(false));
   };
 
@@ -226,16 +230,19 @@ export default function AdminProducts() {
     }
 
     try {
-      // Create backup before saving
-      await fetch("/api/backup", { method: "POST" });
-      await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedProducts) });
+      if (import.meta.env.DEV) {
+        // Dev-only : backup + sauvegarde JSON locale via API
+        await fetch("/api/backup", { method: "POST" });
+        await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedProducts) });
+        setCanRestore(true);
+      }
+      // Mise à jour état local dans tous les cas (Vercel = état mémoire uniquement)
       setProducts(updatedProducts);
       invalidateProductsCache();
       setIsDirty(false);
       setEditingProduct(null);
-      setCanRestore(true);
-      setSaveMessage("Produit sauvegardé avec succès");
-      setTimeout(() => setSaveMessage(""), 3000);
+      setSaveMessage(import.meta.env.DEV ? "Produit sauvegardé avec succès" : "Produit mis à jour (session uniquement — utilisez Supabase pour persister)");
+      setTimeout(() => setSaveMessage(""), 4000);
     } catch {
       setSaveMessage("Erreur lors de la sauvegarde");
       setTimeout(() => setSaveMessage(""), 3000);
@@ -244,6 +251,12 @@ export default function AdminProducts() {
   };
 
   const handleRestore = async () => {
+    // /api/restore est dev-only — non disponible sur Vercel SPA
+    if (!import.meta.env.DEV) {
+      setSaveMessage("Restauration disponible uniquement en développement local");
+      setTimeout(() => setSaveMessage(""), 3000);
+      return;
+    }
     if (!window.confirm("Restaurer la dernière version sauvegardée ? Cette action est irréversible.")) return;
     setRestoring(true);
     try {
@@ -269,7 +282,10 @@ export default function AdminProducts() {
   const handleDelete = async (id: string) => {
     const updatedProducts = products.filter(p => p.id !== id);
     try {
-      await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedProducts) });
+      if (import.meta.env.DEV) {
+        // Dev-only : persistance JSON locale
+        await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedProducts) });
+      }
       setProducts(updatedProducts);
       invalidateProductsCache();
       setDeleteConfirm(null);

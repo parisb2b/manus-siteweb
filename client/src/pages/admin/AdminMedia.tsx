@@ -56,7 +56,12 @@ export default function AdminMedia() {
   // ──────────────────────────────────────
   // Fetch images & site content
   // ──────────────────────────────────────
+  // /api/images et /api/site-content sont dev-only (serveur Node local)
+  // Sur Vercel SPA, ces fonctionnalités sont désactivées — utiliser Supabase Storage
+  const IS_LOCAL = import.meta.env.DEV;
+
   const fetchImages = useCallback(async () => {
+    if (!IS_LOCAL) { setLoading(false); return; }
     try {
       const res = await fetch("/api/images");
       const data: FoldersData = await res.json();
@@ -65,9 +70,10 @@ export default function AdminMedia() {
       setFolders({});
     }
     setLoading(false);
-  }, []);
+  }, [IS_LOCAL]);
 
   const fetchSiteContent = useCallback(async () => {
+    if (!IS_LOCAL) return;
     try {
       const res = await fetch("/api/site-content");
       const data = await res.json();
@@ -76,7 +82,7 @@ export default function AdminMedia() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [IS_LOCAL]);
 
   useEffect(() => {
     fetchImages();
@@ -104,6 +110,11 @@ export default function AdminMedia() {
   // Upload
   // ──────────────────────────────────────
   const handleUpload = async (files: FileList | File[]) => {
+    // /api/images/upload est dev-only — non disponible sur Vercel SPA
+    if (!IS_LOCAL) {
+      showStatus("error", "Upload disponible uniquement en développement local");
+      return;
+    }
     const folder = showNewFolder && newFolderName.trim() ? newFolderName.trim() : uploadFolder;
     setUploading(true);
     let successCount = 0;
@@ -150,6 +161,12 @@ export default function AdminMedia() {
   // Delete
   // ──────────────────────────────────────
   const handleDelete = async (imgPath: string) => {
+    // /api/images/delete est dev-only — non disponible sur Vercel SPA
+    if (!IS_LOCAL) {
+      showStatus("error", "Suppression disponible uniquement en développement local");
+      setDeleteConfirm(null);
+      return;
+    }
     try {
       const res = await fetch("/api/images/delete", {
         method: "POST",
@@ -216,6 +233,11 @@ export default function AdminMedia() {
   };
 
   const saveGallery = async () => {
+    // /api/site-content POST est dev-only — non disponible sur Vercel SPA
+    if (!IS_LOCAL) {
+      showStatus("error", "Sauvegarde galerie disponible uniquement en développement local");
+      return;
+    }
     if (!siteContent) return;
     setGallerySaving(true);
     try {
@@ -277,6 +299,18 @@ export default function AdminMedia() {
         >
           {statusMsg.type === "success" ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           {statusMsg.text}
+        </div>
+      )}
+
+      {/* Bandeau dev-only */}
+      {!IS_LOCAL && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+          <div>
+            <span className="font-semibold">Gestionnaire de médias — développement local uniquement.</span>
+            {" "}Les fonctions upload, suppression et galerie utilisent un serveur Node local non disponible sur Vercel.
+            Gérez vos images via <strong>Supabase Storage</strong> ou en local avec <code>pnpm dev</code>.
+          </div>
         </div>
       )}
 

@@ -85,7 +85,9 @@ export default function AdminLayout() {
     }
   }, [authLoading, user, profile, setLocation]);
 
+  // /api/publish-status est dev-only (git-based) — no-op sur Vercel SPA
   const checkPublishStatus = useCallback(() => {
+    if (!import.meta.env.DEV) return;
     fetch("/api/publish-status")
       .then((res) => res.json())
       .then((data) => setHasChanges(data.hasChanges))
