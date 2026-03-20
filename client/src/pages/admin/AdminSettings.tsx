@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Settings, Palette, Globe, Type, Upload } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminSettings() {
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -33,34 +34,30 @@ export default function AdminSettings() {
   };
 
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && typeof data === "object") {
-          setSiteContent(data);
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "site_content")
+      .single()
+      .then(({ data }) => {
+        if (data?.value && typeof data.value === "object") {
+          setSiteContent(data.value);
         }
         setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
     setSaveMessage("");
-    try {
-      const res = await fetch("/api/site-content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(siteContent),
-      });
-      if (!res.ok) throw new Error("Erreur serveur");
-      setSaveMessage("Paramètres sauvegardés avec succès");
-    } catch {
-      setSaveMessage("Erreur lors de la sauvegarde");
-    }
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
     setSaving(false);
+    setSaveMessage(error ? "Erreur lors de la sauvegarde" : "Paramètres sauvegardés avec succès");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 

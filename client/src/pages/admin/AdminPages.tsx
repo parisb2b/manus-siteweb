@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileText, Save, ChevronRight, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const PAGE_LABELS: Record<string, string> = {
   home: "Accueil",
@@ -34,38 +35,33 @@ export default function AdminPages() {
   const [selectedPage, setSelectedPage] = useState("home");
 
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((res) => res.json())
-      .then((data) => {
-        // Ensure pagesConfig exists
-        if (!data.pagesConfig) {
-          data.pagesConfig = {};
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "site_content")
+      .single()
+      .then(({ data }) => {
+        if (data?.value) {
+          const d = data.value;
+          if (!d.pagesConfig) {
+            d.pagesConfig = {};
+          }
+          setSiteContent(d);
         }
-        setSiteContent(data);
         setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
-    try {
-      const res = await fetch("/api/site-content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(siteContent),
-      });
-      if (res.ok) {
-        setSaveMessage("Contenu des pages sauvegardé avec succès");
-      } else {
-        setSaveMessage("Erreur lors de la sauvegarde");
-      }
-    } catch {
-      setSaveMessage("Erreur lors de la sauvegarde");
-    }
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
     setSaving(false);
+    setSaveMessage(error ? "Erreur lors de la sauvegarde" : "Contenu des pages sauvegardé avec succès");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 

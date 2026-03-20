@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   Save, Upload, Image as ImageIcon, Link, Phone, Mail,
   MessageCircle, Youtube, Layout, AlignLeft, Plus, Trash2,
@@ -22,33 +23,34 @@ export default function AdminHeaderFooter() {
   const footerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.siteSettings) data.siteSettings = {};
-        if (!data.navigation) data.navigation = { menuItems: [], footerLinks: [] };
-        if (!data.navigation.footerLinks) data.navigation.footerLinks = [];
-        setSiteContent(data);
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "site_content")
+      .single()
+      .then(({ data }) => {
+        if (data?.value) {
+          const d = data.value;
+          if (!d.siteSettings) d.siteSettings = {};
+          if (!d.navigation) d.navigation = { menuItems: [], footerLinks: [] };
+          if (!d.navigation.footerLinks) d.navigation.footerLinks = [];
+          setSiteContent(d);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
     setSaveMessage("");
-    try {
-      const res = await fetch("/api/site-content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(siteContent),
-      });
-      if (!res.ok) throw new Error();
-      setSaveMessage("✓ Sauvegardé avec succès");
-    } catch {
-      setSaveMessage("✗ Erreur lors de la sauvegarde");
-    }
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
     setSaving(false);
+    setSaveMessage(error ? "✗ Erreur lors de la sauvegarde" : "✓ Sauvegardé avec succès");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 

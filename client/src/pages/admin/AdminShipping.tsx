@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Truck, Plus, Trash2, Package } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminShipping() {
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -10,10 +11,16 @@ export default function AdminShipping() {
 
   // Load site-content on mount
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((res) => res.json())
-      .then((data) => {
-        setSiteContent(data);
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "site_content")
+      .single()
+      .then(({ data }) => {
+        if (data?.value) {
+          setSiteContent(data.value);
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -29,22 +36,17 @@ export default function AdminShipping() {
 
   // Save the full siteContent back
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
-    try {
-      const res = await fetch("/api/site-content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(siteContent),
-      });
-      if (res.ok) {
-        showMessage("success", "Tarifs de livraison sauvegardes avec succes.");
-      } else {
-        showMessage("error", "Erreur lors de la sauvegarde.");
-      }
-    } catch {
-      showMessage("error", "Erreur reseau lors de la sauvegarde.");
-    }
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
     setSaving(false);
+    if (error) {
+      showMessage("error", "Erreur lors de la sauvegarde.");
+    } else {
+      showMessage("success", "Tarifs de livraison sauvegardes avec succes.");
+    }
   };
 
   // Update a destination field

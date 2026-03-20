@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   Navigation,
   Save,
@@ -28,15 +29,19 @@ export default function AdminNavigation() {
   const dragNode = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((res) => res.json())
-      .then((data) => {
-        setSiteContent(data);
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "site_content")
+      .single()
+      .then(({ data }) => {
+        if (data?.value) {
+          setSiteContent(data.value);
+        }
         setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   const menuItems: MenuItem[] =
@@ -114,23 +119,13 @@ export default function AdminNavigation() {
   };
 
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
-    try {
-      const res = await fetch("/api/site-content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(siteContent),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSaveMessage("Navigation sauvegardee avec succes");
-      } else {
-        setSaveMessage("Erreur : " + (data.error || "Echec de la sauvegarde"));
-      }
-    } catch {
-      setSaveMessage("Erreur lors de la sauvegarde");
-    }
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
     setSaving(false);
+    setSaveMessage(error ? "Erreur lors de la sauvegarde" : "Navigation sauvegardee avec succes");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 
