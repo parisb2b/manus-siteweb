@@ -1,6 +1,10 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatEur } from "./calculPrix";
+
+function pdfEur(n: number): string {
+  const parts = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return parts + " EUR";
+}
 
 export interface FactureData {
   numeroFacture: string;
@@ -130,29 +134,31 @@ function addPage1(doc: jsPDF, data: FactureData) {
 
   const rows = data.produits.map((p) => [
     p.nom,
-    p.description || "—",
-    formatEur(p.prixUnitaire),
+    p.description || p.nom,
+    pdfEur(p.prixUnitaire),
     String(p.quantite),
-    formatEur(p.total),
+    pdfEur(p.total),
   ]);
 
   autoTable(doc, {
     startY: tableY,
-    head: [["Désignation", "Description", "Prix unitaire HT", "Qté", "Total HT"]],
+    head: [["Désignation", "Description", "Prix HT", "Qté", "Total HT"]],
     body: rows,
     theme: "grid",
-    styles: { fontSize: 9, cellPadding: 3.5, textColor: DARK },
+    styles: { fontSize: 8.5, cellPadding: 3, textColor: DARK, overflow: "linebreak" },
     headStyles: {
       fillColor: GREEN,
       textColor: [255, 255, 255],
       fontStyle: "bold",
       halign: "center",
+      fontSize: 8.5,
     },
     columnStyles: {
-      0: { fontStyle: "bold" },
-      2: { halign: "right" },
-      3: { halign: "center" },
-      4: { halign: "right", fontStyle: "bold" },
+      0: { fontStyle: "bold", cellWidth: 48 },
+      1: { cellWidth: 62 },
+      2: { halign: "right", cellWidth: 30 },
+      3: { halign: "center", cellWidth: 12 },
+      4: { halign: "right", fontStyle: "bold", cellWidth: 30 },
     },
     alternateRowStyles: { fillColor: LIGHT },
     margin: { left: 14, right: 14 },
@@ -169,7 +175,7 @@ function addPage1(doc: jsPDF, data: FactureData) {
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
   doc.text("TOTAL HT :", W - 80, afterTable + 9);
-  doc.text(formatEur(data.totalHT), W - 14, afterTable + 9, { align: "right" });
+  doc.text(pdfEur(data.totalHT), W - 14, afterTable + 9, { align: "right" });
 
   // ── Date de paiement ─────────────────────────────────────────────
   const mentionY = afterTable + 22;
