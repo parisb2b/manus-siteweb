@@ -34,13 +34,19 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 async function getNextDevisNum(): Promise<string> {
-  const year = new Date().getFullYear().toString().slice(-2);
-  if (!supabase) return `D${year}00001`;
-  const { count } = await supabase
-    .from("quotes")
-    .select("*", { count: "exact", head: true });
-  const seq = String((count ?? 0) + 1).padStart(5, "0");
-  return `D${year}${seq}`;
+  if (!supabase) {
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `D${year}00001`;
+  }
+  // Utilise la séquence SQL serveur pour éviter tout doublon concurrent
+  const { data, error } = await supabase.rpc("get_next_devis_numero");
+  if (error || !data) {
+    // Fallback basé sur timestamp si la fonction SQL n'existe pas encore
+    const ts = Date.now().toString().slice(-6);
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `D${year}${ts}`;
+  }
+  return data as string;
 }
 
 export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: DevisFormProps) {

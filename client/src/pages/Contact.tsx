@@ -28,7 +28,7 @@ export default function Contact() {
 
   const whatsappNumber = "33663284908";
   const contactEmail = "info@97import.com";
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Bonjour%2C%20je%20souhaite%20obtenir%20des%20informations%20sur%20vos%20produits.`;
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Bonjour, je souhaite obtenir des informations sur vos produits.")}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
