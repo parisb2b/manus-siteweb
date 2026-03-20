@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
-import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save } from "lucide-react";
+import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown } from "lucide-react";
 
 type Statut = "nouveau" | "en_cours" | "negociation" | "accepte" | "refuse";
 
@@ -65,6 +65,13 @@ export default function AdminQuotes() {
     await supabase.from("quotes").update(editData[quoteId]).eq("id", quoteId);
     setSaving(null);
     await load();
+  };
+
+  const passerEnVip = async (email: string, quoteId: string) => {
+    if (!supabase) return;
+    setSaving(quoteId);
+    await supabase.from("profiles").update({ role: "vip" }).eq("email", email);
+    setSaving(null);
   };
 
   const patch = (id: string, field: string, val: any) => {
@@ -188,8 +195,8 @@ export default function AdminQuotes() {
                             className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
                           />
                         </div>
-                        {/* Bouton save */}
-                        <div className="flex items-end">
+                        {/* Boutons */}
+                        <div className="flex flex-col gap-2 items-end justify-end">
                           <button
                             onClick={() => save(q.id)}
                             disabled={saving === q.id}
@@ -197,6 +204,14 @@ export default function AdminQuotes() {
                           >
                             {saving === q.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Sauvegarder
+                          </button>
+                          <button
+                            onClick={() => passerEnVip(q.email, q.id)}
+                            disabled={saving === q.id}
+                            className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+                          >
+                            <Crown className="h-4 w-4" />
+                            Passer en VIP
                           </button>
                         </div>
                       </div>

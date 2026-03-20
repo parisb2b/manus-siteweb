@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2, Database, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from "lucide-react";
 import { invalidateProductsCache } from "@/hooks/useProducts";
+import { supabase } from "@/lib/supabase";
+import { formatEur } from "@/utils/calculPrix";
+
+interface SupabaseProduit {
+  id: string;
+  nom: string;
+  reference?: string;
+  categorie?: string;
+  prix_achat: number;
+  actif: boolean;
+}
 
 interface SpecRow { label: string; value: string; }
 interface GalleryItem { type: "image" | "video"; src: string; alt?: string; }
@@ -120,6 +131,13 @@ export default function AdminProducts() {
   const [restoring, setRestoring] = useState(false);
   const originalProductRef = useRef<string>("");
 
+  // Supabase products state
+  const [supabaseProds, setSupabaseProds] = useState<SupabaseProduit[]>([]);
+  const [supabaseLoading, setSupabaseLoading] = useState(false);
+  const [supabaseOpen, setSupabaseOpen] = useState(false);
+  const [supabaseEdits, setSupabaseEdits] = useState<Record<string, Partial<SupabaseProduit>>>({});
+  const [supabaseSaving, setSupabaseSaving] = useState<string | null>(null);
+
   // Unsaved changes warning
   useEffect(() => {
     if (!isDirty) return;
@@ -137,6 +155,34 @@ export default function AdminProducts() {
   }, []);
 
   useEffect(() => { fetchProducts(); checkBackupStatus(); }, [checkBackupStatus]);
+
+  const loadSupabaseProds = useCallback(async () => {
+    if (!supabase) return;
+    setSupabaseLoading(true);
+    const { data } = await supabase.from("products").select("*").order("nom");
+    setSupabaseProds((data as SupabaseProduit[]) ?? []);
+    setSupabaseLoading(false);
+  }, []);
+
+  useEffect(() => { if (supabaseOpen) loadSupabaseProds(); }, [supabaseOpen, loadSupabaseProds]);
+
+  const patchSupabase = (id: string, field: string, val: any) =>
+    setSupabaseEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [field]: val } }));
+
+  const saveSupabase = async (id: string) => {
+    if (!supabase || !supabaseEdits[id]) return;
+    setSupabaseSaving(id);
+    await supabase.from("products").update(supabaseEdits[id]).eq("id", id);
+    setSupabaseSaving(null);
+    setSupabaseEdits((prev) => { const n = { ...prev }; delete n[id]; return n; });
+    await loadSupabaseProds();
+  };
+
+  const toggleActif = async (prod: SupabaseProduit) => {
+    if (!supabase) return;
+    await supabase.from("products").update({ actif: !prod.actif }).eq("id", prod.id);
+    setSupabaseProds((prev) => prev.map((p) => p.id === prod.id ? { ...p, actif: !p.actif } : p));
+  };
 
   const fetchProducts = () => {
     fetch("/api/products").then(r => r.json()).then(data => { setProducts(data); setLoading(false); }).catch(() => setLoading(false));
@@ -620,6 +666,91 @@ export default function AdminProducts() {
       {saveMessage && (
         <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMessage.includes("Erreur") ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
           {saveMessage}
+        </div>
+      )}
+
+      {/* ── Supabase Prix Catalogue ── */}
+      {supabase && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+          <button
+            onClick={() => setSupabaseOpen(!supabaseOpen)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Database className="w-4 h-4 text-[#4A90D9]" />
+              <span className="font-semibold text-gray-800">Prix Catalogue Supabase</span>
+              {supabaseProds.length > 0 && <span className="text-xs text-gray-400">({supabaseProds.length} produits)</span>}
+            </div>
+            {supabaseOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          </button>
+
+          {supabaseOpen && (
+            <div className="border-t border-gray-100">
+              {supabaseLoading ? (
+                <div className="p-8 text-center text-gray-400">Chargement...</div>
+              ) : supabaseProds.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">Aucun produit dans Supabase.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500">Nom</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">Réf / Catégorie</th>
+                        <th className="text-left px-4 py-3 font-semibold text-emerald-600">Achat</th>
+                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public ×1.5</th>
+                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire ×1.2</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500">Actif</th>
+                        <th className="px-4 py-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {supabaseProds.map((prod) => {
+                        const ed = supabaseEdits[prod.id] ?? {};
+                        const prixAchat = ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat;
+                        return (
+                          <tr key={prod.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium text-gray-800">{prod.nom}</td>
+                            <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
+                              <div>{prod.reference ?? "—"}</div>
+                              <div className="text-xs text-gray-400">{prod.categorie ?? "—"}</div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="number"
+                                value={ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat}
+                                onChange={(e) => patchSupabase(prod.id, "prix_achat", e.target.value ? Number(e.target.value) : 0)}
+                                className="w-28 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                              />
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-[#4A90D9]">{formatEur(Math.round(prixAchat * 1.5))}</td>
+                            <td className="px-4 py-3 font-semibold text-orange-500">{formatEur(Math.round(prixAchat * 1.2))}</td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => toggleActif(prod)} className="text-gray-400 hover:text-[#4A90D9]">
+                                {prod.actif ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-gray-300" />}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3">
+                              {supabaseEdits[prod.id] && (
+                                <button
+                                  onClick={() => saveSupabase(prod.id)}
+                                  disabled={supabaseSaving === prod.id}
+                                  className="flex items-center gap-1 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
+                                >
+                                  {supabaseSaving === prod.id ? <span className="animate-spin">⌛</span> : <Save className="w-3 h-3" />}
+                                  Sauv.
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

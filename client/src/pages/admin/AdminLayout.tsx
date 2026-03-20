@@ -36,28 +36,30 @@ import AdminHeaderFooter from "./AdminHeaderFooter";
 import AdminLeads from "./AdminLeads";
 import AdminQuotes from "./AdminQuotes";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 interface NavItem {
   label: string;
   icon: React.ElementType;
   path: string;
   component: React.ComponentType;
+  adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard },
   { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts },
-  { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages },
-  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter },
-  { label: "Navigation", icon: Navigation, path: "/admin/navigation", component: AdminNavigation },
-  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia },
-  { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing },
-  { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping },
-  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics },
+  { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages, adminOnly: true },
+  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter, adminOnly: true },
+  { label: "Navigation", icon: Navigation, path: "/admin/navigation", component: AdminNavigation, adminOnly: true },
+  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, adminOnly: true },
+  { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing, adminOnly: true },
+  { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true },
+  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, adminOnly: true },
   { label: "Devis", icon: FileText, path: "/admin/quotes", component: AdminQuotes },
-  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads },
+  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads, adminOnly: true },
   { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
-  { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings },
+  { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings, adminOnly: true },
 ];
 
 export default function AdminLayout() {
@@ -68,22 +70,18 @@ export default function AdminLayout() {
   const [publishState, setPublishState] = useState<"idle" | "confirm" | "publishing" | "success" | "error">("idle");
   const [publishError, setPublishError] = useState("");
 
-  useEffect(() => {
-    const isAuth = localStorage.getItem("admin_authenticated");
-    if (isAuth !== "true") {
-      setLocation("/admin");
-    }
-  }, [setLocation]);
-
-  // Supabase role check — if user is loaded and role is not admin, redirect home
+  // Auth guard — redirect to /admin login if not authenticated
   useEffect(() => {
     if (authLoading) return;
-    if (user && profile && profile.role !== "admin") {
+    if (!user) {
+      setLocation("/admin");
+      return;
+    }
+    if (profile && profile.role !== "admin" && profile.role !== "collaborateur") {
       setLocation("/");
     }
   }, [authLoading, user, profile, setLocation]);
 
-  // Check for unpublished changes
   const checkPublishStatus = useCallback(() => {
     fetch("/api/publish-status")
       .then((res) => res.json())
@@ -97,13 +95,26 @@ export default function AdminLayout() {
     return () => clearInterval(interval);
   }, [checkPublishStatus]);
 
-  const isAuthenticated = localStorage.getItem("admin_authenticated") === "true";
-  if (!isAuthenticated) {
-    return null;
+  // Show loading while auth resolves
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#4A90D9]" />
+      </div>
+    );
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated");
+  const isAdmin = profile?.role === "admin";
+  const isCollaborateur = profile?.role === "collaborateur";
+
+  // Filter nav based on role
+  const visibleNav = navItems.filter((item) => {
+    if (item.adminOnly && !isAdmin) return false;
+    return true;
+  });
+
+  const handleLogout = async () => {
+    if (supabase) await supabase.auth.signOut();
     setLocation("/admin");
   };
 
@@ -112,10 +123,8 @@ export default function AdminLayout() {
     try {
       const deployHook = import.meta.env.VITE_VERCEL_DEPLOY_HOOK;
       if (deployHook) {
-        // Production (Vercel) : déclenche un redéploiement via Deploy Hook
         await fetch(deployHook, { method: "POST" });
       } else {
-        // Fallback local : git add + commit + push via API dev server
         const res = await fetch("/api/publish", { method: "POST" });
         const data = await res.json();
         if (!data.success) {
@@ -135,7 +144,7 @@ export default function AdminLayout() {
     }
   };
 
-  const currentNav = navItems.find((item) => location === item.path) || navItems[0];
+  const currentNav = visibleNav.find((item) => location === item.path) || visibleNav[0];
   const ActiveComponent = currentNav.component;
 
   return (
@@ -154,7 +163,7 @@ export default function AdminLayout() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Logo */}
+        {/* Logo + user */}
         <div className="px-6 py-6 border-b border-white/10">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold tracking-wide">97 import Admin</h1>
@@ -165,11 +174,21 @@ export default function AdminLayout() {
               <X className="w-5 h-5" />
             </button>
           </div>
+          {profile && (
+            <div className="mt-3">
+              <p className="text-xs text-white/50 truncate">{profile.email || user.email}</p>
+              <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                isAdmin ? "bg-red-500/30 text-red-300" : "bg-blue-500/30 text-blue-300"
+              }`}>
+                {isAdmin ? "Admin" : "Collaborateur"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {visibleNav.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
             return (
@@ -218,69 +237,73 @@ export default function AdminLayout() {
             <h2 className="text-lg font-semibold text-gray-800">{currentNav.label}</h2>
           </div>
 
-          {/* Preview button */}
-          <a
-            href="/?preview=true"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm mr-3"
-          >
-            <Eye className="w-4 h-4" />
-            <span className="hidden sm:inline">Aperçu</span>
-          </a>
+          <div className="flex items-center gap-2">
+            {/* Preview button */}
+            <a
+              href="/?preview=true"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
+            >
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">Aperçu</span>
+            </a>
 
-          {/* Publish button */}
-          <div className="relative">
-            {publishState === "idle" && (
-              <button
-                onClick={() => setPublishState("confirm")}
-                className="relative inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
-              >
-                <Rocket className="w-4 h-4" />
-                <span className="hidden sm:inline">Publier sur le site</span>
-                <span className="sm:hidden">Publier</span>
-                {hasChanges && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-[9px] font-bold text-white">!</span>
-                  </span>
+            {/* Publish button — admin only */}
+            {isAdmin && (
+              <div className="relative">
+                {publishState === "idle" && (
+                  <button
+                    onClick={() => setPublishState("confirm")}
+                    className="relative inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
+                  >
+                    <Rocket className="w-4 h-4" />
+                    <span className="hidden sm:inline">Publier sur le site</span>
+                    <span className="sm:hidden">Publier</span>
+                    {hasChanges && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-[9px] font-bold text-white">!</span>
+                      </span>
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
-            {publishState === "confirm" && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 hidden sm:inline">Publier sur 97import.com ?</span>
-                <button
-                  onClick={handlePublish}
-                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Confirmer
-                </button>
-                <button
-                  onClick={() => setPublishState("idle")}
-                  className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
-                >
-                  Annuler
-                </button>
-              </div>
-            )}
-            {publishState === "publishing" && (
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-xl text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Publication en cours...
-              </div>
-            )}
-            {publishState === "success" && (
-              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 font-semibold px-4 py-2 rounded-xl text-sm">
-                <CheckCircle2 className="w-4 h-4" />
-                Site mis à jour !
-              </div>
-            )}
-            {publishState === "error" && (
-              <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 font-semibold px-4 py-2 rounded-xl text-sm max-w-md truncate">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Erreur : {publishError}</span>
+                {publishState === "confirm" && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 hidden sm:inline">Publier sur 97import.com ?</span>
+                    <button
+                      onClick={handlePublish}
+                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Confirmer
+                    </button>
+                    <button
+                      onClick={() => setPublishState("idle")}
+                      className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                )}
+                {publishState === "publishing" && (
+                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-xl text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Publication en cours...
+                  </div>
+                )}
+                {publishState === "success" && (
+                  <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 font-semibold px-4 py-2 rounded-xl text-sm">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Site mis à jour !
+                  </div>
+                )}
+                {publishState === "error" && (
+                  <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 font-semibold px-4 py-2 rounded-xl text-sm max-w-md truncate">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Erreur : {publishError}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
