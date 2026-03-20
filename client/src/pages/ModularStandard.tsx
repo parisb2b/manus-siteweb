@@ -22,21 +22,24 @@ const SIZES = [
     id: "20ft",
     name: "20 Pieds (37m²)",
     price: 5600,
-    approxM2: 40, // ~37m² → closest bracket 40m²
+    prixAchat: 4308,
+    approxM2: 40,
     shipping: { martinique: 5500, guadeloupe: 5500 }
   },
   {
     id: "30ft",
     name: "30 Pieds (57m²)",
     price: 7400,
-    approxM2: 60, // ~57m² → closest bracket 60m²
+    prixAchat: 5692,
+    approxM2: 60,
     shipping: { martinique: 9500, guadeloupe: 8650 }
   },
   {
     id: "40ft",
     name: "40 Pieds (74m²)",
     price: 9200,
-    approxM2: 80, // ~74m² → closest bracket 80m²
+    prixAchat: 7077,
+    approxM2: 80,
     shipping: { martinique: 9500, guadeloupe: 8650 }
   }
 ];
@@ -46,35 +49,39 @@ const OPTIONS = [
     id: "extra_room",
     name: "Chambre Supplémentaire",
     description: "Ajout d'une cloison et porte pour créer une chambre additionnelle",
-    price: 0, // Sur devis
+    price: 0,
+    prixAchat: 0,
     icon: BedDouble,
     isQuote: true,
-    volume: 0 // No significant volume
+    volume: 0
   },
   {
     id: "ac",
     name: "Climatisation",
     description: "Pack climatisation tri-split 5.2kW (MIDEA ou équivalent)",
     price: 2500,
+    prixAchat: 1923,
     icon: Snowflake,
-    volume: 0.8 // Estimated volume in m3
+    volume: 0.8
   },
   {
     id: "solar",
     name: "Kit Panneaux Solaires",
     description: "10kW autonome (16 panneaux 585W + onduleur hybride + batteries lithium 10kW)",
     price: 7912,
+    prixAchat: 6086,
     icon: Sun,
-    volume: 2.5 // Estimated volume in m3
+    volume: 2.5
   },
   {
     id: "furniture",
     name: "Pack Meubles",
     description: "Mobilier de base (Sur demande)",
-    price: 0, // Sur demande
+    price: 0,
+    prixAchat: 0,
     icon: Sofa,
     isQuote: true,
-    volume: 0 // Quote based
+    volume: 0
   }
 ];
 
@@ -105,21 +112,24 @@ export default function ModularStandard() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [totalPrixAchat, setTotalPrixAchat] = useState(SIZES[0].prixAchat);
   const { addToCart } = useCart();
   const { user, setShowAuthModal } = useAuth();
 
   useEffect(() => {
     let price = selectedSize.price;
+    let achat = selectedSize.prixAchat;
 
-    // Add options price
     selectedOptions.forEach(optId => {
       const option = OPTIONS.find(o => o.id === optId);
       if (option && !option.isQuote) {
         price += option.price;
+        achat += option.prixAchat;
       }
     });
 
     setTotalPrice(price);
+    setTotalPrixAchat(achat);
   }, [selectedSize, selectedOptions]);
 
   const toggleOption = (id: string) => {
@@ -295,7 +305,7 @@ export default function ModularStandard() {
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
                   <div className="mt-1">
-                    <PrixOuDevis prix={formatPrice(totalPrice)} />
+                    <PrixOuDevis prixAchat={totalPrixAchat} />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Prix de base hors taxes et hors livraison</p>
                 </div>

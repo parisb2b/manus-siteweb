@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Accessoires data based on PDF pricing and extracted images
+// Accessoires data — price = prix affiché (string), prixAchat = prix achat HT
 const ACCESSORIES_DATA = [
   {
     id: "godet-dents",
@@ -27,27 +27,27 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "20 cm", price: "191 €" },
-          { size: "60 cm", price: "182 €" },
-          { size: "80 cm", price: "269 €" }
+          { size: "20 cm", price: "191 €", prixAchat: 147 },
+          { size: "60 cm", price: "182 €", prixAchat: 140 },
+          { size: "80 cm", price: "269 €", prixAchat: 207 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "20 cm", price: "243 €" },
-          { size: "60 cm", price: "270 €" },
-          { size: "80 cm", price: "330 €" }
+          { size: "20 cm", price: "243 €", prixAchat: 187 },
+          { size: "60 cm", price: "270 €", prixAchat: 208 },
+          { size: "80 cm", price: "330 €", prixAchat: 254 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "20 cm", price: "261 €" },
-          { size: "60 cm", price: "330 €" },
-          { size: "80 cm", price: "391 €" },
-          { size: "100 cm", price: "413 €" },
-          { size: "120 cm", price: "452 €" }
+          { size: "20 cm", price: "261 €", prixAchat: 201 },
+          { size: "60 cm", price: "330 €", prixAchat: 254 },
+          { size: "80 cm", price: "391 €", prixAchat: 301 },
+          { size: "100 cm", price: "413 €", prixAchat: 318 },
+          { size: "120 cm", price: "452 €", prixAchat: 348 }
         ]
       }
     ]
@@ -61,28 +61,28 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "30 cm", price: "91 €" },
-          { size: "60 cm", price: "243 €" },
-          { size: "80 cm", price: "270 €" },
-          { size: "100 cm", price: "287 €" }
+          { size: "30 cm", price: "91 €", prixAchat: 70 },
+          { size: "60 cm", price: "243 €", prixAchat: 187 },
+          { size: "80 cm", price: "270 €", prixAchat: 208 },
+          { size: "100 cm", price: "287 €", prixAchat: 221 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "30 cm", price: "243 €" },
-          { size: "60 cm", price: "270 €" },
-          { size: "80 cm", price: "296 €" },
-          { size: "100 cm", price: "330 €" }
+          { size: "30 cm", price: "243 €", prixAchat: 187 },
+          { size: "60 cm", price: "270 €", prixAchat: 208 },
+          { size: "80 cm", price: "296 €", prixAchat: 228 },
+          { size: "100 cm", price: "330 €", prixAchat: 254 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "30 cm", price: "261 €" },
-          { size: "60 cm", price: "278 €" },
-          { size: "80 cm", price: "313 €" },
-          { size: "100 cm", price: "348 €" }
+          { size: "30 cm", price: "261 €", prixAchat: 201 },
+          { size: "60 cm", price: "278 €", prixAchat: 214 },
+          { size: "80 cm", price: "313 €", prixAchat: 241 },
+          { size: "100 cm", price: "348 €", prixAchat: 268 }
         ]
       }
     ]
@@ -96,22 +96,22 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "80 cm", price: "435 €" },
-          { size: "100 cm", price: "452 €" }
+          { size: "80 cm", price: "435 €", prixAchat: 335 },
+          { size: "100 cm", price: "452 €", prixAchat: 348 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "80 cm", price: "461 €" },
-          { size: "100 cm", price: "478 €" }
+          { size: "80 cm", price: "461 €", prixAchat: 355 },
+          { size: "100 cm", price: "478 €", prixAchat: 368 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "80 cm", price: "748 €" },
-          { size: "100 cm", price: "809 €" }
+          { size: "80 cm", price: "748 €", prixAchat: 575 },
+          { size: "100 cm", price: "809 €", prixAchat: 622 }
         ]
       }
     ]
@@ -125,13 +125,13 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Standard", price: "452 €" }
+          { size: "Standard", price: "452 €", prixAchat: 348 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Standard", price: "513 €" }
+          { size: "Standard", price: "513 €", prixAchat: 395 }
         ]
       }
     ]
@@ -145,13 +145,13 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Standard", price: "522 €" }
+          { size: "Standard", price: "522 €", prixAchat: 402 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Standard", price: "565 €" }
+          { size: "Standard", price: "565 €", prixAchat: 435 }
         ]
       }
     ]
@@ -165,25 +165,25 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "40 cm", price: "217 €" },
-          { size: "60 cm", price: "235 €" },
-          { size: "80 cm", price: "261 €" }
+          { size: "40 cm", price: "217 €", prixAchat: 167 },
+          { size: "60 cm", price: "235 €", prixAchat: 181 },
+          { size: "80 cm", price: "261 €", prixAchat: 201 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "40 cm", price: "243 €" },
-          { size: "60 cm", price: "261 €" },
-          { size: "80 cm", price: "287 €" }
+          { size: "40 cm", price: "243 €", prixAchat: 187 },
+          { size: "60 cm", price: "261 €", prixAchat: 201 },
+          { size: "80 cm", price: "287 €", prixAchat: 221 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "40 cm", price: "209 €" },
-          { size: "60 cm", price: "235 €" },
-          { size: "80 cm", price: "261 €" }
+          { size: "40 cm", price: "209 €", prixAchat: 161 },
+          { size: "60 cm", price: "235 €", prixAchat: 181 },
+          { size: "80 cm", price: "261 €", prixAchat: 201 }
         ]
       }
     ]
@@ -197,13 +197,13 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Standard", price: "183 €" }
+          { size: "Standard", price: "183 €", prixAchat: 141 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Standard", price: "209 €" }
+          { size: "Standard", price: "209 €", prixAchat: 161 }
         ]
       }
     ]
@@ -217,19 +217,19 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Standard", price: "452 €" }
+          { size: "Standard", price: "452 €", prixAchat: 348 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Standard", price: "504 €" }
+          { size: "Standard", price: "504 €", prixAchat: 388 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "Standard", price: "669 €" }
+          { size: "Standard", price: "669 €", prixAchat: 515 }
         ]
       }
     ]
@@ -243,13 +243,13 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Ø 80 mm – 20 cm", price: "330 €" }
+          { size: "Ø 80 mm – 20 cm", price: "330 €", prixAchat: 254 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Ø 80 mm – 20 cm", price: "373 €" }
+          { size: "Ø 80 mm – 20 cm", price: "373 €", prixAchat: 287 }
         ]
       }
     ]
@@ -263,19 +263,19 @@ const ACCESSORIES_DATA = [
       {
         name: "R22 PRO",
         options: [
-          { size: "Standard", price: "330 €" }
+          { size: "Standard", price: "330 €", prixAchat: 254 }
         ]
       },
       {
         name: "R32 PRO",
         options: [
-          { size: "Standard", price: "365 €" }
+          { size: "Standard", price: "365 €", prixAchat: 281 }
         ]
       },
       {
         name: "R57 PRO",
         options: [
-          { size: "Standard", price: "748 €" }
+          { size: "Standard", price: "748 €", prixAchat: 575 }
         ]
       }
     ]
@@ -384,7 +384,7 @@ export default function Accessories() {
                               <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 px-3 py-2 rounded group/option hover:bg-gray-100 transition-colors">
                                 <span className="text-gray-600">{option.size}</span>
                                 <div className="flex items-center gap-3">
-                                  <PrixOuDevis prix={option.price} compact />
+                                  <PrixOuDevis prixAchat={option.prixAchat} compact />
                                   <Button 
                                     size="sm" 
                                     variant="ghost" 

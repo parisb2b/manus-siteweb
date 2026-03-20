@@ -14,18 +14,21 @@ const SIZES = [
     id: "20ft",
     name: "20 Pieds (37m²)",
     price: 9920,
+    prixAchat: 7631,
     shipping: { martinique: 11000, guadeloupe: 11000 },
   },
   {
     id: "30ft",
     name: "30 Pieds (57m²)",
     price: 10700,
+    prixAchat: 8231,
     shipping: { martinique: 19000, guadeloupe: 17300 },
   },
   {
     id: "40ft",
     name: "40 Pieds (74m²)",
     price: 13300,
+    prixAchat: 10231,
     shipping: { martinique: 19000, guadeloupe: 17300 },
   },
 ];
@@ -36,6 +39,7 @@ const OPTIONS = [
     name: "Chambre Supplémentaire",
     description: "Ajout d'une cloison et porte pour créer une chambre additionnelle",
     price: 0,
+    prixAchat: 0,
     icon: BedDouble,
     isQuote: true,
   },
@@ -44,6 +48,7 @@ const OPTIONS = [
     name: "Climatisation",
     description: "Pack climatisation tri-split 5.2kW (MIDEA ou équivalent)",
     price: 2500,
+    prixAchat: 1923,
     icon: Snowflake,
     isQuote: false,
   },
@@ -52,6 +57,7 @@ const OPTIONS = [
     name: "Kit Panneaux Solaires",
     description: "10kW autonome (16 panneaux 585W + onduleur hybride + batteries lithium 10kW)",
     price: 7912,
+    prixAchat: 6086,
     icon: Sun,
     isQuote: false,
   },
@@ -60,6 +66,7 @@ const OPTIONS = [
     name: "Pack Meubles",
     description: "Mobilier de base (Sur demande)",
     price: 0,
+    prixAchat: 0,
     icon: Sofa,
     isQuote: true,
   },
@@ -91,6 +98,7 @@ export default function ModularPremium() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [totalPrixAchat, setTotalPrixAchat] = useState(SIZES[0].prixAchat);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
@@ -100,11 +108,16 @@ export default function ModularPremium() {
 
   useEffect(() => {
     let price = selectedSize.price;
+    let achat = selectedSize.prixAchat;
     selectedOptions.forEach((optId) => {
       const option = OPTIONS.find((o) => o.id === optId);
-      if (option && !option.isQuote) price += option.price;
+      if (option && !option.isQuote) {
+        price += option.price;
+        achat += option.prixAchat;
+      }
     });
     setTotalPrice(price);
+    setTotalPrixAchat(achat);
   }, [selectedSize, selectedOptions]);
 
   // Auto-play video when slide changes
@@ -324,7 +337,7 @@ export default function ModularPremium() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
-                  <div className="mt-1"><PrixOuDevis prix={formatPrice(totalPrice)} /></div>
+                  <div className="mt-1"><PrixOuDevis prixAchat={totalPrixAchat} /></div>
                   <p className="text-xs text-gray-500 mt-1">Prix de base hors taxes et hors livraison</p>
                 </div>
 

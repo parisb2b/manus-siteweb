@@ -19,6 +19,7 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
+import PrixOuDevis from "@/components/PrixOuDevis";
 
 // ════════════════════════════════════════════════════
 // DONNÉES DES KITS SOLAIRES
@@ -59,8 +60,8 @@ const SOLAR_KITS: Record<string, any> = {
       { label: "Onduleur", value: "DEYE 1 Phase Low Voltage Hybrid 10KW Inverter" },
       { label: "Modèle onduleur", value: "SUN-10K-SG02LP1-EU-AM3-P" },
       { label: "Garantie", value: "20 ans" },
-      { label: "Prix", value: "7 990 € HT" },
     ],
+    prixAchat: 6146,
   },
   "kit-12kw": {
     id: "kit-solaire-12kw",
@@ -96,8 +97,8 @@ const SOLAR_KITS: Record<string, any> = {
       { label: "Onduleur", value: "DEYE 1 Phase Low Voltage Hybrid 12KW Inverter" },
       { label: "Modèle onduleur", value: "SUN-12K-SG02LP1-EU-AM3" },
       { label: "Garantie", value: "20 ans" },
-      { label: "Prix", value: "8 990 € HT" },
     ],
+    prixAchat: 6915,
   },
   "kit-20kw": {
     id: "kit-solaire-20kw",
@@ -133,8 +134,8 @@ const SOLAR_KITS: Record<string, any> = {
       { label: "Onduleur", value: "DEYE 3 Phase Low Voltage Hybrid 20KW Inverter" },
       { label: "Modèle onduleur", value: "SUN-20K-SG05LP3-EU-SM2" },
       { label: "Garantie", value: "20 ans" },
-      { label: "Prix", value: "18 990 € HT" },
     ],
+    prixAchat: 14608,
   },
 };
 
@@ -304,12 +305,9 @@ export default function SolarKitDetail() {
                 {kit.name}
               </h1>
               <p className="text-gray-500 text-sm mb-6">{kit.subtitle}</p>
-              <div className="text-2xl font-bold text-[#4A90D9] mb-2">
-                {kit.price}
+              <div className="mb-6">
+                <PrixOuDevis prixAchat={kit.prixAchat} />
               </div>
-              <p className="text-xs text-gray-500 mb-6">
-                Prix de base hors taxes et hors livraison
-              </p>
 
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {kit.description}

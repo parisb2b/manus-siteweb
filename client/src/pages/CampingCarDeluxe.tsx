@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
+import PrixOuDevis from "@/components/PrixOuDevis";
 import {
   Carousel,
   CarouselContent,
@@ -203,10 +204,9 @@ export default function CampingCarDeluxe() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
-                  <div className="text-4xl font-bold text-[#4A90D9]">
-                    {formatPrice(BASE_PRICE)}
+                  <div className="mt-2">
+                    <PrixOuDevis prixAchat={41269} />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Prix de base hors taxes et hors livraison</p>
                 </div>
 
                 <Separator className="my-6" />

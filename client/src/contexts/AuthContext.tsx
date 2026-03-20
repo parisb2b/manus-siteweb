@@ -8,11 +8,12 @@ export type Profile = {
   last_name: string;
   email: string;
   phone: string;
-  role?: "admin" | "partenaire" | "client";
+  role?: "admin" | "collaborateur" | "partner" | "vip" | "user";
+  prix_negocie?: Record<string, number>;
   created_at: string;
 };
 
-export type Role = "admin" | "partenaire" | "client" | "visitor";
+export type Role = "admin" | "collaborateur" | "partner" | "vip" | "user" | "visitor";
 
 type AuthContextType = {
   user: User | null;
@@ -41,9 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role: Role =
     !user
       ? "visitor"
-      : profile?.role === "admin" || profile?.role === "partenaire" || profile?.role === "client"
-      ? profile.role
-      : "client";
+      : (["admin", "collaborateur", "partner", "vip", "user"] as const).includes(profile?.role as any)
+      ? (profile!.role as Role)
+      : "user";
 
   // Fetch existing profile — purely non-blocking
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
@@ -84,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         last_name: lastName,
         email: u.email || "",
         phone: (meta.phone as string) || "",
-        role: "client",
+        role: "user",
       })
       .select()
       .maybeSingle();
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         last_name: metadata.last_name,
         email,
         phone: metadata.phone,
-        role: "client",
+        role: "user",
       });
       if (profileError) console.warn("Profile upsert:", profileError);
       const p = await fetchProfile(data.user.id);

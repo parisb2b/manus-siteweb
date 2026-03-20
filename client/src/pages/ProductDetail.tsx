@@ -7,6 +7,14 @@ import { Minus, Plus, Check, FileText, ShoppingCart, ArrowRight, CheckCircle2, C
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
+import PrixOuDevis from "@/components/PrixOuDevis";
+
+const PRIX_ACHAT: Record<string, number> = {
+  "r18-pro": 9538,
+  "r22-pro": 12150,
+  "r32-pro": 14296,
+  "r57-pro": 19923,
+};
 
 // Images mapping (main images)
 const productImages: Record<string, string> = {
@@ -445,8 +453,9 @@ export default function ProductDetail() {
             <div>
               <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
-              <div className="text-2xl font-bold text-[#4A90D9] mb-2">{product.price}</div>
-              <p className="text-xs text-gray-500 mb-6">Prix de base hors taxes et hors livraison</p>
+              <div className="mb-6">
+                <PrixOuDevis prixAchat={PRIX_ACHAT[product.id] ?? 9538} />
+              </div>
               
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {product.description}
