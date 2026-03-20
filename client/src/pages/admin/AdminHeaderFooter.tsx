@@ -38,8 +38,7 @@ export default function AdminHeaderFooter() {
           setSiteContent(d);
         }
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }, () => setLoading(false));
   }, []);
 
   const handleSave = async () => {

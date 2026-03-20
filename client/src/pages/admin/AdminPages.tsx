@@ -50,8 +50,7 @@ export default function AdminPages() {
           setSiteContent(d);
         }
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }, () => setLoading(false));
   }, []);
 
   const handleSave = async () => {

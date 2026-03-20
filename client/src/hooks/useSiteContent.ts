@@ -5,6 +5,10 @@ export interface SiteContent {
   siteSettings: {
     siteName: string;
     logo: string;
+    /** Logo spécifique header (override logo) */
+    headerLogo?: string;
+    /** Logo spécifique footer (override logo) */
+    footerLogo?: string;
     primaryColor: string;
     whatsappNumber: string;
     topBanner: string;

@@ -45,8 +45,7 @@ export default function AdminSettings() {
           setSiteContent(data.value);
         }
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }, () => setLoading(false));
   }, []);
 
   const handleSave = async () => {

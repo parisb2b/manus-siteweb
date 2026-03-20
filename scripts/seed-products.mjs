@@ -1,0 +1,83 @@
+import { createClient } from '@supabase/supabase-js'
+const supabase = createClient(
+  'https://gdqdbgonndmnauyetvht.supabase.co',
+  'sb_publishable_GuTlUBZt3WaTLdnLGSwVcw_-iT6FQ-g'
+)
+const products = [
+  { categorie: 'Mini-pelle', nom: 'Mini-pelle R18 PRO', reference: 'r18-pro', prix_achat: 9538 },
+  { categorie: 'Mini-pelle', nom: 'Mini-pelle R22 PRO', reference: 'r22-pro', prix_achat: 12150 },
+  { categorie: 'Mini-pelle', nom: 'Mini-pelle R32 PRO', reference: 'r32-pro', prix_achat: 14296 },
+  { categorie: 'Mini-pelle', nom: 'Mini-pelle R57 PRO', reference: 'r57-pro', prix_achat: 19923 },
+  { categorie: 'Maison Modulaire Standard', nom: 'Maison Standard 20 Pieds', reference: '20ft-std', prix_achat: 4308 },
+  { categorie: 'Maison Modulaire Standard', nom: 'Maison Standard 30 Pieds', reference: '30ft-std', prix_achat: 5692 },
+  { categorie: 'Maison Modulaire Standard', nom: 'Maison Standard 40 Pieds', reference: '40ft-std', prix_achat: 7077 },
+  { categorie: 'Maison Modulaire Premium', nom: 'Maison Premium 20 Pieds', reference: '20ft-prem', prix_achat: 7631 },
+  { categorie: 'Maison Modulaire Premium', nom: 'Maison Premium 30 Pieds', reference: '30ft-prem', prix_achat: 8231 },
+  { categorie: 'Maison Modulaire Premium', nom: 'Maison Premium 40 Pieds', reference: '40ft-prem', prix_achat: 10231 },
+  { categorie: 'Option Maison', nom: 'Climatisation', reference: 'ac', prix_achat: 1923 },
+  { categorie: 'Option Maison', nom: 'Kit Panneaux Solaires Maison', reference: 'solar-option', prix_achat: 6086 },
+  { categorie: 'Camping Car', nom: 'Camping Car Deluxe Hybride BYD T5DM', reference: 'camping-car-deluxe', prix_achat: 41269 },
+  { categorie: 'Kit Solaire', nom: 'Kit Solaire 10 kW', reference: 'kit-solaire-10kw', prix_achat: 6146 },
+  { categorie: 'Kit Solaire', nom: 'Kit Solaire 12 kW', reference: 'kit-solaire-12kw', prix_achat: 6915 },
+  { categorie: 'Kit Solaire', nom: 'Kit Solaire 20 kW', reference: 'kit-solaire-20kw', prix_achat: 14608 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R22 PRO 20cm', reference: 'godet-dents-r22-20', prix_achat: 147 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R22 PRO 60cm', reference: 'godet-dents-r22-60', prix_achat: 140 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R22 PRO 80cm', reference: 'godet-dents-r22-80', prix_achat: 207 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R32 PRO 20cm', reference: 'godet-dents-r32-20', prix_achat: 187 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R32 PRO 60cm', reference: 'godet-dents-r32-60', prix_achat: 208 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R32 PRO 80cm', reference: 'godet-dents-r32-80', prix_achat: 254 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R57 PRO 20cm', reference: 'godet-dents-r57-20', prix_achat: 201 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R57 PRO 60cm', reference: 'godet-dents-r57-60', prix_achat: 254 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R57 PRO 80cm', reference: 'godet-dents-r57-80', prix_achat: 301 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R57 PRO 100cm', reference: 'godet-dents-r57-100', prix_achat: 318 },
+  { categorie: 'Accessoire', nom: 'Godet a dents R57 PRO 120cm', reference: 'godet-dents-r57-120', prix_achat: 348 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R22 PRO 30cm', reference: 'godet-curage-r22-30', prix_achat: 70 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R22 PRO 60cm', reference: 'godet-curage-r22-60', prix_achat: 187 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R22 PRO 80cm', reference: 'godet-curage-r22-80', prix_achat: 208 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R22 PRO 100cm', reference: 'godet-curage-r22-100', prix_achat: 221 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R32 PRO 30cm', reference: 'godet-curage-r32-30', prix_achat: 187 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R32 PRO 60cm', reference: 'godet-curage-r32-60', prix_achat: 208 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R32 PRO 80cm', reference: 'godet-curage-r32-80', prix_achat: 228 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R32 PRO 100cm', reference: 'godet-curage-r32-100', prix_achat: 254 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R57 PRO 30cm', reference: 'godet-curage-r57-30', prix_achat: 201 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R57 PRO 60cm', reference: 'godet-curage-r57-60', prix_achat: 214 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R57 PRO 80cm', reference: 'godet-curage-r57-80', prix_achat: 241 },
+  { categorie: 'Accessoire', nom: 'Godet de curage R57 PRO 100cm', reference: 'godet-curage-r57-100', prix_achat: 268 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R22 PRO 80cm', reference: 'godet-incl-r22-80', prix_achat: 335 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R22 PRO 100cm', reference: 'godet-incl-r22-100', prix_achat: 348 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R32 PRO 80cm', reference: 'godet-incl-r32-80', prix_achat: 355 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R32 PRO 100cm', reference: 'godet-incl-r32-100', prix_achat: 368 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R57 PRO 80cm', reference: 'godet-incl-r57-80', prix_achat: 575 },
+  { categorie: 'Accessoire', nom: 'Godet inclinable R57 PRO 100cm', reference: 'godet-incl-r57-100', prix_achat: 622 },
+  { categorie: 'Accessoire', nom: 'Attache rapide R22 PRO', reference: 'attache-r22', prix_achat: 348 },
+  { categorie: 'Accessoire', nom: 'Attache rapide R32 PRO', reference: 'attache-r32', prix_achat: 395 },
+  { categorie: 'Accessoire', nom: 'Pince-pouce R22 PRO', reference: 'pince-r22', prix_achat: 402 },
+  { categorie: 'Accessoire', nom: 'Pince-pouce R32 PRO', reference: 'pince-r32', prix_achat: 435 },
+  { categorie: 'Accessoire', nom: 'Rateau R22 PRO 40cm', reference: 'rateau-r22-40', prix_achat: 167 },
+  { categorie: 'Accessoire', nom: 'Rateau R22 PRO 60cm', reference: 'rateau-r22-60', prix_achat: 181 },
+  { categorie: 'Accessoire', nom: 'Rateau R22 PRO 80cm', reference: 'rateau-r22-80', prix_achat: 201 },
+  { categorie: 'Accessoire', nom: 'Rateau R32 PRO 40cm', reference: 'rateau-r32-40', prix_achat: 187 },
+  { categorie: 'Accessoire', nom: 'Rateau R32 PRO 60cm', reference: 'rateau-r32-60', prix_achat: 201 },
+  { categorie: 'Accessoire', nom: 'Rateau R32 PRO 80cm', reference: 'rateau-r32-80', prix_achat: 221 },
+  { categorie: 'Accessoire', nom: 'Rateau R57 PRO 40cm', reference: 'rateau-r57-40', prix_achat: 161 },
+  { categorie: 'Accessoire', nom: 'Rateau R57 PRO 60cm', reference: 'rateau-r57-60', prix_achat: 181 },
+  { categorie: 'Accessoire', nom: 'Rateau R57 PRO 80cm', reference: 'rateau-r57-80', prix_achat: 201 },
+  { categorie: 'Accessoire', nom: 'Ripper R22 PRO', reference: 'ripper-r22', prix_achat: 141 },
+  { categorie: 'Accessoire', nom: 'Ripper R32 PRO', reference: 'ripper-r32', prix_achat: 161 },
+  { categorie: 'Accessoire', nom: 'Marteau hydraulique R22 PRO', reference: 'marteau-r22', prix_achat: 348 },
+  { categorie: 'Accessoire', nom: 'Marteau hydraulique R32 PRO', reference: 'marteau-r32', prix_achat: 388 },
+  { categorie: 'Accessoire', nom: 'Marteau hydraulique R57 PRO', reference: 'marteau-r57', prix_achat: 515 },
+  { categorie: 'Accessoire', nom: 'Tariere R22 PRO', reference: 'tariere-r22', prix_achat: 254 },
+  { categorie: 'Accessoire', nom: 'Tariere R32 PRO', reference: 'tariere-r32', prix_achat: 287 },
+  { categorie: 'Accessoire', nom: 'Grappin R22 PRO', reference: 'grappin-r22', prix_achat: 254 },
+  { categorie: 'Accessoire', nom: 'Grappin R32 PRO', reference: 'grappin-r32', prix_achat: 281 },
+  { categorie: 'Accessoire', nom: 'Grappin R57 PRO', reference: 'grappin-r57', prix_achat: 575 }
+]
+const { data, error } = await supabase
+  .from('products')
+  .upsert(products, { onConflict: 'reference' })
+if (error) {
+  console.error('Erreur:', error)
+} else {
+  console.log('69 produits inseres avec succes')
+}

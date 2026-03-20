@@ -1,56 +1,52 @@
-import type { Product } from "@/hooks/useProducts";
+/**
+ * lib/api.ts — OBSOLÈTE
+ *
+ * Ce fichier appelait des routes /api/ (Node.js) qui ne fonctionnent pas
+ * sur Vercel (SPA statique). Il n'est plus importé dans le projet.
+ *
+ * Remplacé par :
+ * - hooks/useProducts.ts  → Supabase table `products`
+ * - hooks/useSiteContent.ts → Supabase table `site_content`
+ * - Pour les produits admin : AdminProducts.tsx accède directement à Supabase
+ *
+ * Conservé pour éviter une erreur si un import résiduel existe.
+ */
 
-// === Products API ===
+import type { Product } from "@/hooks/useProducts";
+import { supabase } from "@/lib/supabase";
+
+/** @deprecated Utiliser useProducts() hook — Supabase-first */
 export async function fetchProducts(): Promise<Product[]> {
-  try {
-    const res = await fetch("/api/products");
-    if (res.ok) return await res.json();
-  } catch {}
-  const { default: products } = await import("@/data/products.json");
-  return products as Product[];
+  if (supabase) {
+    const { data } = await supabase.from("products").select("*").eq("actif", true);
+    if (data && data.length > 0) return data as unknown as Product[];
+  }
+  const { default: fallback } = await import("@/data/products.json");
+  return fallback as Product[];
 }
 
-export async function fetchProduct(id: string): Promise<Product | null> {
-  try {
-    const res = await fetch(`/api/products/${id}`);
-    if (res.ok) return await res.json();
-  } catch {}
+/** @deprecated Non implémenté sur Vercel */
+export async function fetchProduct(_id: string): Promise<Product | null> {
   return null;
 }
 
-export async function saveProducts(products: Product[]): Promise<boolean> {
-  const res = await fetch("/api/products", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(products),
-  });
-  return res.ok;
+/** @deprecated Non implémenté sur Vercel — utiliser Supabase directement */
+export async function saveProducts(_products: Product[]): Promise<boolean> {
+  return false;
 }
 
-export async function saveProduct(product: Product): Promise<boolean> {
-  const res = await fetch(`/api/products/${product.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(product),
-  });
-  return res.ok;
+/** @deprecated Non implémenté sur Vercel */
+export async function saveProduct(_product: Product): Promise<boolean> {
+  return false;
 }
 
-// === Settings API ===
+/** @deprecated Utiliser Supabase table site_content */
 export async function fetchSettings(): Promise<any> {
-  try {
-    const res = await fetch("/api/settings");
-    if (res.ok) return await res.json();
-  } catch {}
   const { default: settings } = await import("@/data/settings.json");
   return settings;
 }
 
-export async function saveSettings(settings: any): Promise<boolean> {
-  const res = await fetch("/api/settings", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(settings),
-  });
-  return res.ok;
+/** @deprecated Non implémenté sur Vercel */
+export async function saveSettings(_settings: any): Promise<boolean> {
+  return false;
 }

@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, FileText, Download } from "lucide-react";
-import { formatEur } from "@/utils/calculPrix";
+import { formatEur, calculerPrix } from "@/utils/calculPrix";
 import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 
 export interface DevisProduit {
@@ -101,7 +101,10 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
         const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
         const qty = p.quantite ?? 1;
         // Prix référence ×1.5 pour affichage barré VIP
-        const prixPublic = p.prixPublic ?? (p.prixAchat ? Math.round(p.prixAchat * 1.5) : undefined);
+        // Prix public ×1.5 via calculerPrix (source unique)
+        const prixPublic = p.prixPublic ?? (p.prixAchat
+          ? calculerPrix(p.prixAchat, "user").prixAffiche ?? undefined
+          : undefined);
         const remise = prixPublic && prixPublic > pu
           ? Math.round((1 - pu / prixPublic) * 100)
           : undefined;

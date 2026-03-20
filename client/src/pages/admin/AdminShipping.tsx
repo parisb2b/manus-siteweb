@@ -22,8 +22,7 @@ export default function AdminShipping() {
           setSiteContent(data.value);
         }
         setLoading(false);
-      })
-      .catch(() => {
+      }, () => {
         setMessage({ type: "error", text: "Erreur lors du chargement des donnees." });
         setLoading(false);
       });

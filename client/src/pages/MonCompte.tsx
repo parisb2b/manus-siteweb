@@ -39,7 +39,7 @@ type Devis = {
 
 export default function MonCompte() {
   const [, setLocation] = useLocation();
-  const { user, profile, loading, setShowAuthModal, signOut } = useAuth();
+  const { user, profile, role, loading, setShowAuthModal, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("infos");
 
   // ── Redirection si non connecté ─────────────────────────────────
