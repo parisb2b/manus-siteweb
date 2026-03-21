@@ -953,9 +953,9 @@ ERREURS DÉJÀ CORRIGÉES — NE PAS REFAIRE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 23:00
-COMMIT : 1e9c56e
+COMMIT : 1e9c56e (tag: v4.1-bugs-corriges)
 TYPE : fix
-DESCRIPTION : 3 bugs corrigés — badges devis, PDF produits, adresses SQL
+DESCRIPTION : Badges devis valider/refuser, PDF une ligne par produit, adresses facturation/livraison dans profil
 ────────────────────────────────────────────────────────────────
 FICHIERS MODIFIÉS :
   - client/src/features/account/tabs/QuotesTab.tsx
