@@ -73,6 +73,102 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 19:19
+COMMIT : 301f512
+TYPE : refactor
+DESCRIPTION : Split MonCompte.tsx (1418→250 lignes) en 5 modules onglets
+────────────────────────────────────────────────────────────────
+FICHIERS CRÉÉS :
+  - client/src/features/account/tabs/ProfileTab.tsx
+  - client/src/features/account/tabs/OrdersTab.tsx
+  - client/src/features/account/tabs/QuotesTab.tsx
+  - client/src/features/account/tabs/CommissionsTab.tsx
+  - client/src/features/account/tabs/SecurityTab.tsx
+
+FICHIERS MODIFIÉS :
+  - client/src/pages/MonCompte.tsx (1418→250 lignes, thin shell)
+
+DÉTAILS TECHNIQUES :
+
+1. ProfileTab.tsx (~280 lignes)
+   - Infos personnelles (prénom, nom, email, téléphone) avec mode édition
+   - CRUD adresses facturation + livraison avec checkbox "identique"
+   - Props : { user: User, profile: any }
+   - Gère son propre state (editMode, adresseFact*, adresseLiv*, livIdent)
+
+2. OrdersTab.tsx (~135 lignes)
+   - Affiche les devis avec statut "accepte" (commandes confirmées)
+   - Panel expandable par commande (produits, total, adresse)
+   - Props : { user: User }
+
+3. QuotesTab.tsx (~305 lignes)
+   - Le plus complexe : liste devis, badges statut, panel détail
+   - Actions Valider/Refuser avec refetch immédiat
+   - Téléchargement PDF devis + facture (generateDevisPDF, generateFacturePDF)
+   - Props : { user: User, profile: any, role: string }
+
+4. CommissionsTab.tsx (~98 lignes)
+   - Visible uniquement pour role=partner
+   - Résumé dues/payées + liste avec téléchargement note commission
+   - Props : { user: User }
+
+5. SecurityTab.tsx (~120 lignes)
+   - Changement mot de passe via supabase.auth.updateUser()
+   - Règles mdp affichées, validation 6 chars + confirmation
+   - Aucune prop nécessaire
+
+6. MonCompte.tsx (thin shell ~250 lignes)
+   - Hero section + sidebar navigation + modal complétion profil
+   - Import des 5 onglets, rendu conditionnel par activeTab
+   - getInitialTab() pour URL-based tab detection préservé
+
+IMPACT : -1122 lignes nettes, architecture modulaire features/account/tabs/
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 ~18:00
+COMMIT : d09fdc7
+TYPE : feat/fix
+DESCRIPTION : Migration admin /api/ → Supabase Storage + cleanup console.logs
+────────────────────────────────────────────────────────────────
+FICHIERS CRÉÉS :
+  - client/src/lib/storage.ts (helper Supabase Storage : upload, delete, list)
+
+FICHIERS MODIFIÉS :
+  - client/src/pages/admin/AdminSettings.tsx (uploadLogo → uploadFile)
+  - client/src/pages/admin/AdminHeaderFooter.tsx (uploadLogo → uploadFile)
+  - client/src/lib/supabase.ts (suppression 2 console.log debug)
+
+DÉTAILS TECHNIQUES :
+
+1. lib/storage.ts — Nouveau helper Supabase Storage
+   - uploadFile(file, folder) → URL publique ou null
+   - deleteFile(path), listFiles(folder)
+   - Bucket "media", noms sécurisés (slug + timestamp)
+
+2. AdminSettings.tsx — Migration upload logo
+   - AVANT : FileReader + fetch("/api/images/upload") → 404 en prod
+   - APRÈS : uploadFile(file, "logos") → Supabase Storage direct
+   - Réduit de 14 lignes à 3 lignes
+
+3. AdminHeaderFooter.tsx — Même migration upload
+   - Remplacé /api/images/upload par uploadFile()
+
+4. supabase.ts — Suppression debug logs
+   - Supprimé console.log('[Supabase] URL:', ...) et KEY
+   - Ces logs étaient visibles en production
+
+NOTE : Les 13 autres /api/ calls (AdminMedia, AdminProducts, AdminLayout)
+       étaient déjà protégés par import.meta.env.DEV ou IS_LOCAL.
+       Seuls AdminSettings et AdminHeaderFooter étaient non-gardés.
+
+PRÉ-REQUIS : Créer bucket Supabase Storage "media" (public)
+  INSERT INTO storage.buckets (id, name, public) VALUES ('media', 'media', true)
+  ON CONFLICT DO NOTHING;
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 10:11
 COMMIT : 58ae50c / f687124
 TYPE : fix
