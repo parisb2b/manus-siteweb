@@ -55,7 +55,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0 flex items-center gap-3 group">
+          <Link href="/index.html" className="flex-shrink-0 flex items-center gap-3 group">
             <img src={logoSrc} alt={logoAlt} className="h-16 md:h-20 w-auto object-contain" />
           </Link>
 

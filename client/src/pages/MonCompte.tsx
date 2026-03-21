@@ -17,6 +17,17 @@ import { supabase } from "@/lib/supabase";
 
 type Tab = "infos" | "commandes" | "devis" | "commissions" | "securite";
 
+// Détecte l'onglet initial depuis l'URL (.html stables)
+const getInitialTab = (): Tab => {
+  if (typeof window === "undefined") return "infos";
+  const p = window.location.pathname;
+  if (p.includes("mes-devis")) return "devis";
+  if (p.includes("mes-commandes")) return "commandes";
+  if (p.includes("securite")) return "securite";
+  if (p.includes("mes-informations")) return "infos";
+  return "infos";
+};
+
 type Commande = {
   id: string;
   created_at: string;
@@ -41,7 +52,7 @@ type Devis = {
 export default function MonCompte() {
   const [, setLocation] = useLocation();
   const { user, profile, role, loading, setShowAuthModal, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("infos");
+  const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
 
   // ── Redirection si non connecté ─────────────────────────────────
   // loading=false vient d'AuthContext dès que la session est résolue (max 3s)
@@ -217,6 +228,7 @@ export default function MonCompte() {
   // ── Supprimer adresses ───────────────────────────────────────────
   const handleDeleteAdresseFact = async () => {
     if (!supabase || !user) return;
+    if (!window.confirm("Supprimer l'adresse de facturation ?")) return;
     setAdresseFactLoading(true);
     await supabase.from("profiles").update({
       adresse_facturation: null, ville_facturation: null,
@@ -230,6 +242,7 @@ export default function MonCompte() {
 
   const handleDeleteAdresseLiv = async () => {
     if (!supabase || !user) return;
+    if (!window.confirm("Supprimer l'adresse de livraison ?")) return;
     setAdresseLivLoading(true);
     await supabase.from("profiles").update({
       adresse_livraison: null, ville_livraison: null,
@@ -372,12 +385,12 @@ export default function MonCompte() {
 
   const handleUpdatePassword = async () => {
     if (!supabase) return;
-    if (newPassword !== confirmPassword) {
-      setPwdError("Les mots de passe ne correspondent pas.");
-      return;
-    }
     if (newPassword.length < 6) {
       setPwdError("Le mot de passe doit contenir au moins 6 caractères.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwdError("La confirmation ne correspond pas au mot de passe saisi.");
       return;
     }
     setPwdLoading(true);
@@ -1295,7 +1308,20 @@ export default function MonCompte() {
             {/* ── Onglet 4 : Sécurité ── */}
             {activeTab === "securite" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Sécurité</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Sécurité</h2>
+                <p className="text-sm text-gray-400 mb-6">Modifiez votre mot de passe de connexion.</p>
+
+                {/* Règles de mot de passe */}
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8">
+                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">Règles du mot de passe</p>
+                  <ul className="space-y-1 text-sm text-blue-700">
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" /> Minimum 6 caractères</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" /> Lettres seules acceptées (ex. : monmotdepasse)</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" /> Chiffres seuls acceptés (ex. : 123456)</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" /> Mélange lettres + chiffres accepté (ex. : import97)</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" /> Caractères spéciaux non obligatoires</li>
+                  </ul>
+                </div>
 
                 {pwdSuccess && (
                   <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 mb-6">
@@ -1324,7 +1350,7 @@ export default function MonCompte() {
                         type={showNewPwd ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Minimum 6 caractères"
+                        placeholder="Minimum 6 caractères (ex. : import97)"
                         className="w-full pl-11 pr-11 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
                       />
                       <button

@@ -37,6 +37,7 @@ export const showCartNotification = (productName: string) => {
       </div>
     </div>
   ), {
+    id: 'cart-notification',  // empêche l'empilement : remplace la notif précédente
     duration: 5000,
     position: 'top-center',
   });
