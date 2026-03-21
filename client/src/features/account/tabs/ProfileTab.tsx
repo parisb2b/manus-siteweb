@@ -54,12 +54,12 @@ export default function ProfileTab({ user, profile }: Props) {
       setPhone(profile.phone || "");
       setAdresseFact(profile.adresse_facturation || "");
       setVilleFact(profile.ville_facturation || "");
-      setCpFact(profile.code_postal_facturation || "");
+      setCpFact(profile.cp_facturation || "");
       setPaysFact(profile.pays_facturation || "France");
       setLivIdent(profile.adresse_livraison_identique ?? true);
       setAdresseLiv(profile.adresse_livraison || "");
       setVilleLiv(profile.ville_livraison || "");
-      setCpLiv(profile.code_postal_livraison || "");
+      setCpLiv(profile.cp_livraison || "");
       setPaysLiv(profile.pays_livraison || "France");
     }
   }, [profile]);
@@ -91,7 +91,7 @@ export default function ProfileTab({ user, profile }: Props) {
     await supabase.from("profiles").update({
       adresse_facturation: adresseFact,
       ville_facturation: villeFact,
-      code_postal_facturation: cpFact,
+      cp_facturation: cpFact,
       pays_facturation: paysFact,
     }).eq("id", user.id);
     setAdresseFactLoading(false);
@@ -107,7 +107,7 @@ export default function ProfileTab({ user, profile }: Props) {
       adresse_livraison_identique: livIdent,
       adresse_livraison: livIdent ? adresseFact : adresseLiv,
       ville_livraison: livIdent ? villeFact : villeLiv,
-      code_postal_livraison: livIdent ? cpFact : cpLiv,
+      cp_livraison: livIdent ? cpFact : cpLiv,
       pays_livraison: livIdent ? paysFact : paysLiv,
     }).eq("id", user.id);
     setAdresseLivLoading(false);
@@ -122,7 +122,7 @@ export default function ProfileTab({ user, profile }: Props) {
     setAdresseFactLoading(true);
     await supabase.from("profiles").update({
       adresse_facturation: null, ville_facturation: null,
-      code_postal_facturation: null, pays_facturation: null,
+      cp_facturation: null, pays_facturation: null,
     }).eq("id", user.id);
     setAdresseFact(""); setVilleFact(""); setCpFact(""); setPaysFact("France");
     setAdresseFactLoading(false);
@@ -136,7 +136,7 @@ export default function ProfileTab({ user, profile }: Props) {
     setAdresseLivLoading(true);
     await supabase.from("profiles").update({
       adresse_livraison: null, ville_livraison: null,
-      code_postal_livraison: null, pays_livraison: null,
+      cp_livraison: null, pays_livraison: null,
       adresse_livraison_identique: true,
     }).eq("id", user.id);
     setAdresseLiv(""); setVilleLiv(""); setCpLiv(""); setPaysLiv("France"); setLivIdent(true);

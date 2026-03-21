@@ -14,12 +14,12 @@ export type Profile = {
   /** Adresse de facturation (colonnes ajoutées via add-address-columns.sql) */
   adresse_facturation?: string;
   ville_facturation?: string;
-  code_postal_facturation?: string;
+  cp_facturation?: string;
   pays_facturation?: string;
   /** Adresse de livraison */
   adresse_livraison?: string;
   ville_livraison?: string;
-  code_postal_livraison?: string;
+  cp_livraison?: string;
   pays_livraison?: string;
   adresse_livraison_identique?: boolean;
 };

@@ -76,8 +76,9 @@ export default function QuotesTab({ user, profile, role }: Props) {
       .eq("user_id", user.id);
     setActionId(null);
     if (!error) {
+      // Mise à jour locale immédiate — pas de refetch
+      setDevis(prev => prev.map(d => d.id === id ? { ...d, statut: "accepte" } : d));
       setExpandedId(null);
-      fetchDevis();
       setActionMsg("Votre devis a été validé. Nous vous contactons sous 48h.");
       setTimeout(() => setActionMsg(null), 5000);
     }
@@ -93,8 +94,9 @@ export default function QuotesTab({ user, profile, role }: Props) {
       .eq("user_id", user.id);
     setActionId(null);
     if (!error) {
+      // Mise à jour locale immédiate — pas de refetch
+      setDevis(prev => prev.map(d => d.id === id ? { ...d, statut: "refuse" } : d));
       setExpandedId(null);
-      fetchDevis();
       setActionMsg("Devis refusé. N'hésitez pas à nous recontacter.");
       setTimeout(() => setActionMsg(null), 4000);
     }
@@ -109,7 +111,12 @@ export default function QuotesTab({ user, profile, role }: Props) {
 
     // Sinon, régénérer le PDF à la volée
     const today = new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
-    const produitsArr: any[] = Array.isArray(d.produits) ? d.produits : [];
+    const rawProduits = d.produits;
+    const produitsArr: any[] = Array.isArray(rawProduits)
+      ? rawProduits
+      : typeof rawProduits === "string"
+        ? (() => { try { return JSON.parse(rawProduits); } catch { return []; } })()
+        : [];
     const lignes = produitsArr.map((p: any) => {
       const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
       const qty = p.quantite ?? 1;
@@ -159,7 +166,12 @@ export default function QuotesTab({ user, profile, role }: Props) {
     // Sinon, régénérer la facture à la volée
     const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
     const dateDevis = new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
-    const produitsArr: any[] = Array.isArray(d.produits) ? d.produits : [];
+    const rawProduitsF = d.produits;
+    const produitsArr: any[] = Array.isArray(rawProduitsF)
+      ? rawProduitsF
+      : typeof rawProduitsF === "string"
+        ? (() => { try { return JSON.parse(rawProduitsF); } catch { return []; } })()
+        : [];
     const lignes = produitsArr.map((p: any) => {
       const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
       const qty = p.quantite ?? 1;
@@ -221,7 +233,11 @@ export default function QuotesTab({ user, profile, role }: Props) {
         <div className="space-y-4">
           {devis.map((d) => {
             const isExpanded = expandedId === d.id;
-            const produits: any[] = Array.isArray(d.produits) ? d.produits : [];
+            const produits: any[] = Array.isArray(d.produits)
+              ? d.produits
+              : typeof d.produits === "string"
+                ? (() => { try { return JSON.parse(d.produits); } catch { return []; } })()
+                : [];
             return (
               <div key={d.id} className="border border-gray-100 rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
                 <button

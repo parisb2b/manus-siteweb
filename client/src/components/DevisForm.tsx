@@ -61,7 +61,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     telephone: profile?.phone ?? (user?.user_metadata?.phone as string) ?? "",
     adresse: profile?.adresse_facturation ?? "",
     ville: profile?.adresse_facturation
-      ? `${profile.code_postal_facturation ?? ""} ${profile.ville_facturation ?? ""}`.trim()
+      ? `${profile.cp_facturation ?? ""} ${profile.ville_facturation ?? ""}`.trim()
       : "",
     pays: profile?.pays_facturation ?? "France",
     message: "",
@@ -175,7 +175,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
           await supabase.from("profiles").update({
             adresse_facturation: form.adresse,
             ville_facturation: villeOnly,
-            code_postal_facturation: cp,
+            cp_facturation: cp,
             pays_facturation: form.pays,
           }).eq("id", user.id);
         }
