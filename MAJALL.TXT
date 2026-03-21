@@ -951,6 +951,53 @@ ERREURS DÉJÀ CORRIGÉES — NE PAS REFAIRE
     FIX : toast.dismiss("cart-notification") + toast("...", { id: "cart-notification" })
     COMMIT : db23c16 (2026-03-21)
 
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 23:00
+COMMIT : 1e9c56e
+TYPE : fix
+DESCRIPTION : 3 bugs corrigés — badges devis, PDF produits, adresses SQL
+────────────────────────────────────────────────────────────────
+FICHIERS MODIFIÉS :
+  - client/src/features/account/tabs/QuotesTab.tsx
+  - client/src/features/account/tabs/ProfileTab.tsx
+  - client/src/contexts/AuthContext.tsx
+  - client/src/components/DevisForm.tsx
+
+CORRECTIONS DÉTAILLÉES :
+
+BUG 1 — Badges devis Valider/Refuser
+   CAUSE : handleValider() et handleRefuser() appelaient fetchDevis()
+           (refetch async) au lieu de mettre à jour l'état local
+   FIX : setDevis(prev => prev.map(d => ...)) mise à jour immédiate
+         du statut dans le state local → badge couleur instantané
+         (bleu=nouveau, vert=accepté, rouge=refusé)
+   FICHIER : QuotesTab.tsx
+
+BUG 2 — PDF une ligne par produit
+   CAUSE : d.produits pouvait être un string JSON (Supabase jsonb
+           parfois sérialisé en string) → Array.isArray() retournait
+           false → 0 produits dans le PDF
+   FIX : Ajout JSON.parse() fallback dans 3 endroits :
+         - affichage liste produits (l.224)
+         - downloadDevisPdf() (l.112)
+         - downloadFacturePdf() (l.160)
+   FICHIER : QuotesTab.tsx
+
+BUG 3 — Adresses facturation/livraison colonnes SQL
+   CAUSE : Le code utilisait code_postal_facturation et
+           code_postal_livraison mais les colonnes SQL Supabase
+           sont cp_facturation et cp_livraison
+   FIX : Renommage dans 3 fichiers :
+         - ProfileTab.tsx (lecture, sauvegarde, suppression)
+         - AuthContext.tsx (type Profile)
+         - DevisForm.tsx (pré-remplissage formulaire devis)
+   COLONNES SQL EXISTANTES :
+     adresse_facturation, ville_facturation, cp_facturation, pays_facturation
+     adresse_livraison, ville_livraison, cp_livraison, pays_livraison
+     adresse_livraison_identique
+
+PUBLIÉ : 97import.com ✅
+
 ================================================================
 FIN DU JOURNAL — NE PAS SUPPRIMER LES ENTRÉES PASSÉES
 ================================================================
