@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   FileText,
-  Navigation,
   Rocket,
   Loader2,
   CheckCircle2,
@@ -30,7 +29,6 @@ import AdminShipping from "./AdminShipping";
 import AdminUsers from "./AdminUsers";
 import AdminSettings from "./AdminSettings";
 import AdminPages from "./AdminPages";
-import AdminNavigation from "./AdminNavigation";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminMedia from "./AdminMedia";
 import AdminHeaderFooter from "./AdminHeaderFooter";
@@ -53,7 +51,6 @@ const navItems: NavItem[] = [
   { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts },
   { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages, adminOnly: true },
   { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter, adminOnly: true },
-  { label: "Navigation", icon: Navigation, path: "/admin/navigation", component: AdminNavigation, adminOnly: true },
   { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, adminOnly: true },
   { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing, adminOnly: true },
   { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true },

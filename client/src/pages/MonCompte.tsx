@@ -4,6 +4,7 @@ import {
   User, Mail, Phone, Lock, Eye, EyeOff,
   Save, Loader2, CheckCircle2, AlertCircle,
   ShoppingBag, FileText, Shield, ChevronRight, LogOut, Download,
+  Plus, Trash2, X, MapPin,
 } from "lucide-react";
 import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
@@ -213,9 +214,38 @@ export default function MonCompte() {
     }
   };
 
+  // ── Supprimer adresses ───────────────────────────────────────────
+  const handleDeleteAdresseFact = async () => {
+    if (!supabase || !user) return;
+    setAdresseFactLoading(true);
+    await supabase.from("profiles").update({
+      adresse_facturation: null, ville_facturation: null,
+      code_postal_facturation: null, pays_facturation: null,
+    }).eq("id", user.id);
+    setAdresseFact(""); setVilleFact(""); setCpFact(""); setPaysFact("France");
+    setAdresseFactLoading(false);
+    setAdresseFactSuccess(true);
+    setTimeout(() => setAdresseFactSuccess(false), 3000);
+  };
+
+  const handleDeleteAdresseLiv = async () => {
+    if (!supabase || !user) return;
+    setAdresseLivLoading(true);
+    await supabase.from("profiles").update({
+      adresse_livraison: null, ville_livraison: null,
+      code_postal_livraison: null, pays_livraison: null,
+      adresse_livraison_identique: true,
+    }).eq("id", user.id);
+    setAdresseLiv(""); setVilleLiv(""); setCpLiv(""); setPaysLiv("France"); setLivIdent(true);
+    setAdresseLivLoading(false);
+    setAdresseLivSuccess(true);
+    setTimeout(() => setAdresseLivSuccess(false), 3000);
+  };
+
   // ── Onglet 2 : Historique commandes ─────────────────────────────
   const [commandes, setCommandes] = useState<Commande[]>([]);
   const [commandesLoading, setCommandesLoading] = useState(false);
+  const [expandedCmdId, setExpandedCmdId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "commandes" || !supabase || !user) return;
@@ -239,6 +269,7 @@ export default function MonCompte() {
   const [devisLoading, setDevisLoading] = useState(false);
   const [devisActionId, setDevisActionId] = useState<string | null>(null);
   const [devisActionMsg, setDevisActionMsg] = useState<string | null>(null);
+  const [expandedDevisId, setExpandedDevisId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "devis" || !supabase || !user) return;
@@ -698,11 +729,27 @@ export default function MonCompte() {
                   {/* Adresse de facturation */}
                   <div className="border border-gray-100 rounded-xl p-5 mb-4">
                     <div className="flex items-center justify-between mb-4">
-                      <p className="font-semibold text-gray-800 text-sm">Adresse de facturation</p>
+                      <p className="font-semibold text-gray-800 text-sm flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-[#4A90D9]" /> Adresse de facturation
+                      </p>
                       {!adresseFactEditing && (
-                        <button onClick={() => setAdresseFactEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
-                          Modifier
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {!adresseFact ? (
+                            <button onClick={() => setAdresseFactEditing(true)} className="flex items-center gap-1 text-xs text-emerald-600 font-medium hover:underline">
+                              <Plus className="h-3 w-3" /> Ajouter
+                            </button>
+                          ) : (
+                            <>
+                              <button onClick={() => setAdresseFactEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
+                                Modifier
+                              </button>
+                              <span className="text-gray-300">|</span>
+                              <button onClick={handleDeleteAdresseFact} disabled={adresseFactLoading} className="flex items-center gap-1 text-xs text-red-500 font-medium hover:underline disabled:opacity-50">
+                                <Trash2 className="h-3 w-3" /> Supprimer
+                              </button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
                     {adresseFactSuccess && (
@@ -741,11 +788,27 @@ export default function MonCompte() {
                   {/* Adresse de livraison */}
                   <div className="border border-gray-100 rounded-xl p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <p className="font-semibold text-gray-800 text-sm">Adresse de livraison</p>
+                      <p className="font-semibold text-gray-800 text-sm flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-orange-400" /> Adresse de livraison
+                      </p>
                       {!adresseLivEditing && (
-                        <button onClick={() => setAdresseLivEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
-                          Modifier
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {livIdent || !adresseLiv ? (
+                            <button onClick={() => setAdresseLivEditing(true)} className="flex items-center gap-1 text-xs text-emerald-600 font-medium hover:underline">
+                              <Plus className="h-3 w-3" /> {livIdent ? "Définir une adresse différente" : "Ajouter"}
+                            </button>
+                          ) : (
+                            <>
+                              <button onClick={() => setAdresseLivEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
+                                Modifier
+                              </button>
+                              <span className="text-gray-300">|</span>
+                              <button onClick={handleDeleteAdresseLiv} disabled={adresseLivLoading} className="flex items-center gap-1 text-xs text-red-500 font-medium hover:underline disabled:opacity-50">
+                                <Trash2 className="h-3 w-3" /> Supprimer
+                              </button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
                     {adresseLivSuccess && (
@@ -812,48 +875,99 @@ export default function MonCompte() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {commandes.map((cmd: any) => (
-                      <div key={cmd.id} className="border border-emerald-100 bg-emerald-50/30 rounded-xl p-5">
-                        <div className="flex items-start justify-between gap-4 flex-wrap">
-                          <div>
-                            <div className="flex items-center gap-3 mb-1">
-                              <span className="font-bold text-gray-900 text-sm">
-                                {cmd.numero_devis || `#${cmd.id.slice(0, 8).toUpperCase()}`}
-                              </span>
-                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                                Confirmé
-                              </span>
+                  <div className="space-y-3">
+                    {commandes.map((cmd: any) => {
+                      const isExpanded = expandedCmdId === cmd.id;
+                      const produits: any[] = Array.isArray(cmd.produits) ? cmd.produits : [];
+                      return (
+                        <div key={cmd.id} className="border border-emerald-100 rounded-xl overflow-hidden">
+                          {/* En-tête cliquable */}
+                          <button
+                            onClick={() => setExpandedCmdId(isExpanded ? null : cmd.id)}
+                            className="w-full flex items-center justify-between p-5 bg-emerald-50/40 hover:bg-emerald-50/70 transition-colors text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <ShoppingBag className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                              <div>
+                                <span className="font-bold text-gray-900 text-sm">
+                                  {cmd.numero_devis || `#${cmd.id.slice(0, 8).toUpperCase()}`}
+                                </span>
+                                <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                  Confirmé
+                                </span>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                  {new Date(cmd.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-xs text-gray-400 mb-2">
-                              {new Date(cmd.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-                            </p>
-                            {Array.isArray(cmd.produits) && cmd.produits.length > 0 && (
-                              <ul className="text-xs text-gray-500 space-y-0.5">
-                                {cmd.produits.slice(0, 3).map((p: any, i: number) => (
-                                  <li key={i}>• {p.nom || p.name || "—"}</li>
-                                ))}
-                                {cmd.produits.length > 3 && (
-                                  <li className="text-gray-400">+{cmd.produits.length - 3} autre(s)</li>
+                            <div className="flex items-center gap-3">
+                              {(cmd.prix_negocie ?? cmd.prix_total_calcule) != null && (
+                                <span className="font-bold text-emerald-600 text-sm">
+                                  {formatEur(cmd.prix_negocie ?? cmd.prix_total_calcule ?? 0)}
+                                </span>
+                              )}
+                              {isExpanded ? <X className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+                            </div>
+                          </button>
+
+                          {/* Détail expandable */}
+                          {isExpanded && (
+                            <div className="p-5 border-t border-emerald-100 bg-white space-y-4">
+                              {/* Numéro + statut */}
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-0.5">Numéro</p>
+                                  <p className="font-semibold text-gray-800">{cmd.numero_devis || `#${cmd.id.slice(0, 8).toUpperCase()}`}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-0.5">Date</p>
+                                  <p className="font-semibold text-gray-800">
+                                    {new Date(cmd.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                                  </p>
+                                </div>
+                                {(cmd.adresse_client || cmd.ville_client) && (
+                                  <div className="col-span-2">
+                                    <p className="text-xs text-gray-400 mb-0.5">Adresse de livraison</p>
+                                    <p className="text-gray-700">{[cmd.adresse_client, cmd.ville_client].filter(Boolean).join(", ")}</p>
+                                  </div>
                                 )}
-                              </ul>
-                            )}
-                          </div>
-                          <div className="text-right flex flex-col items-end gap-2">
-                            {(cmd.prix_negocie ?? cmd.prix_total_calcule) != null && (
-                              <p className="font-bold text-emerald-600 text-base">
-                                {formatEur(cmd.prix_negocie ?? cmd.prix_total_calcule ?? 0)}
-                              </p>
-                            )}
-                            {cmd.facture_generee && (
-                              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                                <Download className="h-3.5 w-3.5" /> Facture disponible dans "Mes devis"
-                              </span>
-                            )}
-                          </div>
+                              </div>
+
+                              {/* Liste produits complète */}
+                              {produits.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Produits</p>
+                                  <div className="space-y-1.5">
+                                    {produits.map((p: any, i: number) => (
+                                      <div key={i} className="flex justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+                                        <span className="text-gray-700">{p.nom || p.name || "—"}{p.quantite > 1 ? ` × ${p.quantite}` : ""}</span>
+                                        {(p.prixUnitaire ?? p.prixAffiche) ? (
+                                          <span className="font-medium text-gray-800">{formatEur((p.prixUnitaire ?? p.prixAffiche) * (p.quantite ?? 1))}</span>
+                                        ) : null}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Total */}
+                              <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                <span className="font-bold text-gray-900">Total confirmé</span>
+                                <span className="font-bold text-emerald-600 text-lg">
+                                  {formatEur(cmd.prix_negocie ?? cmd.prix_total_calcule ?? 0)}
+                                </span>
+                              </div>
+
+                              {cmd.facture_generee && (
+                                <p className="text-xs text-emerald-600 flex items-center gap-1">
+                                  <Download className="h-3.5 w-3.5" /> Facture disponible dans l'onglet "Mes devis"
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -981,77 +1095,123 @@ export default function MonCompte() {
                         document.body.removeChild(a); URL.revokeObjectURL(url);
                       };
 
+                      const isExpanded = expandedDevisId === d.id;
+                      const produitsArr2: any[] = Array.isArray(d.produits) ? d.produits : [];
+
                       return (
-                        <div key={d.id} className="border border-gray-100 rounded-xl p-5 hover:shadow-sm transition-shadow">
-                          <div className="flex items-start justify-between gap-4 flex-wrap">
-                            <div>
-                              <div className="flex items-center gap-3 mb-1">
-                                <span className="font-bold text-gray-900 text-sm">
-                                  {d.numero_devis || `#${d.id.slice(0, 8).toUpperCase()}`}
+                        <div key={d.id} className="border border-gray-100 rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
+                          {/* En-tête cliquable */}
+                          <button
+                            onClick={() => setExpandedDevisId(isExpanded ? null : d.id)}
+                            className="w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-colors text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-4 w-4 text-[#4A90D9] flex-shrink-0" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-gray-900 text-sm">
+                                    {d.numero_devis || `#${d.id.slice(0, 8).toUpperCase()}`}
+                                  </span>
+                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statutColors[d.statut] ?? "bg-gray-100 text-gray-600"}`}>
+                                    {statutLabels[d.statut] ?? d.statut}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                  {new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                                  {" · "}{produitsArr2.length} produit{produitsArr2.length > 1 ? "s" : ""}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {(d.prix_negocie ?? d.prix_total_calcule) != null && (
+                                <span className="font-bold text-[#4A90D9] text-sm">
+                                  {formatEur(d.prix_negocie ?? d.prix_total_calcule ?? 0)}
                                 </span>
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statutColors[d.statut] ?? "bg-gray-100 text-gray-600"}`}>
-                                  {statutLabels[d.statut] ?? d.statut}
+                              )}
+                              {isExpanded ? <X className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+                            </div>
+                          </button>
+
+                          {/* Détail expandable */}
+                          {isExpanded && (
+                            <div className="p-5 border-t border-gray-100 bg-gray-50/50 space-y-4">
+                              {/* Infos */}
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-0.5">Numéro</p>
+                                  <p className="font-semibold text-gray-800">{d.numero_devis || `#${d.id.slice(0, 8).toUpperCase()}`}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-0.5">Statut</p>
+                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statutColors[d.statut] ?? "bg-gray-100 text-gray-600"}`}>
+                                    {statutLabels[d.statut] ?? d.statut}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Produits complets */}
+                              {produitsArr2.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Produits</p>
+                                  <div className="space-y-1.5">
+                                    {produitsArr2.map((p: any, i: number) => (
+                                      <div key={i} className="flex justify-between text-sm bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                        <span className="text-gray-700">{p.nom || p.name || "—"}{(p.quantite ?? 1) > 1 ? ` × ${p.quantite}` : ""}</span>
+                                        {(p.prixUnitaire ?? p.prixAffiche) ? (
+                                          <span className="font-medium text-gray-800">{formatEur((p.prixUnitaire ?? p.prixAffiche) * (p.quantite ?? 1))}</span>
+                                        ) : null}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Total */}
+                              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                                <span className="font-bold text-gray-900">Total</span>
+                                <span className="font-bold text-[#4A90D9] text-lg">
+                                  {formatEur(d.prix_negocie ?? d.prix_total_calcule ?? 0)}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-400 mb-2">
-                                {new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-                              </p>
-                              {(d.produits || []).length > 0 && (
-                                <ul className="text-xs text-gray-500 space-y-0.5">
-                                  {(d.produits || []).slice(0, 3).map((p: any, i: number) => (
-                                    <li key={i}>• {p.nom || p.name || p.id}</li>
-                                  ))}
-                                  {(d.produits || []).length > 3 && (
-                                    <li className="text-gray-400">+{(d.produits || []).length - 3} autre(s)</li>
-                                  )}
-                                </ul>
-                              )}
-                            </div>
-                            <div className="text-right flex flex-col items-end gap-2">
-                              {(d.prix_negocie ?? d.prix_total_calcule) != null && (
-                                <p className="font-bold text-[#4A90D9] text-base">
-                                  {formatEur(d.prix_negocie ?? d.prix_total_calcule ?? 0)}
-                                </p>
-                              )}
-                              <button
-                                onClick={handleDownloadDevis}
-                                className="flex items-center gap-1.5 text-xs text-[#4A90D9] font-medium hover:underline"
-                              >
-                                <Download className="h-3.5 w-3.5" /> Devis PDF
-                              </button>
-                              {d.facture_generee && (
-                                <button
-                                  onClick={handleDownloadFacture}
-                                  className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium hover:underline"
-                                >
-                                  <Download className="h-3.5 w-3.5" /> Facture PDF
-                                </button>
-                              )}
-                            </div>
-                          </div>
 
-                          {/* Boutons Valider / Refuser */}
-                          {["nouveau", "en_cours", "negociation"].includes(d.statut) && (
-                            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
-                              <button
-                                onClick={() => handleValiderDevis(d.id)}
-                                disabled={devisActionId === d.id}
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
-                              >
-                                {devisActionId === d.id ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                              {/* PDF */}
+                              <div className="flex flex-wrap gap-3">
+                                <button
+                                  onClick={handleDownloadDevis}
+                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#4A90D9] text-[#4A90D9] text-xs font-semibold hover:bg-[#4A90D9]/5 transition-colors"
+                                >
+                                  <Download className="h-3.5 w-3.5" /> Télécharger le devis PDF
+                                </button>
+                                {d.facture_generee && (
+                                  <button
+                                    onClick={handleDownloadFacture}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-500 text-emerald-600 text-xs font-semibold hover:bg-emerald-50 transition-colors"
+                                  >
+                                    <Download className="h-3.5 w-3.5" /> Télécharger la facture PDF
+                                  </button>
                                 )}
-                                Valider ce devis
-                              </button>
-                              <button
-                                onClick={() => handleRefuserDevis(d.id)}
-                                disabled={devisActionId === d.id}
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-colors disabled:opacity-50"
-                              >
-                                Refuser
-                              </button>
+                              </div>
+
+                              {/* Actions Valider / Refuser */}
+                              {["nouveau", "en_cours", "negociation"].includes(d.statut) && (
+                                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
+                                  <button
+                                    onClick={() => handleValiderDevis(d.id)}
+                                    disabled={devisActionId === d.id}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
+                                  >
+                                    {devisActionId === d.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                    Valider ce devis
+                                  </button>
+                                  <button
+                                    onClick={() => handleRefuserDevis(d.id)}
+                                    disabled={devisActionId === d.id}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-colors disabled:opacity-50"
+                                  >
+                                    Refuser
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

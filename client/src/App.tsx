@@ -56,6 +56,15 @@ function App() {
       <Route path="/auth/callback" component={AuthCallback} />
       <Route path="/mot-de-passe-oublie" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/index.html" component={PortalHome} />
+      <Route path="/minipelles.html" component={MiniPelles} />
+      <Route path="/maisons.html" component={ModularHomes} />
+      <Route path="/solaire.html" component={Solar} />
+      <Route path="/accessoires.html" component={Accessories} />
+      <Route path="/services.html" component={Services} />
+      <Route path="/contact.html" component={Contact} />
+      <Route path="/mon-compte.html" component={MonCompte} />
+      <Route path="/connexion.html" component={Connexion} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/:rest*" component={AdminLayout} />
     </Switch>
