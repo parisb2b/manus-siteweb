@@ -8,6 +8,8 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
 import PrixOuDevis from "@/components/PrixOuDevis";
+import { calculerPrix, formatEur } from "@/utils/calculPrix";
+import { CAMPING_CAR_PRIX_ACHAT } from "@/data/pricing";
 import {
   Carousel,
   CarouselContent,
@@ -16,8 +18,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-// Pricing data
-const BASE_PRICE = 53650;
+const BASE_PRIX_ACHAT = CAMPING_CAR_PRIX_ACHAT;
 
 const DESTINATIONS = [
   { id: "mq", name: "Martinique (Port de Fort-de-France)", price: 9500 },
@@ -56,10 +57,12 @@ export default function CampingCarDeluxe() {
       setShowAuthModal(true);
       return;
     }
+    const displayPrice = calculerPrix(BASE_PRIX_ACHAT, "user").prixAffiche ?? BASE_PRIX_ACHAT;
     addToCart({
       id: "camping-car-deluxe",
       name: "Camping Car Deluxe Hybride",
-      price: formatPrice(BASE_PRICE),
+      price: formatEur(displayPrice),
+      prixAchat: BASE_PRIX_ACHAT,
       image: "/images/products/camping_car/exterior_main.webp",
       type: "machine",
     });
@@ -205,7 +208,7 @@ export default function CampingCarDeluxe() {
                 <div className="mb-8">
                   <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Prix de base (HT)</span>
                   <div className="mt-2">
-                    <PrixOuDevis prixAchat={41269} />
+                    <PrixOuDevis prixAchat={BASE_PRIX_ACHAT} />
                   </div>
                 </div>
 

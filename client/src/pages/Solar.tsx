@@ -3,27 +3,28 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import PrixOuDevis from "@/components/PrixOuDevis";
 import ScrollToTop from "@/components/ScrollToTop";
+import { SOLAIRE_PRIX } from "@/data/pricing";
 
 export default function Solar() {
   const products = [
     {
       id: "kit-solaire-10kw",
       name: "Kit Solaire 10 kW",
-      priceElement: <PrixOuDevis prixAchat={6146} />,
+      priceElement: <PrixOuDevis prixAchat={SOLAIRE_PRIX["kit-solaire-10kw"]} />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-10kw",
     },
     {
       id: "kit-solaire-12kw",
       name: "Kit Solaire 12 kW",
-      priceElement: <PrixOuDevis prixAchat={6915} />,
+      priceElement: <PrixOuDevis prixAchat={SOLAIRE_PRIX["kit-solaire-12kw"]} />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-12kw",
     },
     {
       id: "kit-solaire-20kw",
       name: "Kit Solaire 20 kW",
-      priceElement: <PrixOuDevis prixAchat={14608} />,
+      priceElement: <PrixOuDevis prixAchat={SOLAIRE_PRIX["kit-solaire-20kw"]} />,
       image: "/images/products/solar_kits/tiger_neo_585w.avif",
       link: "/solaire/kit-20kw",
     },

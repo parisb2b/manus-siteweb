@@ -38,9 +38,12 @@ export default function Cart() {
     }).format(price);
   };
 
+  const getItemPrice = (item: typeof items[0]): number =>
+    item.prixAchat != null ? item.prixAchat : parsePrice(item.price);
+
   const subtotals = items.map((item) => ({
     ...item,
-    subtotal: parsePrice(item.price) * item.quantity,
+    subtotal: getItemPrice(item) * item.quantity,
   }));
 
   const total = subtotals.reduce((acc, item) => acc + item.subtotal, 0);
@@ -50,8 +53,8 @@ export default function Cart() {
     id: item.id,
     nom: item.name,
     quantite: item.quantity,
-    prixAffiche: parsePrice(item.price),
-    prixUnitaire: parsePrice(item.price),
+    prixAffiche: getItemPrice(item),
+    prixUnitaire: getItemPrice(item),
   }));
 
   return (

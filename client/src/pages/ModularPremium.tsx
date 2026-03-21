@@ -8,38 +8,17 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
 import PrixOuDevis from "@/components/PrixOuDevis";
+import { calculerPrix, formatEur } from "@/utils/calculPrix";
+import { MODULAR_PREMIUM_SIZES, MODULAR_OPTIONS_PRIX } from "@/data/pricing";
 
-const SIZES = [
-  {
-    id: "20ft",
-    name: "20 Pieds (37m²)",
-    price: 9920,
-    prixAchat: 7631,
-    shipping: { martinique: 11000, guadeloupe: 11000 },
-  },
-  {
-    id: "30ft",
-    name: "30 Pieds (57m²)",
-    price: 10700,
-    prixAchat: 8231,
-    shipping: { martinique: 19000, guadeloupe: 17300 },
-  },
-  {
-    id: "40ft",
-    name: "40 Pieds (74m²)",
-    price: 13300,
-    prixAchat: 10231,
-    shipping: { martinique: 19000, guadeloupe: 17300 },
-  },
-];
+const SIZES = MODULAR_PREMIUM_SIZES;
 
 const OPTIONS = [
   {
     id: "extra_room",
     name: "Chambre Supplémentaire",
     description: "Ajout d'une cloison et porte pour créer une chambre additionnelle",
-    price: 0,
-    prixAchat: 0,
+    prixAchat: MODULAR_OPTIONS_PRIX.extra_room,
     icon: BedDouble,
     isQuote: true,
   },
@@ -47,8 +26,7 @@ const OPTIONS = [
     id: "ac",
     name: "Climatisation",
     description: "Pack climatisation tri-split 5.2kW (MIDEA ou équivalent)",
-    price: 2500,
-    prixAchat: 1923,
+    prixAchat: MODULAR_OPTIONS_PRIX.ac,
     icon: Snowflake,
     isQuote: false,
   },
@@ -56,8 +34,7 @@ const OPTIONS = [
     id: "solar",
     name: "Kit Panneaux Solaires",
     description: "10kW autonome (16 panneaux 585W + onduleur hybride + batteries lithium 10kW)",
-    price: 7912,
-    prixAchat: 6086,
+    prixAchat: MODULAR_OPTIONS_PRIX.solar,
     icon: Sun,
     isQuote: false,
   },
@@ -65,8 +42,7 @@ const OPTIONS = [
     id: "furniture",
     name: "Pack Meubles",
     description: "Mobilier de base (Sur demande)",
-    price: 0,
-    prixAchat: 0,
+    prixAchat: MODULAR_OPTIONS_PRIX.furniture,
     icon: Sofa,
     isQuote: true,
   },
@@ -97,7 +73,6 @@ const TECH_SPECS = [
 export default function ModularPremium() {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [totalPrice, setTotalPrice] = useState(0);
   const [totalPrixAchat, setTotalPrixAchat] = useState(SIZES[0].prixAchat);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -107,16 +82,13 @@ export default function ModularPremium() {
   const { user, setShowAuthModal } = useAuth();
 
   useEffect(() => {
-    let price = selectedSize.price;
     let achat = selectedSize.prixAchat;
     selectedOptions.forEach((optId) => {
       const option = OPTIONS.find((o) => o.id === optId);
       if (option && !option.isQuote) {
-        price += option.price;
         achat += option.prixAchat;
       }
     });
-    setTotalPrice(price);
     setTotalPrixAchat(achat);
   }, [selectedSize, selectedOptions]);
 
@@ -143,10 +115,12 @@ export default function ModularPremium() {
     const selectedOptionNames = selectedOptions.map(
       (optId) => OPTIONS.find((o) => o.id === optId)?.name || optId
     );
+    const displayPrice = calculerPrix(totalPrixAchat, "user").prixAffiche ?? totalPrixAchat;
     addToCart({
       id: `maison-premium-${selectedSize.id}`,
       name: `Maison Modulaire Premium - ${selectedSize.name}`,
-      price: formatPrice(totalPrice),
+      price: formatEur(displayPrice),
+      prixAchat: totalPrixAchat,
       image: "/images/products/modular_premium/exterior_4.jpg",
       type: "house",
       houseConfig: { size: selectedSize.name, options: selectedOptionNames },
@@ -407,7 +381,7 @@ export default function ModularPremium() {
                                 {option.name}
                               </span>
                               <span className="text-sm font-bold text-[#4A90D9]">
-                                {option.isQuote ? "Sur devis" : `+${formatPrice(option.price)}`}
+                                {option.isQuote ? "Sur devis" : <PrixOuDevis prixAchat={option.prixAchat} compact />}
                               </span>
                             </div>
                             <p className="text-xs text-gray-500 leading-relaxed">{option.description}</p>

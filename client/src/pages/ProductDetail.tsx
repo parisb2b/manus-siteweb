@@ -8,13 +8,8 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";
 import PrixOuDevis from "@/components/PrixOuDevis";
-
-const PRIX_ACHAT: Record<string, number> = {
-  "r18-pro": 9538,
-  "r22-pro": 12150,
-  "r32-pro": 14296,
-  "r57-pro": 19923,
-};
+import { MINI_PELLES_PRIX } from "@/data/pricing";
+import { calculerPrix, formatEur } from "@/utils/calculPrix";
 
 // Images mapping (main images)
 const productImages: Record<string, string> = {
@@ -53,7 +48,6 @@ const PRODUCTS_DATA: Record<string, any> = {
   "r18-pro": {
     id: "r18-pro",
     name: "R18 PRO",
-    price: "12 400,00 EUR HT",
     description: "Le Rippa R18 PRO est une mini-pelle puissante et polyvalente, idéale pour les projets de construction exigeants, l’aménagement paysager et les travaux de terrassement de précision. Grâce à sa conception robuste et à son moteur diesel Kubota performant, elle allie efficacité, précision et fiabilité professionnelle. Avec un poids opérationnel de 1.806 kg et une profondeur de creusement de 2,42 mètres, la R18 PRO est parfaitement équipée pour les utilisations intensives et offre des performances constantes même sous forte charge.",
     pdf: "/documents/r18_pro_fiche_technique.pdf",
     specs: {
@@ -73,7 +67,6 @@ const PRODUCTS_DATA: Record<string, any> = {
   "r22-pro": {
     id: "r22-pro",
     name: "R22 PRO",
-    price: "15 795,00 EUR HT",
     description: "Le Rippa R22 PRO est une mini-pelle puissante et polyvalente, idéale pour les projets de construction et d’aménagement paysager de taille moyenne à grande. Grâce à sa conception robuste et à son moteur diesel Kubota performant, elle allie efficacité, précision et fiabilité pour une utilisation professionnelle. Avec un poids opérationnel de 2 371,5 kg, une profondeur de creusement de 2,29 mètres et une force de creusement de 18,4 kN, la R22 PRO exécute sans effort les tâches les plus exigeantes tout en offrant un contrôle optimal à chaque mouvement.",
     pdf: "/documents/r22_pro_fiche_technique.pdf",
     specs: {
@@ -93,7 +86,6 @@ const PRODUCTS_DATA: Record<string, any> = {
   "r32-pro": {
     id: "r32-pro",
     name: "R32 PRO",
-    price: "18 585,00 EUR HT",
     description: "Le Rippa R32 PRO est une mini-pelle professionnelle haute performance, idéale pour les grands projets de construction, les travaux d'excavation profonds et les opérations de terrassement exigeantes. Avec sa combinaison de puissance massive, de contrôle précis et de conception robuste, c'est le choix parfait pour les professionnels qui apprécient l'efficacité et la durabilité. Propulsée par un puissant moteur diesel Kubota, la R32 PRO offre des performances exceptionnelles avec un poids opérationnel de 3 375 kg, une profondeur de creusement de 2,83 mètres et une force de creusement de 27 kN – assurant une productivité maximale pour chaque tâche.",
     pdf: "/documents/r32_pro_fiche_technique.pdf",
     specs: {
@@ -113,7 +105,6 @@ const PRODUCTS_DATA: Record<string, any> = {
   "r57-pro": {
     id: "r57-pro",
     name: "R57 PRO",
-    price: "25 900,00 EUR HT",
     description: "La Rippa R57 PRO est une mini-pelle de 5,7 tonnes conçue pour offrir une puissance et une efficacité maximales. Équipée d'un moteur Kubota V2607 fiable et performant, elle garantit une productivité élevée pour les travaux de construction, de terrassement et d'aménagement paysager les plus exigeants. Avec une profondeur de fouille de près de 3,9 mètres et une cabine confortable climatisée, la R57 PRO est l'outil ultime pour les professionnels.",
     pdf: "/documents/r57_pro_fiche_technique.pdf",
     specs: {
@@ -356,10 +347,12 @@ export default function ProductDetail() {
       setShowAuthModal(true);
       return;
     }
+    const pa = MINI_PELLES_PRIX[product.id] ?? 9538;
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: formatEur(calculerPrix(pa, "user").prixAffiche ?? pa),
+      prixAchat: pa,
       image: productId ? productImages[productId] || "/images/placeholder.jpg" : "/images/placeholder.jpg",
       type: "machine"
     });
@@ -454,7 +447,7 @@ export default function ProductDetail() {
               <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
               <div className="mb-6">
-                <PrixOuDevis prixAchat={PRIX_ACHAT[product.id] ?? 9538} />
+                <PrixOuDevis prixAchat={MINI_PELLES_PRIX[product.id] ?? 9538} />
               </div>
               
               <p className="text-gray-600 mb-8 leading-relaxed">

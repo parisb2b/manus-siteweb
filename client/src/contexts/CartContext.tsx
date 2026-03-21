@@ -4,6 +4,8 @@ export type CartItem = {
   id: string;
   name: string;
   price: string;
+  /** Prix d'achat HT numérique — source unique pour calculerPrix() */
+  prixAchat?: number;
   image: string;
   quantity: number;
   type: "machine" | "accessory" | "solar" | "house";

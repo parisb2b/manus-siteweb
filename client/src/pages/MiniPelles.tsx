@@ -5,22 +5,16 @@ import PrixOuDevis from "@/components/PrixOuDevis";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
 import { usePageContent } from "@/hooks/useSiteContent";
+import { MINI_PELLES_PRIX } from "@/data/pricing";
 
 export default function Home() {
   const { products, loading } = useProducts("Mini-pelles");
   const { page } = usePageContent("minipelles");
 
-  const PRIX_ACHAT: Record<string, number> = {
-    "r18-pro": 9538,
-    "r22-pro": 12150,
-    "r32-pro": 14296,
-    "r57-pro": 19923,
-  };
-
   const proProducts = products.map((p) => ({
     id: p.id,
     name: p.name,
-    priceElement: <PrixOuDevis prixAchat={PRIX_ACHAT[p.id] ?? 9538} />,
+    priceElement: <PrixOuDevis prixAchat={p.price || (MINI_PELLES_PRIX[p.id] ?? 9538)} />,
     image: p.image,
     link: p.link,
   }));
