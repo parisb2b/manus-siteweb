@@ -73,6 +73,22 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 23:28
+COMMIT : 47d4763
+TAG : v4.3-fix-pdf-definitif
+TYPE : fix
+DESCRIPTION : PDF bug définitif — prix espaces cassés + total faux
+CAUSE : formatPrix() utilisait \u202F et \u00A0 (espaces insécables Unicode)
+  que jsPDF ne sait pas rendre → prix concaténés "15 /795,00 €".
+  totalHT utilisait prix_total_calcule Supabase au lieu de recalculer.
+FIX : formatPrix() utilise espaces ASCII standard + toFixed(2).
+  totalHT recalculé depuis lignes.reduce() dans devis et facture.
+FICHIERS :
+  - client/src/features/pdf/lib/pdf-helpers.ts (formatPrix corrigé)
+  - client/src/features/account/tabs/QuotesTab.tsx (totalHT recalculé)
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 22:29
 COMMIT : 645282a
 TAG : v4.0-phases-completes
