@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Settings, Palette, Globe, Type, Upload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { uploadFile } from "@/lib/storage";
 
 export default function AdminSettings() {
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -13,24 +14,12 @@ export default function AdminSettings() {
   const uploadLogo = async (file: File) => {
     setUploadingLogo(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(",")[1];
-        const ext = file.name.split(".").pop() || "png";
-        const filename = `logo_site_${Date.now()}.${ext}`;
-        const res = await fetch("/api/images/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageData: base64, filename, folder: "" }),
-        });
-        const data = await res.json();
-        if (data.path) updateSetting("logo", data.path);
-        setUploadingLogo(false);
-      };
-      reader.readAsDataURL(file);
+      const url = await uploadFile(file, "logos");
+      if (url) updateSetting("logo", url);
     } catch {
-      setUploadingLogo(false);
+      // silent
     }
+    setUploadingLogo(false);
   };
 
   useEffect(() => {

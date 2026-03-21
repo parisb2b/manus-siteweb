@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { uploadFile } from "@/lib/storage";
 import {
   Save, Upload, Image as ImageIcon, Link, Phone, Mail,
   MessageCircle, Youtube, Layout, AlignLeft, Plus, Trash2,
@@ -63,7 +64,7 @@ export default function AdminHeaderFooter() {
   const getSetting = (field: string): string =>
     siteContent?.siteSettings?.[field] ?? "";
 
-  // Upload logo from file
+  // Upload logo via Supabase Storage
   const uploadLogo = async (
     file: File,
     field: string,
@@ -71,26 +72,12 @@ export default function AdminHeaderFooter() {
   ) => {
     setUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(",")[1];
-        const ext = file.name.split(".").pop() || "png";
-        const filename = `logo_${field}_${Date.now()}.${ext}`;
-        const res = await fetch("/api/images/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageData: base64, filename, folder: "" }),
-        });
-        const data = await res.json();
-        if (data.path) {
-          updateSetting(field, data.path);
-        }
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const url = await uploadFile(file, "logos");
+      if (url) updateSetting(field, url);
     } catch {
-      setUploading(false);
+      // silent
     }
+    setUploading(false);
   };
 
   // Footer links
