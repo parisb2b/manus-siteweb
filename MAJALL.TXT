@@ -73,6 +73,86 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 22:29
+COMMIT : 645282a
+TAG : v4.0-phases-completes
+TYPE : chore
+DESCRIPTION : Phase 6 — Nettoyage final
+────────────────────────────────────────────────────────────────
+FICHIERS SUPPRIMÉS :
+  - client/src/pages/admin/AdminNavigation.tsx (composant orphelin)
+  - client/src/lib/api.ts (deprecated, 0 imports)
+
+FICHIERS MODIFIÉS :
+  - client/src/pages/AuthCallback.tsx (console.error supprimé)
+  - client/src/contexts/AuthContext.tsx (2 console.warn supprimés)
+  - client/src/contexts/CartContext.tsx (console.error supprimé)
+  - client/src/components/Map.tsx (2 console.error supprimés)
+  - client/src/lib/storage.ts (2 console.error supprimés)
+  - client/src/pages/ProductDetail.tsx (5 imports inutilisés supprimés)
+  - client/src/pages/ModularStandard.tsx (4 imports + formatPrice supprimés)
+  - client/src/pages/ModularPremium.tsx (formatPrice supprimé)
+  - client/src/pages/CampingCarDeluxe.tsx (5 imports + formatPrice supprimés)
+  - client/src/pages/Accessories.tsx (import Check supprimé)
+
+BILAN : 8 console.* prod supprimés, 13 imports inutilisés, 3 formatPrice(),
+        2 fichiers orphelins, -444 lignes nettes
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 22:29
+COMMIT : 8637048
+TYPE : feat
+DESCRIPTION : Phase 5 — PDF persistence Supabase Storage
+────────────────────────────────────────────────────────────────
+FICHIERS MODIFIÉS :
+  - client/src/lib/storage.ts (ajout uploadPdfBlob)
+  - client/src/features/account/tabs/QuotesTab.tsx
+
+DÉTAILS :
+  - uploadPdfBlob(blob, folder, filename) pour PDF devis/factures
+  - QuotesTab : après génération PDF → upload media/devis/ ou media/factures/
+  - Sauvegarde URL dans quotes.pdf_url / quotes.facture_url
+  - Si URL existe → téléchargement direct sans régénération
+  - Fallback : régénération à la volée si URL null
+
+PRÉ-REQUIS SQL :
+  ALTER TABLE quotes ADD COLUMN IF NOT EXISTS pdf_url TEXT;
+  ALTER TABLE quotes ADD COLUMN IF NOT EXISTS facture_url TEXT;
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 22:29
+COMMIT : da051a7
+TYPE : refactor
+DESCRIPTION : Phase 2 — Prix via calculPrix(), source unique pricing.ts
+────────────────────────────────────────────────────────────────
+FICHIERS CRÉÉS :
+  - client/src/data/pricing.ts (source centralisée prixAchat)
+
+FICHIERS MODIFIÉS :
+  - client/src/contexts/CartContext.tsx (ajout prixAchat? optionnel)
+  - client/src/pages/ProductDetail.tsx (suppression 4 prix display strings)
+  - client/src/pages/MiniPelles.tsx (import pricing.ts + Supabase fallback)
+  - client/src/pages/Accessories.tsx (52 prix strings supprimés)
+  - client/src/pages/Solar.tsx (import SOLAIRE_PRIX)
+  - client/src/pages/ModularStandard.tsx (import MODULAR_STANDARD_SIZES)
+  - client/src/pages/ModularPremium.tsx (import MODULAR_PREMIUM_SIZES)
+  - client/src/pages/CampingCarDeluxe.tsx (import CAMPING_CAR_PRIX_ACHAT)
+  - client/src/pages/Cart.tsx (utilise prixAchat quand disponible)
+
+DÉTAILS :
+  - pricing.ts contient : MINI_PELLES_PRIX, SOLAIRE_PRIX,
+    MODULAR_STANDARD_SIZES, MODULAR_PREMIUM_SIZES, MODULAR_OPTIONS_PRIX,
+    CAMPING_CAR_PRIX_ACHAT, CAMPING_CAR_SHIPPING
+  - Tous les prix display hardcodés supprimés (52 strings "XXX €")
+  - CartItem enrichi avec prixAchat optionnel (rétrocompatible)
+  - Cart.tsx : getItemPrice() utilise prixAchat au lieu de parsePrice()
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 19:19
 COMMIT : 301f512
 TYPE : refactor
