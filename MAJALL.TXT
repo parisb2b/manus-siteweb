@@ -53,8 +53,8 @@ Chemins clés :
 
 Tables Supabase :
   profiles  : id, email, role, first_name, last_name, phone,
-              adresse_facturation, ville_facturation, code_postal_facturation, pays_facturation,
-              adresse_livraison, ville_livraison, code_postal_livraison, pays_livraison,
+              adresse_facturation, ville_facturation, cp_facturation, pays_facturation,
+              adresse_livraison, ville_livraison, cp_livraison, pays_livraison,
               adresse_livraison_identique (boolean)
   quotes    : id, user_id, numero_devis, produits (JSONB), prix_total_calcule,
               prix_negocie, statut, facture_generee, signe_le,
@@ -362,11 +362,11 @@ CORRECTIONS DÉTAILLÉES :
    COLONNES Supabase utilisées (table profiles) :
      adresse_facturation    (text)
      ville_facturation      (text)
-     code_postal_facturation (text)
+     cp_facturation (text)
      pays_facturation       (text)
      adresse_livraison      (text)
      ville_livraison        (text)
-     code_postal_livraison  (text)
+     cp_livraison  (text)
      pays_livraison         (text)
      adresse_livraison_identique (boolean)
 
@@ -672,11 +672,11 @@ FICHIER : client/src/pages/MonCompte.tsx lignes 140-256
 COLONNES SUPABASE (table profiles) :
   adresse_facturation        (text, nullable)
   ville_facturation          (text, nullable)
-  code_postal_facturation    (text, nullable)
+  cp_facturation    (text, nullable)
   pays_facturation           (text, nullable, défaut "France")
   adresse_livraison          (text, nullable)
   ville_livraison            (text, nullable)
-  code_postal_livraison      (text, nullable)
+  cp_livraison      (text, nullable)
   pays_livraison             (text, nullable, défaut "France")
   adresse_livraison_identique (boolean, défaut true)
 
@@ -684,11 +684,11 @@ SQL À EXÉCUTER DANS SUPABASE (si colonnes absentes) :
   ALTER TABLE profiles
     ADD COLUMN IF NOT EXISTS adresse_facturation text,
     ADD COLUMN IF NOT EXISTS ville_facturation text,
-    ADD COLUMN IF NOT EXISTS code_postal_facturation text,
+    ADD COLUMN IF NOT EXISTS cp_facturation text,
     ADD COLUMN IF NOT EXISTS pays_facturation text DEFAULT 'France',
     ADD COLUMN IF NOT EXISTS adresse_livraison text,
     ADD COLUMN IF NOT EXISTS ville_livraison text,
-    ADD COLUMN IF NOT EXISTS code_postal_livraison text,
+    ADD COLUMN IF NOT EXISTS cp_livraison text,
     ADD COLUMN IF NOT EXISTS pays_livraison text DEFAULT 'France',
     ADD COLUMN IF NOT EXISTS adresse_livraison_identique boolean DEFAULT true;
 
@@ -984,8 +984,8 @@ BUG 2 — PDF une ligne par produit
    FICHIER : QuotesTab.tsx
 
 BUG 3 — Adresses facturation/livraison colonnes SQL
-   CAUSE : Le code utilisait code_postal_facturation et
-           code_postal_livraison mais les colonnes SQL Supabase
+   CAUSE : Le code utilisait cp_facturation et
+           cp_livraison mais les colonnes SQL Supabase
            sont cp_facturation et cp_livraison
    FIX : Renommage dans 3 fichiers :
          - ProfileTab.tsx (lecture, sauvegarde, suppression)
