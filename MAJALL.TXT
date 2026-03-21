@@ -73,6 +73,24 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 23:35
+COMMIT : 011f9a3
+TAG : v4.4-version-stable-20260321
+TYPE : release
+DESCRIPTION : Audit complet + certification version stable
+AUDIT :
+  - Build pnpm : ✅ 0 erreur
+  - TypeScript tsc --noEmit : ✅ 0 erreur
+  - console.warn/error : 1 légitime (supabase.ts — config warning)
+  - TODO/FIXME/HACK/@ts-ignore : 0
+  - PDF formatPrix : ✅ espaces ASCII (corrigé v4.3)
+  - AdminUsers query : ✅ profiles.select('*') correct
+  - Bouton rouge visiteur : ✅ #EF4444 sur toutes les pages
+  - vercel.json : ✅ outputDirectory=client/dist
+AUCUNE CORRECTION NÉCESSAIRE — code propre et stable
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 23:28
 COMMIT : 47d4763
 TAG : v4.3-fix-pdf-definitif
