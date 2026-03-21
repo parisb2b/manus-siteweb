@@ -9,6 +9,20 @@ RÈGLE : Ne jamais supprimer les entrées passées.
 ================================================================================
 
 ---
+DATE : 2026-03-21 10:11
+COMMIT : f687124
+TYPE : fix
+DESCRIPTION : Vérification MAJALL complète — 3 écarts corrigés : route /products/:id.html + header liens .html + badge devis refresh immédiat
+FICHIERS MODIFIÉS : client/src/App.tsx, client/src/components/Header.tsx, client/src/pages/MonCompte.tsx
+DÉTAIL :
+  - App.tsx : route /products/:id.html ajoutée (URLs fiches produit stables)
+  - Header : /mon-compte → /mon-compte.html, /cart → /panier.html
+  - MonCompte devis : setExpandedDevisId(null) après Valider/Refuser → badge statut mis à jour immédiatement
+ERREUR CORRIGÉE : badge devis ne se mettait pas à jour visuellement après Valider/Refuser
+PUBLIÉ SUR : 97import.com ✅
+---
+
+---
 DATE : 2026-03-21 09:03
 COMMIT : db23c16
 TYPE : feat
