@@ -998,6 +998,31 @@ BUG 3 — Adresses facturation/livraison colonnes SQL
 
 PUBLIÉ : 97import.com ✅
 
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 23:06
+COMMIT : f086093 (tag: v4.2-corrections)
+TYPE : fix + audit
+DESCRIPTION : Audit complet + AdminUsers erreur détaillée
+────────────────────────────────────────────────────────────────
+AUDIT COMPLET :
+  ✅ 37 routes App.tsx — tous composants importés existent
+  ✅ AdminNavigation.tsx supprimé, aucune référence dans AdminLayout
+  ✅ QuotesTab badges — mise à jour locale immédiate (accepte/refuse)
+  ✅ PDF produits — JSON.parse fallback si string JSON
+  ✅ ProfileTab adresses — facturation + livraison avec checkbox
+  ✅ PrixOuDevis bouton rouge — bg-[#EF4444] hover:bg-[#DC2626] visiteurs
+
+CORRECTION :
+  AdminUsers.tsx — message d'erreur détaillé si 0 profils ou erreur Supabase
+  + bouton Réessayer dans l'encart d'erreur
+  CAUSE : comptes Google sans profil → 0 résultats → pas de message explicatif
+  FIX : gestion d'erreur complète avec { data, error } + messages contextuels
+
+FICHIERS MODIFIÉS :
+  - client/src/pages/admin/AdminUsers.tsx
+
+PUBLIÉ : 97import.com ✅
+
 ================================================================
 FIN DU JOURNAL — NE PAS SUPPRIMER LES ENTRÉES PASSÉES
 ================================================================
