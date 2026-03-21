@@ -52,15 +52,18 @@ async function getNextDevisNum(): Promise<string> {
 export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: DevisFormProps) {
   const { user, profile, role } = useAuth();
 
+  // Pré-remplir depuis le profil : informations personnelles + adresse facturation si disponible
   const [form, setForm] = useState({
     nom: profile
       ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
       : (user?.user_metadata?.full_name as string) ?? "",
     email: profile?.email ?? user?.email ?? "",
     telephone: profile?.phone ?? (user?.user_metadata?.phone as string) ?? "",
-    adresse: "",
-    ville: "",
-    pays: "France",
+    adresse: profile?.adresse_facturation ?? "",
+    ville: profile?.adresse_facturation
+      ? `${profile.code_postal_facturation ?? ""} ${profile.ville_facturation ?? ""}`.trim()
+      : "",
+    pays: profile?.pays_facturation ?? "France",
     message: "",
   });
   const [loading, setLoading] = useState(false);
@@ -160,12 +163,21 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
         const { error: dbErr } = await supabase.from("quotes").insert(payload);
         if (dbErr) throw new Error(dbErr.message);
 
-        // Mettre à jour l'adresse dans le profil si vide
+        // Sauvegarder téléphone si manquant
         if (user?.id && profile && !profile.phone && form.telephone) {
-          await supabase
-            .from("profiles")
-            .update({ phone: form.telephone })
-            .eq("id", user.id);
+          await supabase.from("profiles").update({ phone: form.telephone }).eq("id", user.id);
+        }
+        // Sauvegarder adresse facturation si non encore renseignée dans le profil
+        if (user?.id && profile && !profile.adresse_facturation && form.adresse) {
+          const villeParts = form.ville.trim().split(/\s+/);
+          const cp = villeParts.length > 1 && /^\d{5}/.test(villeParts[0]) ? villeParts[0] : "";
+          const villeOnly = cp ? villeParts.slice(1).join(" ") : form.ville;
+          await supabase.from("profiles").update({
+            adresse_facturation: form.adresse,
+            ville_facturation: villeOnly,
+            code_postal_facturation: cp,
+            pays_facturation: form.pays,
+          }).eq("id", user.id);
         }
       }
 

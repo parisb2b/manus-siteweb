@@ -125,13 +125,72 @@ export default function MonCompte() {
   const [infoSuccess, setInfoSuccess] = useState(false);
   const [infoError, setInfoError] = useState<string | null>(null);
 
+  // Adresse facturation
+  const [adresseFactEditing, setAdresseFactEditing] = useState(false);
+  const [adresseFact, setAdresseFact] = useState("");
+  const [villeFact, setVilleFact] = useState("");
+  const [cpFact, setCpFact] = useState("");
+  const [paysFact, setPaysFact] = useState("France");
+  const [adresseFactLoading, setAdresseFactLoading] = useState(false);
+  const [adresseFactSuccess, setAdresseFactSuccess] = useState(false);
+
+  // Adresse livraison
+  const [livIdent, setLivIdent] = useState(true);
+  const [adresseLivEditing, setAdresseLivEditing] = useState(false);
+  const [adresseLiv, setAdresseLiv] = useState("");
+  const [villeLiv, setVilleLiv] = useState("");
+  const [cpLiv, setCpLiv] = useState("");
+  const [paysLiv, setPaysLiv] = useState("France");
+  const [adresseLivLoading, setAdresseLivLoading] = useState(false);
+  const [adresseLivSuccess, setAdresseLivSuccess] = useState(false);
+
   useEffect(() => {
     if (profile) {
       setFirstName(profile.first_name || "");
       setLastName(profile.last_name || "");
       setPhone(profile.phone || "");
+      setAdresseFact(profile.adresse_facturation || "");
+      setVilleFact(profile.ville_facturation || "");
+      setCpFact(profile.code_postal_facturation || "");
+      setPaysFact(profile.pays_facturation || "France");
+      setLivIdent(profile.adresse_livraison_identique ?? true);
+      setAdresseLiv(profile.adresse_livraison || "");
+      setVilleLiv(profile.ville_livraison || "");
+      setCpLiv(profile.code_postal_livraison || "");
+      setPaysLiv(profile.pays_livraison || "France");
     }
   }, [profile]);
+
+  const handleSaveAdresseFact = async () => {
+    if (!supabase || !user) return;
+    setAdresseFactLoading(true);
+    await supabase.from("profiles").update({
+      adresse_facturation: adresseFact,
+      ville_facturation: villeFact,
+      code_postal_facturation: cpFact,
+      pays_facturation: paysFact,
+    }).eq("id", user.id);
+    setAdresseFactLoading(false);
+    setAdresseFactSuccess(true);
+    setAdresseFactEditing(false);
+    setTimeout(() => setAdresseFactSuccess(false), 3000);
+  };
+
+  const handleSaveAdresseLiv = async () => {
+    if (!supabase || !user) return;
+    setAdresseLivLoading(true);
+    await supabase.from("profiles").update({
+      adresse_livraison_identique: livIdent,
+      adresse_livraison: livIdent ? adresseFact : adresseLiv,
+      ville_livraison: livIdent ? villeFact : villeLiv,
+      code_postal_livraison: livIdent ? cpFact : cpLiv,
+      pays_livraison: livIdent ? paysFact : paysLiv,
+    }).eq("id", user.id);
+    setAdresseLivLoading(false);
+    setAdresseLivSuccess(true);
+    setAdresseLivEditing(false);
+    setTimeout(() => setAdresseLivSuccess(false), 3000);
+  };
 
   const handleSaveInfos = async () => {
     if (!supabase || !user) return;
@@ -161,33 +220,25 @@ export default function MonCompte() {
   useEffect(() => {
     if (activeTab !== "commandes" || !supabase || !user) return;
     setCommandesLoading(true);
-
-    const timer = setTimeout(() => {
-      setCommandesLoading(false);
-    }, 5000);
-
+    // Commandes = devis acceptés (statut "accepte")
     supabase
-      .from("orders")
-      .select("*")
+      .from("quotes")
+      .select("id,created_at,numero_devis,produits,prix_negocie,prix_total_calcule,statut,facture_generee,adresse_client,ville_client")
       .eq("user_id", user.id)
+      .eq("statut", "accepte")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        clearTimeout(timer);
-        if (error) {
-          console.error("Orders error:", error);
-          setCommandes([]);
-        } else {
-          setCommandes((data as Commande[]) || []);
-        }
+        if (error) { console.error("Commandes error:", error); setCommandes([]); }
+        else { setCommandes((data as any[]) || []); }
         setCommandesLoading(false);
       });
-
-    return () => clearTimeout(timer);
   }, [activeTab, user]);
 
   // ── Onglet 3 : Mes devis ─────────────────────────────────────────
   const [devis, setDevis] = useState<Devis[]>([]);
   const [devisLoading, setDevisLoading] = useState(false);
+  const [devisActionId, setDevisActionId] = useState<string | null>(null);
+  const [devisActionMsg, setDevisActionMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "devis" || !supabase || !user) return;
@@ -235,6 +286,49 @@ export default function MonCompte() {
           });
       });
   }, [activeTab, user]);
+
+  // ── Valider / Refuser un devis ───────────────────────────────────
+  const refetchDevis = () => {
+    if (!supabase || !user) return;
+    supabase
+      .from("quotes")
+      .select("id,created_at,numero_devis,produits,prix_total_calcule,prix_negocie,statut,facture_generee,adresse_client,ville_client")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { setDevis((data as Devis[]) || []); });
+  };
+
+  const handleValiderDevis = async (id: string) => {
+    if (!supabase) return;
+    setDevisActionId(id);
+    const { error } = await supabase
+      .from("quotes")
+      .update({ statut: "accepte", signe_le: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", user!.id);
+    setDevisActionId(null);
+    if (!error) {
+      setDevisActionMsg("Votre devis a été validé. Nous vous contactons sous 48h.");
+      refetchDevis();
+      setTimeout(() => setDevisActionMsg(null), 5000);
+    }
+  };
+
+  const handleRefuserDevis = async (id: string) => {
+    if (!supabase) return;
+    setDevisActionId(id);
+    const { error } = await supabase
+      .from("quotes")
+      .update({ statut: "refuse" })
+      .eq("id", id)
+      .eq("user_id", user!.id);
+    setDevisActionId(null);
+    if (!error) {
+      setDevisActionMsg("Devis refusé. N'hésitez pas à nous recontacter.");
+      refetchDevis();
+      setTimeout(() => setDevisActionMsg(null), 4000);
+    }
+  };
 
   // ── Onglet 4 : Sécurité ──────────────────────────────────────────
   const [newPassword, setNewPassword] = useState("");
@@ -594,13 +688,117 @@ export default function MonCompte() {
                     </Button>
                   </div>
                 )}
+
+                {/* ── Section Adresses ── */}
+                <div className="mt-10">
+                  <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <span>📍</span> Mes adresses
+                  </h3>
+
+                  {/* Adresse de facturation */}
+                  <div className="border border-gray-100 rounded-xl p-5 mb-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="font-semibold text-gray-800 text-sm">Adresse de facturation</p>
+                      {!adresseFactEditing && (
+                        <button onClick={() => setAdresseFactEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
+                          Modifier
+                        </button>
+                      )}
+                    </div>
+                    {adresseFactSuccess && (
+                      <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3">
+                        <CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.
+                      </div>
+                    )}
+                    {adresseFactEditing ? (
+                      <div className="space-y-3">
+                        <input type="text" value={adresseFact} onChange={e => setAdresseFact(e.target.value)} placeholder="Rue et numéro" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input type="text" value={cpFact} onChange={e => setCpFact(e.target.value)} placeholder="Code postal" className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                          <input type="text" value={villeFact} onChange={e => setVilleFact(e.target.value)} placeholder="Ville" className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                        </div>
+                        <select value={paysFact} onChange={e => setPaysFact(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none bg-white">
+                          {["France","Martinique","Guadeloupe","Guyane","La Réunion","Mayotte","Nouvelle-Calédonie","Polynésie française","Saint-Martin","Saint-Barthélemy","Belgique","Suisse","Canada","Autre"].map(p => <option key={p}>{p}</option>)}
+                        </select>
+                        <div className="flex gap-3">
+                          <button onClick={handleSaveAdresseFact} disabled={adresseFactLoading} className="px-4 py-2 bg-[#4A90D9] text-white text-xs font-bold rounded-lg hover:bg-[#3a7bc8] disabled:opacity-50">
+                            {adresseFactLoading ? "Sauvegarde…" : "Enregistrer"}
+                          </button>
+                          <button onClick={() => setAdresseFactEditing(false)} className="px-4 py-2 border border-gray-200 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Annuler</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        {adresseFact ? (
+                          <p>{adresseFact}{cpFact || villeFact ? `, ${cpFact} ${villeFact}`.trim() : ""}{paysFact && paysFact !== "France" ? `, ${paysFact}` : ""}</p>
+                        ) : (
+                          <p className="text-gray-400 italic">Aucune adresse enregistrée</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Adresse de livraison */}
+                  <div className="border border-gray-100 rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="font-semibold text-gray-800 text-sm">Adresse de livraison</p>
+                      {!adresseLivEditing && (
+                        <button onClick={() => setAdresseLivEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
+                          Modifier
+                        </button>
+                      )}
+                    </div>
+                    {adresseLivSuccess && (
+                      <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3">
+                        <CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.
+                      </div>
+                    )}
+                    {adresseLivEditing ? (
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                          <input type="checkbox" checked={livIdent} onChange={e => setLivIdent(e.target.checked)} className="rounded" />
+                          Identique à l'adresse de facturation
+                        </label>
+                        {!livIdent && (
+                          <>
+                            <input type="text" value={adresseLiv} onChange={e => setAdresseLiv(e.target.value)} placeholder="Rue et numéro" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                            <div className="grid grid-cols-2 gap-3">
+                              <input type="text" value={cpLiv} onChange={e => setCpLiv(e.target.value)} placeholder="Code postal" className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                              <input type="text" value={villeLiv} onChange={e => setVilleLiv(e.target.value)} placeholder="Ville" className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
+                            </div>
+                            <select value={paysLiv} onChange={e => setPaysLiv(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none bg-white">
+                              {["France","Martinique","Guadeloupe","Guyane","La Réunion","Mayotte","Nouvelle-Calédonie","Polynésie française","Saint-Martin","Saint-Barthélemy","Belgique","Suisse","Canada","Autre"].map(p => <option key={p}>{p}</option>)}
+                            </select>
+                          </>
+                        )}
+                        <div className="flex gap-3">
+                          <button onClick={handleSaveAdresseLiv} disabled={adresseLivLoading} className="px-4 py-2 bg-[#4A90D9] text-white text-xs font-bold rounded-lg hover:bg-[#3a7bc8] disabled:opacity-50">
+                            {adresseLivLoading ? "Sauvegarde…" : "Enregistrer"}
+                          </button>
+                          <button onClick={() => setAdresseLivEditing(false)} className="px-4 py-2 border border-gray-200 text-gray-600 text-xs rounded-lg hover:bg-gray-50">Annuler</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        {livIdent ? (
+                          <p className="text-gray-400 italic">Identique à l'adresse de facturation</p>
+                        ) : adresseLiv ? (
+                          <p>{adresseLiv}{cpLiv || villeLiv ? `, ${cpLiv} ${villeLiv}`.trim() : ""}{paysLiv && paysLiv !== "France" ? `, ${paysLiv}` : ""}</p>
+                        ) : (
+                          <p className="text-gray-400 italic">Aucune adresse enregistrée</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* ── Onglet 2 : Historique commandes ── */}
+            {/* ── Onglet 2 : Mes commandes (devis acceptés) ── */}
             {activeTab === "commandes" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Mes commandes</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Mes commandes</h2>
+                <p className="text-sm text-gray-400 mb-8">Devis validés — en cours de préparation.</p>
                 {commandesLoading ? (
                   <div className="flex justify-center py-16">
                     <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" />
@@ -608,49 +806,54 @@ export default function MonCompte() {
                 ) : commandes.length === 0 ? (
                   <div className="text-center py-16">
                     <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 font-medium">Aucune commande pour le moment</p>
+                    <p className="text-gray-500 font-medium">Aucune commande confirmée pour le moment</p>
                     <p className="text-gray-400 text-sm mt-1">
-                      Vos futures commandes apparaîtront ici.
+                      Vos devis validés apparaîtront ici.
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-left border-b border-gray-100">
-                          <th className="pb-3 font-semibold text-gray-600">Date</th>
-                          <th className="pb-3 font-semibold text-gray-600">Produit</th>
-                          <th className="pb-3 font-semibold text-gray-600">Montant</th>
-                          <th className="pb-3 font-semibold text-gray-600">Statut</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {commandes.map((cmd) => (
-                          <tr key={cmd.id} className="border-b border-gray-50 hover:bg-gray-50">
-                            <td className="py-4 text-gray-600">
-                              {new Date(cmd.created_at).toLocaleDateString("fr-FR")}
-                            </td>
-                            <td className="py-4 text-gray-900 font-medium">
-                              {cmd.product_name || "—"}
-                            </td>
-                            <td className="py-4 text-gray-900">
-                              {cmd.amount != null ? `${cmd.amount} €` : "—"}
-                            </td>
-                            <td className="py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                cmd.status === "completed"
-                                  ? "bg-green-100 text-green-700"
-                                  : cmd.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}>
-                                {cmd.status || "—"}
+                  <div className="space-y-4">
+                    {commandes.map((cmd: any) => (
+                      <div key={cmd.id} className="border border-emerald-100 bg-emerald-50/30 rounded-xl p-5">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="font-bold text-gray-900 text-sm">
+                                {cmd.numero_devis || `#${cmd.id.slice(0, 8).toUpperCase()}`}
                               </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                Confirmé
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-2">
+                              {new Date(cmd.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                            </p>
+                            {Array.isArray(cmd.produits) && cmd.produits.length > 0 && (
+                              <ul className="text-xs text-gray-500 space-y-0.5">
+                                {cmd.produits.slice(0, 3).map((p: any, i: number) => (
+                                  <li key={i}>• {p.nom || p.name || "—"}</li>
+                                ))}
+                                {cmd.produits.length > 3 && (
+                                  <li className="text-gray-400">+{cmd.produits.length - 3} autre(s)</li>
+                                )}
+                              </ul>
+                            )}
+                          </div>
+                          <div className="text-right flex flex-col items-end gap-2">
+                            {(cmd.prix_negocie ?? cmd.prix_total_calcule) != null && (
+                              <p className="font-bold text-emerald-600 text-base">
+                                {formatEur(cmd.prix_negocie ?? cmd.prix_total_calcule ?? 0)}
+                              </p>
+                            )}
+                            {cmd.facture_generee && (
+                              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                                <Download className="h-3.5 w-3.5" /> Facture disponible dans "Mes devis"
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -659,7 +862,12 @@ export default function MonCompte() {
             {/* ── Onglet 3 : Mes devis ── */}
             {activeTab === "devis" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Mes devis</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Mes devis</h2>
+                {devisActionMsg && (
+                  <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-700 text-sm mb-4">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" /> {devisActionMsg}
+                  </div>
+                )}
                 {devisLoading ? (
                   <div className="flex justify-center py-16">
                     <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" />
@@ -694,12 +902,19 @@ export default function MonCompte() {
                         const today = new Date(d.created_at).toLocaleDateString("fr-FR", {
                           day: "2-digit", month: "long", year: "numeric",
                         });
-                        const lignes = (d.produits || []).map((p: any) => ({
-                          nom: p.nom || p.name || p.id,
-                          prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
-                          quantite: p.quantite ?? 1,
-                          total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
-                        }));
+                        // BUG 1 FIX: s'assurer que produits est bien un Array (pas une string JSON)
+                        const produitsArr: any[] = Array.isArray(d.produits) ? d.produits : [];
+                        const lignes = produitsArr.map((p: any) => {
+                          const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
+                          const qty = p.quantite ?? 1;
+                          return {
+                            nom: String(p.nom || p.name || p.id || "—"),
+                            description: p.description || "",
+                            prixUnitaire: pu,
+                            quantite: qty,
+                            total: Math.round(pu * qty),
+                          };
+                        });
                         const devisData: DevisData = {
                           numeroDevis: d.numero_devis || d.id.slice(0, 8).toUpperCase(),
                           date: today,
@@ -730,12 +945,17 @@ export default function MonCompte() {
                         const dateDevis = new Date(d.created_at).toLocaleDateString("fr-FR", {
                           day: "2-digit", month: "long", year: "numeric",
                         });
-                        const lignes = (d.produits || []).map((p: any) => ({
-                          nom: p.nom || p.name || p.id,
-                          prixUnitaire: p.prixAffiche ?? 0,
-                          quantite: p.quantite ?? 1,
-                          total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
-                        }));
+                        const produitsArr2: any[] = Array.isArray(d.produits) ? d.produits : [];
+                        const lignes = produitsArr2.map((p: any) => {
+                          const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
+                          const qty = p.quantite ?? 1;
+                          return {
+                            nom: String(p.nom || p.name || p.id || "—"),
+                            prixUnitaire: pu,
+                            quantite: qty,
+                            total: Math.round(pu * qty),
+                          };
+                        });
                         const factureNum = (d.numero_devis || "D00001").replace("D", "F");
                         const factureData: FactureData = {
                           numeroFacture: factureNum,
@@ -809,6 +1029,31 @@ export default function MonCompte() {
                               )}
                             </div>
                           </div>
+
+                          {/* Boutons Valider / Refuser */}
+                          {["nouveau", "en_cours", "negociation"].includes(d.statut) && (
+                            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                              <button
+                                onClick={() => handleValiderDevis(d.id)}
+                                disabled={devisActionId === d.id}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
+                              >
+                                {devisActionId === d.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                )}
+                                Valider ce devis
+                              </button>
+                              <button
+                                onClick={() => handleRefuserDevis(d.id)}
+                                disabled={devisActionId === d.id}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-colors disabled:opacity-50"
+                              >
+                                Refuser
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

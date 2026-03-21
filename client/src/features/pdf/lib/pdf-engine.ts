@@ -197,7 +197,7 @@ export function addProductTable(
       font: "helvetica",
     },
     headStyles: {
-      fillColor: TABLE_HEADER_BG,
+      fillColor: WHITE,          // fond blanc pur — zéro fond coloré (règle absolue)
       textColor: NAVY,
       fontStyle: "bold",
       halign: "center",
@@ -216,7 +216,7 @@ export function addProductTable(
         },
       ])
     ),
-    alternateRowStyles: { fillColor: TABLE_ALT },
+    alternateRowStyles: { fillColor: WHITE },  // lignes blanches uniformes
     tableLineColor: LIGHT_BLUE,
     tableLineWidth: 0.3,
     margin: { left: L, right: L },

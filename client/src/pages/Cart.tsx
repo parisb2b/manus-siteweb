@@ -133,7 +133,7 @@ export default function Cart() {
 
                       <div className="sm:col-span-2 text-center">
                         <span className="sm:hidden text-xs text-gray-500 mr-2">Prix :</span>
-                        <span className="text-sm font-medium text-gray-700">{item.price}</span>
+                        <span className="text-sm font-medium text-gray-700">{formatPrice(parsePrice(item.price))}</span>
                       </div>
 
                       <div className="sm:col-span-2 flex items-center justify-center">
