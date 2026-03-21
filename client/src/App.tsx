@@ -42,6 +42,7 @@ function App() {
       <Route path="/solaire/:slug" component={SolarKitDetail} />
       <Route path="/agricole" component={Agriculture} />
       <Route path="/products/:id" component={ProductDetail} />
+      <Route path="/products/:id.html" component={ProductDetail} />
       <Route path="/accessoires" component={Accessories} />
       <Route path="/cart" component={Cart} />
       <Route path="/terms" component={Terms} />

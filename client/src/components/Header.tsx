@@ -107,7 +107,7 @@ export default function Header() {
                     </div>
                     <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
                   </div>
-                  <Link href="/mon-compte" onClick={() => setShowUserMenu(false)}>
+                  <Link href="/mon-compte.html" onClick={() => setShowUserMenu(false)}>
                     <span className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       <LayoutDashboard className="w-4 h-4 text-[#4A90D9]" />
                       Mon espace
@@ -124,7 +124,7 @@ export default function Header() {
               )}
             </div>
 
-            <Link href="/cart">
+            <Link href="/panier.html">
               <div className="relative cursor-pointer hover:text-[#4A90D9]">
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -167,7 +167,7 @@ export default function Header() {
                 <span className="text-sm font-bold text-[#4A90D9]">
                   {profile?.first_name} {profile?.last_name}
                 </span>
-                <Link href="/mon-compte" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/mon-compte.html" onClick={() => setIsMenuOpen(false)}>
                   <span className="flex items-center gap-2 py-2 text-sm font-bold text-gray-700 hover:text-[#4A90D9]">
                     <LayoutDashboard className="h-4 w-4" />
                     Mon espace
@@ -191,7 +191,7 @@ Se connecter
               </button>
             )}
             <div className="flex items-center space-x-6 text-gray-600">
-              <Link href="/cart" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/panier.html" onClick={() => setIsMenuOpen(false)}>
                 <div className="relative">
                   <ShoppingBag className="h-5 w-5" />
                   {cartCount > 0 && (

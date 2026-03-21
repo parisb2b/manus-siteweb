@@ -352,8 +352,9 @@ export default function MonCompte() {
       .eq("user_id", user!.id);
     setDevisActionId(null);
     if (!error) {
-      setDevisActionMsg("Votre devis a été validé. Nous vous contactons sous 48h.");
+      setExpandedDevisId(null); // ferme le panel → force le re-render avec le nouveau statut
       refetchDevis();
+      setDevisActionMsg("Votre devis a été validé ✅. Nous vous contactons sous 48h.");
       setTimeout(() => setDevisActionMsg(null), 5000);
     }
   };
@@ -368,8 +369,9 @@ export default function MonCompte() {
       .eq("user_id", user!.id);
     setDevisActionId(null);
     if (!error) {
-      setDevisActionMsg("Devis refusé. N'hésitez pas à nous recontacter.");
+      setExpandedDevisId(null); // ferme le panel → badge mis à jour immédiatement
       refetchDevis();
+      setDevisActionMsg("Devis refusé. N'hésitez pas à nous recontacter.");
       setTimeout(() => setDevisActionMsg(null), 4000);
     }
   };
