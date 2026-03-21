@@ -6,11 +6,11 @@
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS adresse_facturation        TEXT,
   ADD COLUMN IF NOT EXISTS ville_facturation          TEXT,
-  ADD COLUMN IF NOT EXISTS code_postal_facturation    TEXT,
+  ADD COLUMN IF NOT EXISTS cp_facturation             TEXT,
   ADD COLUMN IF NOT EXISTS pays_facturation           TEXT DEFAULT 'France',
   ADD COLUMN IF NOT EXISTS adresse_livraison          TEXT,
   ADD COLUMN IF NOT EXISTS ville_livraison            TEXT,
-  ADD COLUMN IF NOT EXISTS code_postal_livraison      TEXT,
+  ADD COLUMN IF NOT EXISTS cp_livraison               TEXT,
   ADD COLUMN IF NOT EXISTS pays_livraison             TEXT DEFAULT 'France',
   ADD COLUMN IF NOT EXISTS adresse_livraison_identique BOOLEAN DEFAULT true;
 
@@ -18,5 +18,5 @@ ALTER TABLE profiles
 SELECT column_name, data_type, column_default
 FROM information_schema.columns
 WHERE table_name = 'profiles'
-  AND column_name LIKE '%facturation%' OR column_name LIKE '%livraison%'
+  AND (column_name LIKE '%facturation%' OR column_name LIKE '%livraison%')
 ORDER BY column_name;

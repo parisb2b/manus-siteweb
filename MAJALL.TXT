@@ -58,7 +58,7 @@ Tables Supabase :
               adresse_livraison_identique (boolean)
   quotes    : id, user_id, numero_devis, produits (JSONB), prix_total_calcule,
               prix_negocie, statut, facture_generee, signe_le,
-              adresse_client, ville_client, created_at
+              adresse_client, ville_client, pdf_url, facture_url, created_at
   partners  : id, user_id, nom, commission_montant, commission_payee, commission_pdf_url
   products  : données catalogue (source unique Supabase)
   site_content : CMS (logo, navigation, bannière, config pages)
@@ -1022,6 +1022,32 @@ FICHIERS MODIFIÉS :
   - client/src/pages/admin/AdminUsers.tsx
 
 PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-21 23:10
+COMMIT : (scripts SQL uniquement)
+TYPE : feat
+DESCRIPTION : Trigger auto-création profil à l'inscription (Google OAuth)
+────────────────────────────────────────────────────────────────
+FICHIERS CRÉÉS :
+  - scripts/auto-create-profile-trigger.sql
+
+FICHIERS MODIFIÉS :
+  - scripts/add-address-columns.sql (renommage code_postal → cp)
+
+SQL À EXÉCUTER DANS SUPABASE :
+  Copier-coller scripts/auto-create-profile-trigger.sql dans SQL Editor
+  Ce script :
+  1. Crée la fonction handle_new_user() → insère dans profiles
+     avec extraction first_name/last_name depuis raw_user_meta_data
+  2. Crée le trigger on_auth_user_created sur auth.users AFTER INSERT
+  3. Synchronise les comptes existants sans profil (rattrapage)
+  4. Requête de vérification
+
+  RÉSULTAT : tout nouveau compte (email ou Google OAuth) aura
+  automatiquement une ligne dans profiles avec role='user'
+
+PUBLIÉ : script SQL prêt, à exécuter manuellement dans Supabase
 
 ================================================================
 FIN DU JOURNAL — NE PAS SUPPRIMER LES ENTRÉES PASSÉES
