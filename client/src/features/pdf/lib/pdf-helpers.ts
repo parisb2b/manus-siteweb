@@ -2,12 +2,13 @@
  * pdf-helpers.ts — Utilitaires partagés pour la génération PDF
  */
 
-/** Formate un nombre en euros sans espaces insécables (compatible jsPDF) */
+/** Formate un nombre en euros — espaces ASCII standards (compatible jsPDF) */
 export function formatPrix(n: number): string {
+  if (n == null || isNaN(n)) return "0,00 \u20AC";
   const abs = Math.abs(n);
-  const entier = Math.floor(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
-  const cents = Math.round((abs % 1) * 100).toString().padStart(2, "0");
-  return (n < 0 ? "-" : "") + entier + "," + cents + "\u00A0\u20AC";
+  const parts = abs.toFixed(2).split(".");
+  const entier = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return (n < 0 ? "-" : "") + entier + "," + parts[1] + " \u20AC";
 }
 
 /** Formate une date ISO en date française */

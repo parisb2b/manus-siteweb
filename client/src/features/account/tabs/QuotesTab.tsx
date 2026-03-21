@@ -135,7 +135,7 @@ export default function QuotesTab({ user, profile, role }: Props) {
         telephone: profile?.phone || undefined,
       },
       produits: lignes,
-      totalHT: d.prix_negocie ?? d.prix_total_calcule ?? 0,
+      totalHT: lignes.reduce((s, l) => s + l.total, 0),
       role: role ?? "user",
     };
     const blob = generateDevisPDF(devisData);
@@ -192,7 +192,7 @@ export default function QuotesTab({ user, profile, role }: Props) {
         telephone: profile?.phone || undefined,
       },
       produits: lignes,
-      totalHT: d.prix_negocie ?? d.prix_total_calcule ?? 0,
+      totalHT: lignes.reduce((s, l) => s + l.total, 0),
     };
     const blob = generateFacturePDF(factureData);
 
