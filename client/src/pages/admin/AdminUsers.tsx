@@ -39,14 +39,29 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, Partial<UserRecord>>>({});
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoadError("Connexion Supabase indisponible.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const { data } = await supabase
+    setLoadError(null);
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .order("created_at", { ascending: false });
-    setUsers((data as UserRecord[]) ?? []);
+    if (error) {
+      setLoadError(`Erreur de chargement : ${error.message} (code ${error.code})`);
+      setUsers([]);
+    } else if (!data || data.length === 0) {
+      setLoadError("Aucun profil trouvé. Vérifiez que la table profiles est accessible et que les RLS policies autorisent la lecture admin.");
+      setUsers([]);
+    } else {
+      setUsers(data as UserRecord[]);
+    }
     setLoading(false);
   };
 
@@ -123,6 +138,14 @@ export default function AdminUsers() {
           ))}
         </div>
       </div>
+
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-700">
+          <p className="font-semibold mb-1">⚠ Problème de chargement</p>
+          <p>{loadError}</p>
+          <button onClick={load} className="mt-2 text-xs font-bold text-red-600 hover:underline">Réessayer</button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-12">
