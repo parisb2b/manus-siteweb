@@ -4,6 +4,7 @@ import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
 import { formatEur } from "@/utils/calculPrix";
 import { supabase } from "@/lib/supabase";
+import { uploadPdfBlob } from "@/lib/storage";
 import type { User } from "@supabase/supabase-js";
 
 interface Props {
@@ -23,6 +24,8 @@ type Devis = {
   facture_generee?: boolean;
   adresse_client?: string;
   ville_client?: string;
+  pdf_url?: string | null;
+  facture_url?: string | null;
 };
 
 const statutColors: Record<string, string> = {
@@ -52,7 +55,7 @@ export default function QuotesTab({ user, profile, role }: Props) {
     if (!supabase) return;
     supabase
       .from("quotes")
-      .select("id,created_at,numero_devis,produits,prix_total_calcule,prix_negocie,statut,facture_generee,adresse_client,ville_client")
+      .select("id,created_at,numero_devis,produits,prix_total_calcule,prix_negocie,statut,facture_generee,adresse_client,ville_client,pdf_url,facture_url")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -97,7 +100,14 @@ export default function QuotesTab({ user, profile, role }: Props) {
     }
   };
 
-  const downloadDevisPdf = (d: Devis) => {
+  const downloadDevisPdf = async (d: Devis) => {
+    // Si le PDF est déjà stocké dans Supabase, télécharger directement
+    if (d.pdf_url) {
+      window.open(d.pdf_url, "_blank");
+      return;
+    }
+
+    // Sinon, régénérer le PDF à la volée
     const today = new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
     const produitsArr: any[] = Array.isArray(d.produits) ? d.produits : [];
     const lignes = produitsArr.map((p: any) => {
@@ -105,8 +115,9 @@ export default function QuotesTab({ user, profile, role }: Props) {
       const qty = p.quantite ?? 1;
       return { nom: String(p.nom || p.name || p.id || "—"), description: p.description || "", prixUnitaire: pu, quantite: qty, total: Math.round(pu * qty) };
     });
+    const numDevis = d.numero_devis || d.id.slice(0, 8).toUpperCase();
     const devisData: DevisData = {
-      numeroDevis: d.numero_devis || d.id.slice(0, 8).toUpperCase(),
+      numeroDevis: numDevis,
       date: today,
       client: {
         nom: profile ? `${profile.first_name} ${profile.last_name}`.trim() : user.email ?? "",
@@ -121,14 +132,31 @@ export default function QuotesTab({ user, profile, role }: Props) {
       role: role ?? "user",
     };
     const blob = generateDevisPDF(devisData);
+
+    // Téléchargement immédiat
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `Devis_${devisData.numeroDevis}.pdf`;
+    a.href = url; a.download = `Devis_${numDevis}.pdf`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
+
+    // Upload asynchrone vers Supabase Storage + sauvegarde URL
+    const pdfUrl = await uploadPdfBlob(blob, "devis", `Devis_${numDevis}`);
+    if (pdfUrl && supabase) {
+      await supabase.from("quotes").update({ pdf_url: pdfUrl }).eq("id", d.id);
+      // Mettre à jour l'état local pour éviter re-génération
+      setDevis(prev => prev.map(x => x.id === d.id ? { ...x, pdf_url: pdfUrl } : x));
+    }
   };
 
-  const downloadFacturePdf = (d: Devis) => {
+  const downloadFacturePdf = async (d: Devis) => {
+    // Si la facture est déjà stockée dans Supabase, télécharger directement
+    if (d.facture_url) {
+      window.open(d.facture_url, "_blank");
+      return;
+    }
+
+    // Sinon, régénérer la facture à la volée
     const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
     const dateDevis = new Date(d.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
     const produitsArr: any[] = Array.isArray(d.produits) ? d.produits : [];
@@ -155,11 +183,20 @@ export default function QuotesTab({ user, profile, role }: Props) {
       totalHT: d.prix_negocie ?? d.prix_total_calcule ?? 0,
     };
     const blob = generateFacturePDF(factureData);
+
+    // Téléchargement immédiat
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = `Facture_${factureNum}.pdf`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
+
+    // Upload asynchrone vers Supabase Storage + sauvegarde URL
+    const factureUrl = await uploadPdfBlob(blob, "factures", `Facture_${factureNum}`);
+    if (factureUrl && supabase) {
+      await supabase.from("quotes").update({ facture_url: factureUrl }).eq("id", d.id);
+      setDevis(prev => prev.map(x => x.id === d.id ? { ...x, facture_url: factureUrl } : x));
+    }
   };
 
   return (
