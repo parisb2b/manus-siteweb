@@ -1,225 +1,198 @@
-MAJALL.TXT — JOURNAL DES MODIFICATIONS
-Projet : 97import.com
-Dépôt  : https://github.com/parisb2b/manus-siteweb
-Déploiement : Vercel — SPA React 19 + Vite 7 + TypeScript + Supabase + wouter
-================================================================================
-RÈGLE : Ne jamais supprimer les entrées passées.
-        Consulter ce fichier AVANT toute modification.
-        Mettre à jour APRÈS chaque commit publié.
-================================================================================
+================================================================
+MAJALL.TXT — Projet 97import.com
+Référence maître consolidée — Journal + Cahier des charges
+Dernière mise à jour : 2026-03-21
+================================================================
+RÈGLES PERMANENTES CLAUDE CODE :
+- Toujours : git fetch origin && git reset --hard origin/main
+- Toujours : git tag backup-$(date +%Y%m%d-%H%M) && git push origin --tags
+- Toujours publier immédiatement après chaque modification validée
+- Toujours consulter ce fichier avant toute modification
+================================================================
 
----
+================================================
+HISTORIQUE DES COMMITS
+================================================
+
 DATE : 2026-03-21 10:11
-COMMIT : f687124
+COMMIT : 58ae50c / f687124
 TYPE : fix
-DESCRIPTION : Vérification MAJALL complète — 3 écarts corrigés : route /products/:id.html + header liens .html + badge devis refresh immédiat
-FICHIERS MODIFIÉS : client/src/App.tsx, client/src/components/Header.tsx, client/src/pages/MonCompte.tsx
+DESCRIPTION : Vérification MAJALL v5 — 3 écarts corrigés
+FICHIERS : App.tsx, Header.tsx, MonCompte.tsx
 DÉTAIL :
-  - App.tsx : route /products/:id.html ajoutée (URLs fiches produit stables)
+  - Route /products/:id.html ajoutée
   - Header : /mon-compte → /mon-compte.html, /cart → /panier.html
-  - MonCompte devis : setExpandedDevisId(null) après Valider/Refuser → badge statut mis à jour immédiatement
-ERREUR CORRIGÉE : badge devis ne se mettait pas à jour visuellement après Valider/Refuser
-PUBLIÉ SUR : 97import.com ✅
----
+  - Devis : setExpandedDevisId(null) après Valider/Refuser → badge immédiat
+PUBLIÉ : 97import.com ✅
 
----
 DATE : 2026-03-21 09:03
 COMMIT : db23c16
 TYPE : feat
-DESCRIPTION : Routes .html complètes + logo /index.html + toast panier anti-empilement + règles mdp + onglets MonCompte par URL + confirmation suppression adresse
-FICHIERS MODIFIÉS : client/src/App.tsx, client/src/components/Header.tsx, client/src/components/CartNotification.tsx, client/src/pages/MonCompte.tsx
+DESCRIPTION : Routes .html complètes + logo /index.html + toast panier anti-empilement + règles mdp + onglets MonCompte par URL
+FICHIERS : App.tsx, Header.tsx, CartNotification.tsx, MonCompte.tsx
 DÉTAIL :
-  - Header logo → /index.html
-  - 14 nouvelles routes .html stables : mini-pelle, maison-modulaire, panneau-solaire, accessoires-mini-pelle, panier, mes-informations, mes-commandes, mes-devis, securite, etc.
-  - MonCompte : onglet actif détecté depuis l'URL (/mes-devis.html → tab devis)
-  - CartNotification : id fixe 'cart-notification' → anti-empilement
-  - Sécurité : règles mot de passe affichées + messages d'erreur précis
-  - Adresses : window.confirm() avant suppression
-PUBLIÉ SUR : 97import.com ✅
-TAG : v3.2-20260321-08h44
----
+  - 14 routes .html stables (mini-pelle, maison-modulaire, panier, mes-devis, etc.)
+  - Logo → /index.html
+  - CartNotification id fixe → anti-empilement
+  - Sécurité : règles mot de passe affichées
+  - Onglets MonCompte détectés depuis l'URL
+PUBLIÉ : 97import.com ✅
 
----
 DATE : 2026-03-21 08:20
 COMMIT : b39eed0
 TYPE : feat
-DESCRIPTION : MAJ02 — Audit complet + corrections : suppression AdminNavigation, routes .html, adresses Ajouter/Modifier/Supprimer, commandes/devis cliquables avec panel détail
-FICHIERS MODIFIÉS : client/src/pages/admin/AdminLayout.tsx, client/src/App.tsx, client/src/pages/MonCompte.tsx
+DESCRIPTION : MAJ02 — AdminNavigation supprimée + adresses CRUD + commandes/devis cliquables
+FICHIERS : AdminLayout.tsx, App.tsx, MonCompte.tsx
 DÉTAIL :
-  - AdminNavigation supprimée (page cassée — erreur "Impossible de charger le contenu")
-  - Import Navigation supprimé, entrée menu sidebar supprimée
-  - 9 routes .html ajoutées (index, minipelles, maisons, solaire, accessoires, services, contact, mon-compte, connexion)
-  - Adresses facturation/livraison : boutons Ajouter (état vide) + Modifier + Supprimer séparés
-  - Mes commandes : cartes cliquables → panel expandable (numéro, date, produits, total, adresse)
-  - Mes devis : cartes cliquables → panel expandable (numéro, statut, produits, total, PDF, valider/refuser)
-  - Nouveaux imports : Plus, Trash2, X, MapPin, handleDeleteAdresseFact/Liv
-ERREUR CORRIGÉE : page /admin/navigation cassée
-PUBLIÉ SUR : 97import.com ✅
----
+  - AdminNavigation supprimée (page cassée)
+  - Adresses : Ajouter / Modifier / Supprimer séparés facturation/livraison
+  - Mes commandes et Mes devis : cartes cliquables avec panel détail
+ERREURS CORRIGÉES : page /admin/navigation cassée
+PUBLIÉ : 97import.com ✅
 
----
-DATE : 2026-03-20 (session précédente)
-COMMIT : be90420
-TYPE : fix
-DESCRIPTION : PDF une ligne par produit + style blanc + validation devis + adresses client
-FICHIERS MODIFIÉS : client/src/features/pdf/, client/src/pages/MonCompte.tsx
-DÉTAIL :
-  - PDF : une ligne par produit (plus de doublon description)
-  - PDF : fond blanc, texte navy, sans fond sombre
-  - Validation/refus devis dans espace client
-  - Champs adresses client ajoutés (adresse_facturation, adresse_livraison, etc.)
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-20
-COMMIT : f1fcee1
-TYPE : fix
-DESCRIPTION : Correction erreurs TypeScript étape 5 cleanup
-FICHIERS MODIFIÉS : divers fichiers client/src/
-DÉTAIL : Nettoyage imports inutilisés, types corrigés, zéro erreur TS
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-20
-COMMIT : 091f176
-TYPE : fix
-DESCRIPTION : Isoler appels /api/ dev-only (AdminLayout, AdminProducts, AdminMedia)
-FICHIERS MODIFIÉS : client/src/pages/admin/AdminLayout.tsx, client/src/pages/admin/AdminProducts.tsx, client/src/pages/admin/AdminMedia.tsx
-DÉTAIL :
-  - Appels /api/publish, /api/images, /api/backup uniquement si import.meta.env.DEV
-  - Compatibilité Vercel SPA sans serveur Node permanent
-ERREUR CORRIGÉE : erreurs 404 sur /api/ en production Vercel
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-20
-COMMIT : d6a46ba
+DATE : 2026-03-21
+COMMIT : v3.0-refonte-architecture
 TYPE : refactor
-DESCRIPTION : calcCommission via features/pricing (source unique ×1.2)
-FICHIERS MODIFIÉS : client/src/pages/admin/AdminQuotes.tsx
-DÉTAIL : Remplacement de Math.round(prixAchat * 1.2) par calcPrixPartenaire() depuis features/pricing
-PUBLIÉ SUR : 97import.com ✅
----
+DESCRIPTION : Refonte architecturale complète domain-driven design
+FICHIERS : features/pdf/, features/auth/, features/pricing/, features/catalog/
+ERREURS CORRIGÉES : /api/ incompatibles Vercel, double source vérité JSON+Supabase, fonds noirs PDF
+PUBLIÉ : 97import.com ✅
 
----
 DATE : 2026-03-20
-COMMIT : 9b8d0f1
-TYPE : refactor
-DESCRIPTION : Moteur PDF mutualisé + style minimaliste + fix /api/ analytics + prix via calculerPrix
-FICHIERS MODIFIÉS : client/src/features/pdf/ (pdf-theme.ts, pdf-helpers.ts, pdf-engine.ts, templates/), client/src/utils/generate*.ts (shims), client/src/lib/analytics.ts, client/src/pages/admin/AdminDashboard.tsx, client/src/pages/admin/AdminProducts.tsx, client/src/pages/admin/AdminPricing.tsx, client/src/components/DevisForm.tsx
-DÉTAIL :
-  - Création features/pdf/ : moteur partagé (pdf-engine.ts) pour 3 types de PDF
-  - PDF : fond blanc #FFFFFF, navy #1E3A5F, bleu clair #BFDBFE — zéro fond sombre
-  - Anciens utils/generate*.ts → shims 7 lignes qui re-exportent features/pdf/
-  - analytics.ts : appel /api/ uniquement sur localhost
-  - calculerPrix() utilisé partout, plus de calculs inline (×1.5, ×1.2, ×1.3)
-TAG : v3.0-refonte-architecture, v3.1-20260321-01h42
-PUBLIÉ SUR : 97import.com ✅
----
+COMMIT : v2.3-partenaires-commission
+TYPE : feat
+DESCRIPTION : Système partenaires + commissions + bouton rouge visiteur
+FICHIERS : AdminPartners.tsx, AdminQuotes.tsx, generateCommissionPDF.ts
+PUBLIÉ : 97import.com ✅
 
----
 DATE : 2026-03-20
-COMMIT : 61b812c
+COMMIT : v2.2-devis-pdf
 TYPE : feat
-DESCRIPTION : Système complet partenaires + commissions + bouton rouge visiteur
-FICHIERS MODIFIÉS : client/src/pages/admin/AdminPartners.tsx, client/src/pages/MonCompte.tsx, client/src/components/DevisForm.tsx
-DÉTAIL :
-  - Table partners dans Supabase
-  - Commissions calculées et PDF généré
-  - Onglet "Mes commissions" dans MonCompte (visible si role=partner)
-  - Bouton rouge "Demander un devis" pour les visiteurs non connectés
-PUBLIÉ SUR : 97import.com ✅
----
+DESCRIPTION : Système devis PDF + formulaire + espace client
+FICHIERS : DevisForm.tsx, generateDevisPDF.ts, MonCompte.tsx
+ERREURS CORRIGÉES : duplicate key quotes_numero_devis_key, WhatsApp doublon
+PUBLIÉ : 97import.com ✅
 
----
-DATE : 2026-03-19
-COMMIT : 9affcff
-TYPE : fix
-DESCRIPTION : Numéro devis unique via rpc SQL + message WhatsApp doublon supprimé
-FICHIERS MODIFIÉS : client/src/components/DevisForm.tsx, supabase (rpc)
-ERREUR CORRIGÉE : duplicate key sur numero_devis + WhatsApp message envoyé en double
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-19
-COMMIT : 45dbe64
-TYPE : fix
-DESCRIPTION : PDF devis prix barré VIP + total correct + formatage euros
-FICHIERS MODIFIÉS : client/src/utils/generateDevisPDF.ts
-ERREUR CORRIGÉE : prix avec espaces non-passants cassant jsPDF, total incorrect, prix barré VIP absent
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-19
-COMMIT : 1086901
-TYPE : fix
-DESCRIPTION : jspdf-autotable import corrigé
-FICHIERS MODIFIÉS : client/src/utils/generateDevisPDF.ts
-ERREUR CORRIGÉE : "t.autoTable is not a function" — import ESM incorrect
-PUBLIÉ SUR : 97import.com ✅
----
-
----
-DATE : 2026-03-19
-COMMIT : 1b2e5ef
-TYPE : feat
-DESCRIPTION : Système devis PDF + facture + espace client complet
-FICHIERS MODIFIÉS : client/src/components/DevisForm.tsx, client/src/utils/generateDevisPDF.ts, client/src/utils/generateFacturePDF.ts, client/src/pages/MonCompte.tsx, client/src/pages/admin/AdminQuotes.tsx
-DÉTAIL :
-  - Génération PDF devis (jsPDF + jspdf-autotable)
-  - Génération PDF facture
-  - Espace client : onglets devis + commandes + sécurité
-  - Admin : gestion des devis, statuts, validation/refus
-PUBLIÉ SUR : 97import.com ✅
----
-
----
 DATE : 2026-03-18
-COMMIT : 1901d49
-TYPE : fix
-DESCRIPTION : Back-office 100% connecté Supabase, suppression routes /api/
-FICHIERS MODIFIÉS : client/src/lib/api.ts, client/src/pages/admin/
-DÉTAIL : Toutes les données viennent de Supabase. lib/api.ts marqué @deprecated.
-PUBLIÉ SUR : 97import.com ✅
----
+COMMIT : v2.0-roles-prix-devis
+TYPE : feat
+DESCRIPTION : Système rôles visitor/user/vip/partner/admin + prix dynamiques
+FICHIERS : PrixOuDevis.tsx, calculPrix.ts, useRole.ts, AuthContext.tsx
+ERREURS CORRIGÉES : spinner infini MonCompte, rôle client remplacé par user
+PUBLIÉ : 97import.com ✅
 
----
 DATE : 2026-03-18
-COMMIT : 4000db6
+COMMIT : auth-complete
 TYPE : feat
-DESCRIPTION : Back-office connecté à Supabase — auth, dashboard stats, VIP, prix catalogue
-FICHIERS MODIFIÉS : client/src/pages/admin/AdminDashboard.tsx, AdminProducts.tsx, AdminUsers.tsx, AdminPricing.tsx
-PUBLIÉ SUR : 97import.com ✅
----
+DESCRIPTION : Auth robuste tous providers + mot de passe oublié + reset
+FICHIERS : AuthContext.tsx, ForgotPassword.tsx, ResetPassword.tsx
+PUBLIÉ : 97import.com ✅
 
----
-DATE : 2026-03-17
-COMMIT : 2f3bf4f
-TYPE : feat
-DESCRIPTION : Système complet rôles + prix dynamiques + devis + back-office
-FICHIERS MODIFIÉS : client/src/contexts/AuthContext.tsx, client/src/hooks/useRole.ts, client/src/utils/calculPrix.ts, client/src/components/DevisForm.tsx
-DÉTAIL :
-  - Rôles : visitor | user | vip | partner | collaborateur | admin
-  - calculerPrix() : source unique de tarification
-  - Prix masqués pour les visiteurs
-PUBLIÉ SUR : 97import.com ✅
----
+================================================
+CAHIER DES CHARGES — MODIFICATIONS À FAIRE
+================================================
 
----
-DATE : 2026-03-17
-COMMIT : 948e929
-TYPE : feat
-DESCRIPTION : Espace personnel client /mon-compte
-FICHIERS MODIFIÉS : client/src/pages/MonCompte.tsx (création)
-DÉTAIL : Première version de l'espace client avec informations profil
-PUBLIÉ SUR : 97import.com ✅
----
+--- RÈGLES GÉNÉRALES ---
+- URLs stables en .html pour toutes les pages importantes
+- Logo cliquable vers /index.html partout
+- Fiches produit : /products/[slug].html
+- Aucun bouton décoratif sans effet
+- Toute suppression = confirmation obligatoire
+- États UI obligatoires : vide / chargement / erreur / succès
+- Une seule notification visible à la fois
 
-================================================================================
-FIN DU JOURNAL
-================================================================================
+--- PAGES PRINCIPALES ATTENDUES ---
+/index.html
+/mini-pelle.html
+/accessoires-mini-pelle.html
+/maison-modulaire.html
+/panneau-solaire.html
+/services.html
+/contact.html
+/mon-compte.html
+/mes-commandes.html
+/mes-devis.html
+/securite.html
+/panier.html
+/products/[slug].html
+
+--- PANIER ---
+- Vérifier Cart.tsx : tous les prix via calculPrix()
+- Notification ajout panier : toast léger, auto-fermé, pas d'empilement
+- Compteur panier mis à jour immédiatement
+
+--- MON COMPTE ---
+Menu latéral : Mes informations / Mes commandes / Mes devis / Sécurité
+Données : prénom, nom, email, téléphone
+Actions : Modifier / Enregistrer / Annuler
+
+--- ADRESSES ---
+CRITIQUE : facturation et livraison = deux entités distinctes
+Champs dans profiles :
+- adresse_facturation, ville_facturation, cp_facturation, pays_facturation
+- adresse_livraison, ville_livraison, cp_livraison, pays_livraison
+- adresse_livraison_identique (boolean)
+Actions : Ajouter / Modifier / Supprimer pour chaque type
+DevisForm doit pré-remplir depuis profiles
+
+--- MES DEVIS ---
+Afficher : numéro, date, nb produits, total, statut
+Boutons : Voir / Télécharger PDF / Valider / Refuser
+Statuts : Nouveau / Accepté / Refusé
+BUG À CORRIGER : Refuser n'entraîne pas de différence visible
+BUG À CORRIGER : Valider ne remet pas correctement le statut Accepté
+Après Valider → statut=Accepté, badge mis à jour, rafraîchissement immédiat
+Après Refuser → statut=Refusé, badge mis à jour, rafraîchissement immédiat
+
+--- MES COMMANDES ---
+Afficher les devis acceptés ici
+Si facture disponible → bouton Télécharger ma facture
+
+--- SÉCURITÉ ---
+Règle mot de passe : min 6 caractères, lettres/chiffres autorisés
+Messages : trop court / confirmation différente / succès / erreur
+
+--- PDF (PRIORITÉ HAUTE) ---
+BUG CRITIQUE : une ligne par produit (vérifier que produits est Array pas string)
+STYLE ABSOLU : zéro fond sombre, tout blanc, texte bleu marine #1E3A5F
+Appliquer sur : generateDevisPDF.ts, generateFacturePDF.ts, generateCommissionPDF.ts
+ou features/pdf/templates/*
+
+--- ADMIN ---
+SUPPRIMER : page /admin/navigation + bouton menu Navigation + route + imports
+Garder uniquement les pages utiles
+
+================================================
+TESTS FONCTIONNELS APRÈS CORRECTION
+================================================
+
+Navigation : logo → index.html, toutes pages ouvrent, aucun lien mort
+Profil : modification fonctionne, message succès, erreur gérée
+Adresses : CRUD facturation + livraison
+Devis : valider/refuser → badge mis à jour + PDF téléchargeable
+Commandes : détail visible, statuts visibles
+Sécurité : validation mot de passe
+Panier : prix cohérents, notification auto-fermée, pas d'empilement
+PDF : une ligne par produit, fond blanc conforme
+Admin : plus de bouton Navigation, plus d'erreur associée
+
+================================================
+ERREURS DÉJÀ CORRIGÉES — NE PAS REFAIRE
+================================================
+
+- Spinner infini sur /mon-compte ← CORRIGÉ
+- Rôle "client" → renommé "user" partout ← CORRIGÉ
+- duplicate key quotes_numero_devis_key ← CORRIGÉ via séquence SQL
+- Message WhatsApp en double ← CORRIGÉ
+- Appels /api/ sur Vercel ← CORRIGÉS (isolés import.meta.env.DEV)
+- Double source de vérité JSON + Supabase ← CORRIGÉ
+- Fonds noirs dans PDF ← CORRIGÉ v3.0
+- vercel.json outputDirectory incorrect ← CORRIGÉ (client/dist)
+- npm install → pnpm install ← CORRIGÉ
+- Auth Google callback ← CORRIGÉ
+- Trigger handle_new_user rôle "client" → "user" ← CORRIGÉ
+- AdminNavigation page cassée ← SUPPRIMÉE
+- Badge devis non rafraîchi après Valider/Refuser ← CORRIGÉ
+- Header liens /cart /mon-compte non en .html ← CORRIGÉ
+- Route /products/:id.html manquante ← CORRIGÉE
+- Toast panier empilable ← CORRIGÉ (id fixe sonner)
