@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useRoute, useLocation } from "wouter";
 import { useState } from "react";
-import { Minus, Plus, Check, FileText, ShoppingCart, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { showCartNotification } from "@/components/CartNotification";

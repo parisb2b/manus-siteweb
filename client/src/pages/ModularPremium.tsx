@@ -107,9 +107,6 @@ export default function ModularPremium() {
     );
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(price);
-
   const handleAddToCart = () => {
     if (!user) { setShowAuthModal(true); return; }
     const selectedOptionNames = selectedOptions.map(

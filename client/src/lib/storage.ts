@@ -30,7 +30,7 @@ export async function uploadFile(
   });
 
   if (error) {
-    console.error("[Storage] Upload error:", error.message);
+    // Storage upload failed silently — returns null
     return null;
   }
 
@@ -60,7 +60,7 @@ export async function uploadPdfBlob(
   });
 
   if (error) {
-    console.error("[Storage] PDF upload error:", error.message);
+    // PDF upload failed silently — returns null
     return null;
   }
 

@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import PrixOuDevis from "@/components/PrixOuDevis";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";

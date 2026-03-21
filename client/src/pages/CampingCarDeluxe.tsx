@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, Play, Info, ShoppingCart } from "lucide-react";
+import { ShieldCheck, Zap, BatteryCharging, Gauge, Maximize, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -47,10 +47,6 @@ export default function CampingCarDeluxe() {
   const [selectedDestination, setSelectedDestination] = useState(DESTINATIONS[0]);
   const { addToCart } = useCart();
   const { user, setShowAuthModal } = useAuth();
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
-  };
 
   const handleAddToCart = () => {
     if (!user) {

@@ -67,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("id", userId)
         .maybeSingle();
       if (error) {
-        console.warn("[AuthContext] fetchProfile:", error.message);
         return null;
       }
       return data as Profile | null;
@@ -168,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: metadata.phone,
         role: "user",
       });
-      if (profileError) console.warn("Profile upsert:", profileError);
+      if (profileError) { /* silent: profile upsert may fail on race condition */ }
       const p = await fetchProfile(data.user.id);
       setProfile(p);
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Truck, ArrowRight, ShieldCheck, Ruler, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, Info, ShoppingCart } from "lucide-react";
+import { Check, ShieldCheck, Home, Sun, Snowflake, Sofa, BedDouble, PaintBucket, FileText, ShoppingCart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -106,10 +106,6 @@ export default function ModularStandard() {
     } else {
       setSelectedOptions([...selectedOptions, id]);
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
   };
 
   const handleAddToCart = () => {

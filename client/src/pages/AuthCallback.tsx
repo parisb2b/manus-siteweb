@@ -21,7 +21,6 @@ export default function AuthCallback() {
         // Échanger le code contre une session
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          console.error("[AuthCallback] Erreur échange code:", error);
           setLocation("/");
           return;
         }
