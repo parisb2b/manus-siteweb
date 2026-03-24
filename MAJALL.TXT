@@ -73,6 +73,22 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-24 10:12
+COMMIT : e37ecdd
+TAG : v4.5-fix-pdf-tableau
+TYPE : fix
+DESCRIPTION : PDF produits s'écrasaient sur la même ligne
+CAUSE : produits pouvaient être string JSON ou double-stringify depuis Supabase JSONB.
+  Noms de champs variaient (nom/name, prixUnitaire/prixAffiche/prix, quantite/qty).
+  Largeurs colonnes dépassaient 180mm utile (182mm) → chevauchement visuel.
+FIX : parseProduits() robuste gère Array, string, double-stringify, objet.
+  Mapping avec fallbacks (nom||name, prixUnitaire||prixAffiche||prix, etc.).
+  Largeurs colonnes = 180mm exact (52+50+32+14+32).
+  Total recalculé depuis les items (jamais depuis Supabase).
+FICHIERS : quote-pdf.ts, invoice-pdf.ts, commission-pdf.ts
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-21 23:35
 COMMIT : 011f9a3
 TAG : v4.4-version-stable-20260321
