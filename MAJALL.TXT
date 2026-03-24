@@ -73,6 +73,19 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-03-24 10:35
+COMMIT : 6086e81
+TAG : v4.6-fix-pdf-all-docs
+TYPE : fix
+DESCRIPTION : Tous les PDF (devis, facture, commission) — autoTable direct
+CAUSE : addProductTable() de pdf-engine.ts fusionnait les lignes malgré body correct.
+  Les logs confirmaient 3 rows mais le rendu PDF montrait 1 seule ligne.
+FIX : Contournement total — appel autoTable directement dans chaque template.
+  body string[][] construit via for loop, tableWidth:180, minCellHeight:10.
+FICHIERS : quote-pdf.ts, invoice-pdf.ts, commission-pdf.ts
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-24 10:12
 COMMIT : e37ecdd
 TAG : v4.5-fix-pdf-tableau
