@@ -1,13 +1,13 @@
 /**
  * invoice-pdf.ts — Génération PDF facture (style minimaliste)
- * Utilise pdf-engine.ts — Zéro fond sombre
+ * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
  */
 
+import autoTable from "jspdf-autotable";
 import {
   createDocument,
   addPageHeader,
   addParties,
-  addProductTable,
   addTotal,
   addTVAMention,
   addConditionsPage,
@@ -41,24 +41,34 @@ export interface InvoiceData {
   totalHT: number;
 }
 
-/** Parse robuste des produits */
-function parseProduits(raw: any): InvoiceProduit[] {
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === "string") {
+/** Parse robuste — gère Array, string JSON, double stringify, objet */
+function parseProduits(raw: any): Array<{
+  nom: string;
+  description: string;
+  prixUnitaire: number;
+  quantite: number;
+}> {
+  let arr: any[] = [];
+  if (Array.isArray(raw)) {
+    arr = raw;
+  } else if (typeof raw === "string") {
     try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-      if (typeof parsed === "string") {
-        const p2 = JSON.parse(parsed);
-        if (Array.isArray(p2)) return p2;
-      }
-    } catch { return []; }
+      let parsed = JSON.parse(raw);
+      while (typeof parsed === "string") parsed = JSON.parse(parsed);
+      if (Array.isArray(parsed)) arr = parsed;
+    } catch {
+      return [];
+    }
+  } else if (raw && typeof raw === "object") {
+    if (Array.isArray(raw.items)) arr = raw.items;
+    else if (Array.isArray(raw.produits)) arr = raw.produits;
   }
-  if (raw && typeof raw === "object") {
-    if (Array.isArray(raw.items)) return raw.items;
-    if (Array.isArray(raw.produits)) return raw.produits;
-  }
-  return [];
+  return arr.map((i: any) => ({
+    nom: String(i.nom ?? i.name ?? i.designation ?? "Produit"),
+    description: String(i.description ?? ""),
+    prixUnitaire: Number(i.prixUnitaire ?? i.prixAffiche ?? i.prix ?? 0),
+    quantite: Number(i.quantite ?? i.qty ?? i.quantity ?? 1),
+  }));
 }
 
 export function generateInvoicePDF(data: InvoiceData): Blob {
@@ -83,44 +93,61 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
   y = addParties(doc, { destinataire: { nom: data.client.nom, lignes: clientLignes } }, y);
 
-  // Recalculer total depuis les items
-  const totalReel = produits.reduce((s, p) => {
-    const pu = Number((p as any).prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
-    const qty = Number((p as any).quantite ?? (p as any).qty ?? 1);
-    return s + pu * qty;
-  }, 0);
+  // ── Tableau produits — appel autoTable DIRECT ────────────────────
+  const body: string[][] = [];
+  for (let idx = 0; idx < produits.length; idx++) {
+    const p = produits[idx];
+    const total = p.prixUnitaire * p.quantite;
+    body.push([
+      p.nom,
+      p.description,
+      formatPrix(p.prixUnitaire),
+      String(p.quantite),
+      formatPrix(total),
+    ]);
+  }
 
-  y = addProductTable(
-    doc,
-    {
-      columns: [
-        { header: "D\u00E9signation", width: 52, bold: true },
-        { header: "Description",     width: 50 },
-        { header: "Prix HT",         width: 32, align: "right" },
-        { header: "Qt\u00E9",        width: 14, align: "center" },
-        { header: "Total HT",        width: 32, align: "right", bold: true },
-      ],
-      rows: produits.map((p) => {
-        const nom = String((p as any).nom || (p as any).name || (p as any).designation || "—");
-        const desc = String((p as any).description || "");
-        const pu = Number((p as any).prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
-        const qty = Number((p as any).quantite ?? (p as any).qty ?? (p as any).quantity ?? 1);
-        const total = pu * qty;
-        return {
-          cells: [
-            nom,
-            desc,
-            formatPrix(pu),
-            String(qty),
-            formatPrix(total),
-          ],
-        };
-      }),
-    },
-    y,
+  const totalHT = produits.reduce(
+    (sum, p) => sum + p.prixUnitaire * p.quantite,
+    0,
   );
 
-  y = addTotal(doc, { montant: totalReel, accent: GREEN_ACC }, y);
+  autoTable(doc, {
+    startY: y,
+    head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
+    body: body,
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+      overflow: "linebreak",
+      textColor: [30, 58, 95] as any,
+      lineColor: [191, 219, 254] as any,
+      lineWidth: 0.3,
+      minCellHeight: 10,
+    },
+    headStyles: {
+      fillColor: [239, 246, 255] as any,
+      textColor: [30, 58, 95] as any,
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 9,
+    },
+    columnStyles: {
+      0: { cellWidth: 52, halign: "left" as const, fontStyle: "bold" as const },
+      1: { cellWidth: 50, halign: "left" as const },
+      2: { cellWidth: 32, halign: "right" as const },
+      3: { cellWidth: 14, halign: "center" as const },
+      4: { cellWidth: 32, halign: "right" as const, fontStyle: "bold" as const },
+    },
+    margin: { left: 15, right: 15 },
+    tableWidth: 180,
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 6;
+
+  y = addTotal(doc, { montant: totalHT, accent: GREEN_ACC }, y);
 
   // Mention "Date de paiement"
   const W = doc.internal.pageSize.getWidth();

@@ -1,13 +1,13 @@
 /**
  * commission-pdf.ts — Génération PDF note de commission (style minimaliste)
- * Utilise pdf-engine.ts — Zéro fond sombre
+ * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
  */
 
+import autoTable from "jspdf-autotable";
 import {
   createDocument,
   addPageHeader,
   addParties,
-  addProductTable,
   addTotal,
   addPageFooter,
 } from "../lib/pdf-engine";
@@ -35,7 +35,6 @@ export interface CommissionData {
 export function generateCommissionPDF(data: CommissionData): Blob {
   const doc = createDocument();
   const W = doc.internal.pageSize.getWidth();
-  const H = doc.internal.pageSize.getHeight();
   const L = 15;
 
   // ── En-tête ──────────────────────────────────────────────────────
@@ -60,31 +59,49 @@ export function generateCommissionPDF(data: CommissionData): Blob {
     },
   }, y);
 
-  // ── Tableau commission ─────────────────────────────────────────
-  y = addProductTable(
-    doc,
-    {
-      columns: [
-        { header: "R\u00E9f. devis",     width: 25, bold: true },
-        { header: "Client",              width: 28 },
-        { header: "Produit(s)",          width: 49 },
-        { header: "Prix n\u00E9goci\u00E9", width: 28, align: "right" },
-        { header: "Prix partenaire",     width: 26, align: "right" },
-        { header: "Commission",          width: 24, align: "right", bold: true },
-      ],
-      rows: [{
-        cells: [
-          data.devis.numeroDevis,
-          data.devis.nomClient,
-          data.devis.produits,
-          formatPrix(data.devis.prixNegocie),
-          formatPrix(data.devis.prixPartenaire),
-          formatPrix(data.devis.commission),
-        ],
-      }],
+  // ── Tableau commission — appel autoTable DIRECT ──────────────────
+  autoTable(doc, {
+    startY: y,
+    head: [["R\u00E9f. devis", "Client", "Produit(s)", "Prix n\u00E9goci\u00E9", "Prix partenaire", "Commission"]],
+    body: [[
+      data.devis.numeroDevis,
+      data.devis.nomClient,
+      data.devis.produits,
+      formatPrix(data.devis.prixNegocie),
+      formatPrix(data.devis.prixPartenaire),
+      formatPrix(data.devis.commission),
+    ]],
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+      overflow: "linebreak",
+      textColor: [30, 58, 95] as any,
+      lineColor: [191, 219, 254] as any,
+      lineWidth: 0.3,
+      minCellHeight: 10,
     },
-    y,
-  );
+    headStyles: {
+      fillColor: [255, 251, 235] as any,
+      textColor: [30, 58, 95] as any,
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 8.5,
+    },
+    columnStyles: {
+      0: { cellWidth: 25, halign: "left" as const, fontStyle: "bold" as const },
+      1: { cellWidth: 28, halign: "left" as const },
+      2: { cellWidth: 49, halign: "left" as const },
+      3: { cellWidth: 28, halign: "right" as const },
+      4: { cellWidth: 26, halign: "right" as const },
+      5: { cellWidth: 24, halign: "right" as const, fontStyle: "bold" as const },
+    },
+    margin: { left: L, right: L },
+    tableWidth: 180,
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 6;
 
   // ── Total commission ─────────────────────────────────────────
   y = addTotal(doc, {
