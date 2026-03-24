@@ -70,6 +70,16 @@ export function generateQuotePDF(data: QuoteData): Blob {
   // Parser les produits de façon sécurisée
   const produits = parseProduits(data.produits);
 
+  // Debug logs — à retirer après validation
+  console.log("[PDF] typeof data.produits:", typeof data.produits);
+  console.log("[PDF] Array.isArray(data.produits):", Array.isArray(data.produits));
+  console.log("[PDF] Nombre de produits parsés:", produits.length);
+  console.log("[PDF] Produits:", JSON.stringify(produits.map(p => ({
+    nom: (p as any).nom || (p as any).name,
+    pu: (p as any).prixUnitaire ?? (p as any).prixAffiche,
+    qty: (p as any).quantite ?? (p as any).qty,
+  }))));
+
   // ── Page 1 ───────────────────────────────────────────────────────
   let y = addPageHeader(doc, {
     numeroDoc: data.numeroDevis,

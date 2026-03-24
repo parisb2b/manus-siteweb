@@ -184,6 +184,10 @@ export function addProductTable(
 
   const bodyRows = opts.rows.map((r) => r.cells);
 
+  // Debug logs — à retirer après validation
+  console.log("[PDF-ENGINE] Nombre de rows:", bodyRows.length);
+  console.log("[PDF-ENGINE] Body:", JSON.stringify(bodyRows));
+
   autoTable(doc, {
     startY,
     head: [opts.columns.map((c) => c.header)],
