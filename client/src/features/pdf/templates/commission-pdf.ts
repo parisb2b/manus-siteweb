@@ -65,12 +65,12 @@ export function generateCommissionPDF(data: CommissionData): Blob {
     doc,
     {
       columns: [
-        { header: "R\u00E9f. devis",     width: 26, bold: true },
-        { header: "Client",              width: 30 },
-        { header: "Produit(s)",          width: 52 },
+        { header: "R\u00E9f. devis",     width: 25, bold: true },
+        { header: "Client",              width: 28 },
+        { header: "Produit(s)",          width: 49 },
         { header: "Prix n\u00E9goci\u00E9", width: 28, align: "right" },
         { header: "Prix partenaire",     width: 26, align: "right" },
-        { header: "Commission",          width: 20, align: "right", bold: true },
+        { header: "Commission",          width: 24, align: "right", bold: true },
       ],
       rows: [{
         cells: [

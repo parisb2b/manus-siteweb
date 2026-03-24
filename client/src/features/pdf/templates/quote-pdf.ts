@@ -43,9 +43,32 @@ export interface QuoteData {
   role: string;
 }
 
+/** Parse robuste des produits — gère Array, string JSON, double stringify, objet */
+function parseProduits(raw: any): QuoteProduit[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === "string") {
+        const parsed2 = JSON.parse(parsed);
+        if (Array.isArray(parsed2)) return parsed2;
+      }
+    } catch { return []; }
+  }
+  if (raw && typeof raw === "object") {
+    if (Array.isArray(raw.items)) return raw.items;
+    if (Array.isArray(raw.produits)) return raw.produits;
+  }
+  return [];
+}
+
 export function generateQuotePDF(data: QuoteData): Blob {
   const doc = createDocument();
   const isVip = data.role === "vip";
+
+  // Parser les produits de façon sécurisée
+  const produits = parseProduits(data.produits);
 
   // ── Page 1 ───────────────────────────────────────────────────────
   let y = addPageHeader(doc, {
@@ -64,12 +87,16 @@ export function generateQuotePDF(data: QuoteData): Blob {
 
   y = addParties(doc, { destinataire: { nom: data.client.nom, lignes: clientLignes } }, y);
 
-  // Tableau produits
-  const totalReel = data.produits.reduce((s, p) => s + p.total, 0);
+  // Tableau produits — recalculer total depuis les items
+  const totalReel = produits.reduce((s, p) => {
+    const pu = Number(p.prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
+    const qty = Number(p.quantite ?? (p as any).qty ?? 1);
+    return s + pu * qty;
+  }, 0);
 
   const customDrawMap: Record<number, (doc: any, hookData: any) => void> = {};
   if (isVip) {
-    data.produits.forEach((p, i) => {
+    produits.forEach((p, i) => {
       const prixRef = p.prixPublic ?? p.prixUnitaire;
       customDrawMap[i] = (docRef, hookData) => {
         drawVipPriceCell(docRef, hookData, {
@@ -85,21 +112,28 @@ export function generateQuotePDF(data: QuoteData): Blob {
     doc,
     {
       columns: [
-        { header: "D\u00E9signation", width: 50, bold: true },
-        { header: "Description",     width: 56 },
-        { header: "Prix HT",         width: 34, align: "right" },
-        { header: "Qt\u00E9",        width: 12, align: "center" },
-        { header: "Total HT",        width: 30, align: "right", bold: true },
+        { header: "D\u00E9signation", width: 52, bold: true },
+        { header: "Description",     width: 50 },
+        { header: "Prix HT",         width: 32, align: "right" },
+        { header: "Qt\u00E9",        width: 14, align: "center" },
+        { header: "Total HT",        width: 32, align: "right", bold: true },
       ],
-      rows: data.produits.map((p) => ({
-        cells: [
-          p.nom,
-          p.description || "",
-          isVip ? "" : formatPrix(p.prixUnitaire),
-          String(p.quantite),
-          formatPrix(p.total),
-        ],
-      })),
+      rows: produits.map((p) => {
+        const nom = String((p as any).nom || (p as any).name || (p as any).designation || "—");
+        const desc = String((p as any).description || "");
+        const pu = Number(p.prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
+        const qty = Number(p.quantite ?? (p as any).qty ?? (p as any).quantity ?? 1);
+        const total = pu * qty;
+        return {
+          cells: [
+            nom,
+            desc,
+            isVip ? "" : formatPrix(pu),
+            String(qty),
+            formatPrix(total),
+          ],
+        };
+      }),
       customColumnIndex: isVip ? 2 : undefined,
       customDrawMap: isVip ? customDrawMap : undefined,
     },

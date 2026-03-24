@@ -41,8 +41,29 @@ export interface InvoiceData {
   totalHT: number;
 }
 
+/** Parse robuste des produits */
+function parseProduits(raw: any): InvoiceProduit[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === "string") {
+        const p2 = JSON.parse(parsed);
+        if (Array.isArray(p2)) return p2;
+      }
+    } catch { return []; }
+  }
+  if (raw && typeof raw === "object") {
+    if (Array.isArray(raw.items)) return raw.items;
+    if (Array.isArray(raw.produits)) return raw.produits;
+  }
+  return [];
+}
+
 export function generateInvoicePDF(data: InvoiceData): Blob {
   const doc = createDocument();
+  const produits = parseProduits(data.produits);
 
   // ── Page 1 ───────────────────────────────────────────────────────
   let y = addPageHeader(doc, {
@@ -62,30 +83,44 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
   y = addParties(doc, { destinataire: { nom: data.client.nom, lignes: clientLignes } }, y);
 
+  // Recalculer total depuis les items
+  const totalReel = produits.reduce((s, p) => {
+    const pu = Number((p as any).prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
+    const qty = Number((p as any).quantite ?? (p as any).qty ?? 1);
+    return s + pu * qty;
+  }, 0);
+
   y = addProductTable(
     doc,
     {
       columns: [
-        { header: "D\u00E9signation", width: 50, bold: true },
-        { header: "Description",     width: 60 },
-        { header: "Prix HT",         width: 30, align: "right" },
-        { header: "Qt\u00E9",        width: 12, align: "center" },
-        { header: "Total HT",        width: 30, align: "right", bold: true },
+        { header: "D\u00E9signation", width: 52, bold: true },
+        { header: "Description",     width: 50 },
+        { header: "Prix HT",         width: 32, align: "right" },
+        { header: "Qt\u00E9",        width: 14, align: "center" },
+        { header: "Total HT",        width: 32, align: "right", bold: true },
       ],
-      rows: data.produits.map((p) => ({
-        cells: [
-          p.nom,
-          p.description || "",
-          formatPrix(p.prixUnitaire),
-          String(p.quantite),
-          formatPrix(p.total),
-        ],
-      })),
+      rows: produits.map((p) => {
+        const nom = String((p as any).nom || (p as any).name || (p as any).designation || "—");
+        const desc = String((p as any).description || "");
+        const pu = Number((p as any).prixUnitaire ?? (p as any).prixAffiche ?? (p as any).prix ?? 0);
+        const qty = Number((p as any).quantite ?? (p as any).qty ?? (p as any).quantity ?? 1);
+        const total = pu * qty;
+        return {
+          cells: [
+            nom,
+            desc,
+            formatPrix(pu),
+            String(qty),
+            formatPrix(total),
+          ],
+        };
+      }),
     },
     y,
   );
 
-  y = addTotal(doc, { montant: data.totalHT, accent: GREEN_ACC }, y);
+  y = addTotal(doc, { montant: totalReel, accent: GREEN_ACC }, y);
 
   // Mention "Date de paiement"
   const W = doc.internal.pageSize.getWidth();
