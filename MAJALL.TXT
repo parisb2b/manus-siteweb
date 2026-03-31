@@ -94,6 +94,42 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-03-31
+TAG : v5.0-complet
+TYPE : release
+DESCRIPTION : V5.0 complet — 8 phases détaillées
+
+PHASES IMPLÉMENTÉES (v5.0-complet) :
+  Phase 1  : Prix public ×2 — migration complète multiplicateur
+  Phase 2  : Sidebar admin v5.0 — 3 sections (Commerce/Catalogue/Configuration)
+             Routes : /admin/devis, /admin/partenaires, /admin/suivi-achats,
+                      /admin/parametres, /admin/contenu
+  Phase 3  : Partenaires dynamiques — codes 2 lettres, stats, Excel commissions
+             DevisForm : sélection partenaire, code appendé au numéro devis
+  Phase 4  : CRUD produits enrichi — nom_en, nom_zh, dimensions, poids, douane, notices
+  Phase 5  : Paramètres — 2 émetteurs PRO/PERSO, 2 RIB avec PDF, config acomptes
+  Phase 6  : Suivi Achats — filtres, checkbox, export Excel 22 colonnes FR/CH
+  Phase 7  : Contenu site — bannière, contact, footer, livraison DOM-TOM
+  Phase 8  : Notices produits — role-aware (visitor=lock), email auto solde
+
+FICHIERS CRÉÉS (v5.0-complet) :
+  client/src/pages/admin/AdminPartenaires.tsx
+  client/src/pages/admin/AdminSuiviAchats.tsx
+  client/src/pages/admin/AdminParametres.tsx
+  client/src/pages/admin/AdminContenu.tsx
+  client/src/components/ProductNotices.tsx
+
+FICHIERS MODIFIÉS (v5.0-complet) :
+  client/src/features/pricing/model/pricing.ts (user 1.5 → 2)
+  client/src/components/PrixOuDevis.tsx (labels ×2)
+  client/src/components/DevisForm.tsx (partenaire + code)
+  client/src/pages/admin/AdminLayout.tsx (sidebar v5)
+  client/src/pages/admin/AdminProducts.tsx (champs enrichis)
+  client/src/lib/notifications.ts (sendNoticeLinks)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-31
 TAG : v5.0
 TYPE : release
 DESCRIPTION : V5.0 — Module GDF + Back-office restructur\u00E9 + 7 types PDF
