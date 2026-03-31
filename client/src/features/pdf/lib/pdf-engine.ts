@@ -12,7 +12,7 @@ import {
 } from "./pdf-theme";
 import { formatPrix, EMETTEUR } from "./pdf-helpers";
 
-export type DocType = "devis" | "facture" | "commission";
+export type DocType = "devis" | "facture" | "commission" | "frais_maritimes" | "dedouanement" | "bon_livraison";
 export type AccentColor = [number, number, number];
 
 // ── createDocument ─────────────────────────────────────────────────────────
@@ -48,9 +48,15 @@ export function addPageHeader(doc: jsPDF, opts: HeaderOptions): number {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(...NAVY);
-  const label =
-    opts.type === "devis" ? "Devis" :
-    opts.type === "facture" ? "Facture" : "Note de commission";
+  const labelMap: Record<DocType, string> = {
+    devis: "Devis",
+    facture: "Facture",
+    commission: "Note de commission",
+    frais_maritimes: "Frais maritimes",
+    dedouanement: "D\u00E9douanement",
+    bon_livraison: "Bon de livraison",
+  };
+  const label = labelMap[opts.type] ?? opts.type;
   doc.text(`${label} ${opts.numeroDoc}`, L, 18);
 
   // Date
