@@ -3,7 +3,6 @@
  * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
  */
 
-import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
   createDocument,
@@ -14,7 +13,7 @@ import {
   addConditionsPage,
   addPageFooter,
 } from "../lib/pdf-engine";
-import { NAVY, BLUE, LIGHT_BLUE, WHITE } from "../lib/pdf-theme";
+import { NAVY, BLUE, LIGHT_BLUE, WHITE, STRIKE } from "../lib/pdf-theme";
 import { formatPrix } from "../lib/pdf-helpers";
 
 export interface QuoteProduit {
@@ -101,64 +100,120 @@ export function generateQuotePDF(data: QuoteData): Blob {
 
   // ── Tableau produits — appel autoTable DIRECT ────────────────────
   const body: string[][] = [];
-  for (let idx = 0; idx < produits.length; idx++) {
-    const p = produits[idx];
-    const total = p.prixUnitaire * p.quantite;
-    body.push([
-      p.nom,
-      p.description,
-      formatPrix(p.prixUnitaire),
-      String(p.quantite),
-      formatPrix(total),
-    ]);
-  }
-
   const totalHT = produits.reduce(
     (sum, p) => sum + p.prixUnitaire * p.quantite,
     0,
   );
 
-  // Debug log
-  console.log("[PDF-DIRECT] body.length:", body.length, "body:", JSON.stringify(body));
+  if (isVip) {
+    // VIP : 7 colonnes — avec prix public et remise
+    for (let idx = 0; idx < produits.length; idx++) {
+      const p = produits[idx];
+      const total = p.prixUnitaire * p.quantite;
+      body.push([
+        p.nom,
+        p.description,
+        p.prixPublic ? formatPrix(p.prixPublic) : "",
+        p.remise ? `-${p.remise}%` : "",
+        formatPrix(p.prixUnitaire),
+        String(p.quantite),
+        formatPrix(total),
+      ]);
+    }
 
-  autoTable(doc, {
-    startY: y,
-    head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
-    body: body,
-    theme: "grid",
-    styles: {
-      font: "helvetica",
-      fontSize: 9,
-      cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
-      overflow: "linebreak",
-      textColor: [30, 58, 95] as any,
-      lineColor: [191, 219, 254] as any,
-      lineWidth: 0.3,
-      minCellHeight: 10,
-    },
-    headStyles: {
-      fillColor: [239, 246, 255] as any,
-      textColor: [30, 58, 95] as any,
-      fontStyle: "bold",
-      halign: "center",
-      fontSize: 9,
-    },
-    columnStyles: {
-      0: { cellWidth: 52, halign: "left" as const, fontStyle: "bold" as const },
-      1: { cellWidth: 50, halign: "left" as const },
-      2: { cellWidth: 32, halign: "right" as const },
-      3: { cellWidth: 14, halign: "center" as const },
-      4: { cellWidth: 32, halign: "right" as const, fontStyle: "bold" as const },
-    },
-    margin: { left: 15, right: 15 },
-    tableWidth: 180,
-    didDrawPage: () => {},
-  });
+    autoTable(doc, {
+      startY: y,
+      head: [["D\u00E9signation", "Description", "Prix public", "Remise", "Prix n\u00E9goci\u00E9", "Qt\u00E9", "Total HT"]],
+      body: body,
+      theme: "grid",
+      styles: {
+        font: "helvetica",
+        fontSize: 8.5,
+        cellPadding: { top: 4, right: 2, bottom: 4, left: 2 },
+        overflow: "linebreak",
+        textColor: [30, 58, 95] as any,
+        lineColor: [191, 219, 254] as any,
+        lineWidth: 0.3,
+        minCellHeight: 10,
+      },
+      headStyles: {
+        fillColor: [239, 246, 255] as any,
+        textColor: [30, 58, 95] as any,
+        fontStyle: "bold",
+        halign: "center",
+        fontSize: 8.5,
+      },
+      columnStyles: {
+        0: { cellWidth: 40, halign: "left" as const, fontStyle: "bold" as const },
+        1: { cellWidth: 36, halign: "left" as const },
+        2: { cellWidth: 24, halign: "right" as const },
+        3: { cellWidth: 16, halign: "center" as const },
+        4: { cellWidth: 26, halign: "right" as const, fontStyle: "bold" as const },
+        5: { cellWidth: 12, halign: "center" as const },
+        6: { cellWidth: 26, halign: "right" as const, fontStyle: "bold" as const },
+      },
+      margin: { left: 15, right: 15 },
+      tableWidth: 180,
+      didDrawCell: (hookData: any) => {
+        // Barrer le prix public (colonne 2) dans le body
+        if (hookData.section === "body" && hookData.column.index === 2 && hookData.cell.text[0]) {
+          const cell = hookData.cell;
+          const textY = cell.y + cell.height / 2;
+          doc.setDrawColor(...STRIKE);
+          doc.setLineWidth(0.4);
+          doc.line(cell.x + 2, textY, cell.x + cell.width - 2, textY);
+        }
+      },
+    });
+  } else {
+    // Standard : 5 colonnes
+    for (let idx = 0; idx < produits.length; idx++) {
+      const p = produits[idx];
+      const total = p.prixUnitaire * p.quantite;
+      body.push([
+        p.nom,
+        p.description,
+        formatPrix(p.prixUnitaire),
+        String(p.quantite),
+        formatPrix(total),
+      ]);
+    }
+
+    autoTable(doc, {
+      startY: y,
+      head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
+      body: body,
+      theme: "grid",
+      styles: {
+        font: "helvetica",
+        fontSize: 9,
+        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+        overflow: "linebreak",
+        textColor: [30, 58, 95] as any,
+        lineColor: [191, 219, 254] as any,
+        lineWidth: 0.3,
+        minCellHeight: 10,
+      },
+      headStyles: {
+        fillColor: [239, 246, 255] as any,
+        textColor: [30, 58, 95] as any,
+        fontStyle: "bold",
+        halign: "center",
+        fontSize: 9,
+      },
+      columnStyles: {
+        0: { cellWidth: 52, halign: "left" as const, fontStyle: "bold" as const },
+        1: { cellWidth: 50, halign: "left" as const },
+        2: { cellWidth: 32, halign: "right" as const },
+        3: { cellWidth: 14, halign: "center" as const },
+        4: { cellWidth: 32, halign: "right" as const, fontStyle: "bold" as const },
+      },
+      margin: { left: 15, right: 15 },
+      tableWidth: 180,
+    });
+  }
 
   y = (doc as any).lastAutoTable.finalY + 6;
-
-  // ── VIP : redessiner les prix barrés si nécessaire ───────────────
-  // (supprimé pour simplifier — à ajouter ultérieurement si besoin)
 
   y = addTotal(doc, { montant: totalHT, accent: NAVY }, y);
   addTVAMention(doc, y);
