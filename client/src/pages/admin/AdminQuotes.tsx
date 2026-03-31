@@ -8,6 +8,7 @@ import { generateFacturePDF, type FactureData } from "@/features/pdf/templates/i
 import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templates/commission-pdf";
 import { generateFeesPDF, type FeesData } from "@/features/pdf/templates/fees-pdf";
 import { generateDeliveryNotePDF, type DeliveryNoteData } from "@/features/pdf/templates/delivery-note-pdf";
+import { generateSuiviAchatsExcel, type SuiviAchatRow } from "@/features/excel/suivi-achats";
 // Calcul commission depuis source unique features/pricing
 import { prixPartenaire as calcPrixPartenaire } from "@/features/pricing/model/pricing";
 
@@ -338,6 +339,40 @@ export default function AdminQuotes() {
     await load();
   };
 
+  const exporterSuiviAchats = () => {
+    const rows: SuiviAchatRow[] = [];
+    for (const q of quotes) {
+      const produits = q.produits || [];
+      const { prixPartenaire, commission } = calcCommission(q);
+      const partner = partners.find((p) => p.id === (q.partner_id ?? ADMIN_PARTNER_ID));
+      for (const p of produits) {
+        const prixVente = p.prixAffiche ?? p.prixUnitaire ?? 0;
+        const prixAchat = p.prixAchat ?? Math.round(prixVente / 2);
+        rows.push({
+          numeroDevis: q.numero_devis || q.id.slice(0, 8),
+          dateDevis: new Date(q.created_at).toLocaleDateString("fr-FR"),
+          client: q.nom,
+          emailClient: q.email,
+          produit: p.nom || p.name || p.id,
+          reference: p.reference || "",
+          quantite: p.quantite ?? 1,
+          prixAchat,
+          prixVente,
+          marge: prixVente - prixAchat,
+          partenaire: partner?.nom,
+          commission: q.commission_montant ?? commission,
+          statutDevis: q.statut,
+          factureGeneree: q.facture_generee ?? false,
+          acomptePaye: false,
+          soldePaye: false,
+          notes: q.notes_admin || "",
+        });
+      }
+    }
+    const blob = generateSuiviAchatsExcel(rows);
+    downloadBlob(blob, `Suivi_Achats_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   const patch = (id: string, field: string, val: any) => {
     setEditData((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [field]: val } }));
   };
@@ -347,9 +382,17 @@ export default function AdminQuotes() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">Gestion des Devis</h2>
-        <button onClick={load} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#4A90D9]">
-          <RefreshCw className="h-4 w-4" /> Actualiser
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={exporterSuiviAchats}
+            className="flex items-center gap-2 text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700"
+          >
+            <Download className="h-4 w-4" /> Export Excel
+          </button>
+          <button onClick={load} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#4A90D9]">
+            <RefreshCw className="h-4 w-4" /> Actualiser
+          </button>
+        </div>
       </div>
 
       {/* Filtres statut */}
