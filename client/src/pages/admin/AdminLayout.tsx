@@ -21,6 +21,7 @@ import {
   Layout,
   Inbox,
   Handshake,
+  Receipt,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -35,6 +36,7 @@ import AdminHeaderFooter from "./AdminHeaderFooter";
 import AdminLeads from "./AdminLeads";
 import AdminQuotes from "./AdminQuotes";
 import AdminPartners from "./AdminPartners";
+import AdminInvoices from "./AdminInvoices";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -44,23 +46,47 @@ interface NavItem {
   path: string;
   component: React.ComponentType;
   adminOnly?: boolean;
+  section?: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard },
-  { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts },
-  { label: "Pages", icon: FileText, path: "/admin/pages", component: AdminPages, adminOnly: true },
-  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter, adminOnly: true },
-  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, adminOnly: true },
-  { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing, adminOnly: true },
-  { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true },
-  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, adminOnly: true },
-  { label: "Devis", icon: FileText, path: "/admin/quotes", component: AdminQuotes },
-  { label: "Partenaires", icon: Handshake, path: "/admin/partners", component: AdminPartners },
-  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads, adminOnly: true },
-  { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers },
-  { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings, adminOnly: true },
+  // ── Section : Gestion ──
+  { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard, section: "Gestion" },
+  { label: "Devis / Commandes", icon: FileText, path: "/admin/quotes", component: AdminQuotes, section: "Gestion" },
+  { label: "Factures", icon: Receipt, path: "/admin/invoices", component: AdminInvoices, section: "Gestion" },
+  { label: "Partenaires", icon: Handshake, path: "/admin/partners", component: AdminPartners, section: "Gestion" },
+  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads, adminOnly: true, section: "Gestion" },
+  // ── Section : Catalogue ──
+  { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts, section: "Catalogue" },
+  { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing, adminOnly: true, section: "Catalogue" },
+  { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true, section: "Catalogue" },
+  { label: "Pages & Contenu", icon: FileText, path: "/admin/pages", component: AdminPages, adminOnly: true, section: "Catalogue" },
+  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter, adminOnly: true, section: "Catalogue" },
+  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, adminOnly: true, section: "Catalogue" },
+  // ── Section : Système ──
+  { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers, section: "Système" },
+  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, adminOnly: true, section: "Système" },
+  { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings, adminOnly: true, section: "Système" },
 ];
+
+function groupBySection(items: NavItem[]): NavSection[] {
+  const sections: NavSection[] = [];
+  const sectionMap = new Map<string, NavItem[]>();
+  for (const item of items) {
+    const key = item.section || "Autre";
+    if (!sectionMap.has(key)) sectionMap.set(key, []);
+    sectionMap.get(key)!.push(item);
+  }
+  for (const [title, sItems] of sectionMap) {
+    sections.push({ title, items: sItems });
+  }
+  return sections;
+}
 
 export default function AdminLayout() {
   const [location, setLocation] = useLocation();
@@ -188,29 +214,38 @@ export default function AdminLayout() {
           )}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {visibleNav.map((item) => {
-            const Icon = item.icon;
-            const isActive = location === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => {
-                  setLocation(item.path);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors duration-150 ${
-                  isActive
-                    ? "bg-white/10 text-white font-semibold"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{item.label}</span>
-              </button>
-            );
-          })}
+        {/* Navigation groupée par section */}
+        <nav className="flex-1 py-4 px-3 overflow-y-auto">
+          {groupBySection(visibleNav).map((section, sIdx) => (
+            <div key={section.title} className={sIdx > 0 ? "mt-4" : ""}>
+              <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                {section.title}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.path;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        setLocation(item.path);
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-colors duration-150 ${
+                        isActive
+                          ? "bg-white/10 text-white font-semibold"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-4.5 h-4.5 flex-shrink-0" />
+                      <span className="text-sm">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Logout */}
