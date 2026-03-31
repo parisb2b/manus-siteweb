@@ -8,8 +8,12 @@ interface SupabaseProduit {
   id: string;
   nom: string;
   reference?: string;
+  reference_interne?: string;
   categorie?: string;
+  description?: string;
   prix_achat: number;
+  prix_public?: number;
+  image_url?: string;
   actif: boolean;
 }
 
@@ -712,10 +716,11 @@ export default function AdminProducts() {
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
                         <th className="text-left px-4 py-3 font-semibold text-gray-500">Nom</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">Réf / Catégorie</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden lg:table-cell">R\u00E9f interne</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">R\u00E9f / Cat\u00E9gorie</th>
                         <th className="text-left px-4 py-3 font-semibold text-emerald-600">Achat</th>
-                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public ×1.5</th>
-                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire ×1.2</th>
+                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public \u00D72</th>
+                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire \u00D71.2</th>
                         <th className="text-left px-4 py-3 font-semibold text-gray-500">Actif</th>
                         <th className="px-4 py-3"></th>
                       </tr>
@@ -726,10 +731,22 @@ export default function AdminProducts() {
                         const prixAchat = ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat;
                         return (
                           <tr key={prod.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 font-medium text-gray-800">{prod.nom}</td>
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-gray-800">{prod.nom}</div>
+                              {prod.description && <div className="text-xs text-gray-400 truncate max-w-[200px]">{prod.description}</div>}
+                            </td>
+                            <td className="px-4 py-3 hidden lg:table-cell">
+                              <input
+                                type="text"
+                                value={ed.reference_interne !== undefined ? ed.reference_interne : prod.reference_interne ?? ""}
+                                onChange={(e) => patchSupabase(prod.id, "reference_interne", e.target.value)}
+                                placeholder="REF-001"
+                                className="w-28 border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                              />
+                            </td>
                             <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
-                              <div>{prod.reference ?? "—"}</div>
-                              <div className="text-xs text-gray-400">{prod.categorie ?? "—"}</div>
+                              <div>{prod.reference ?? "\u2014"}</div>
+                              <div className="text-xs text-gray-400">{prod.categorie ?? "\u2014"}</div>
                             </td>
                             <td className="px-4 py-3">
                               <input
@@ -753,7 +770,7 @@ export default function AdminProducts() {
                                   disabled={supabaseSaving === prod.id}
                                   className="flex items-center gap-1 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
                                 >
-                                  {supabaseSaving === prod.id ? <span className="animate-spin">⌛</span> : <Save className="w-3 h-3" />}
+                                  {supabaseSaving === prod.id ? <span className="animate-spin">\u231B</span> : <Save className="w-3 h-3" />}
                                   Sauv.
                                 </button>
                               )}
