@@ -3,8 +3,6 @@ import { useLocation } from "wouter";
 import {
   LayoutDashboard,
   Package,
-  Home,
-  Truck,
   Users,
   Settings,
   LogOut,
@@ -15,28 +13,21 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  BarChart3,
   Eye,
   Image as ImageIcon,
-  Layout,
-  Inbox,
   Handshake,
-  Receipt,
+  ShoppingCart,
+  Globe,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
-import AdminPricing from "./AdminPricing";
-import AdminShipping from "./AdminShipping";
 import AdminUsers from "./AdminUsers";
-import AdminSettings from "./AdminSettings";
-import AdminPages from "./AdminPages";
-import AdminAnalytics from "./AdminAnalytics";
 import AdminMedia from "./AdminMedia";
-import AdminHeaderFooter from "./AdminHeaderFooter";
-import AdminLeads from "./AdminLeads";
 import AdminQuotes from "./AdminQuotes";
-import AdminPartners from "./AdminPartners";
-import AdminInvoices from "./AdminInvoices";
+import AdminPartenaires from "./AdminPartenaires";
+import AdminSuiviAchats from "./AdminSuiviAchats";
+import AdminParametres from "./AdminParametres";
+import AdminContenu from "./AdminContenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -55,23 +46,18 @@ interface NavSection {
 }
 
 const navItems: NavItem[] = [
-  // ── Section : Gestion ──
-  { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard, section: "Gestion" },
-  { label: "Devis / Commandes", icon: FileText, path: "/admin/quotes", component: AdminQuotes, section: "Gestion" },
-  { label: "Factures", icon: Receipt, path: "/admin/invoices", component: AdminInvoices, section: "Gestion" },
-  { label: "Partenaires", icon: Handshake, path: "/admin/partners", component: AdminPartners, section: "Gestion" },
-  { label: "Contacts & Leads", icon: Inbox, path: "/admin/leads", component: AdminLeads, adminOnly: true, section: "Gestion" },
-  // ── Section : Catalogue ──
+  // ── Commerce ──
+  { label: "Tableau de bord", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard, section: "Commerce" },
+  { label: "Devis & Facturation", icon: FileText, path: "/admin/devis", component: AdminQuotes, section: "Commerce" },
+  { label: "Clients", icon: Users, path: "/admin/users", component: AdminUsers, section: "Commerce" },
+  { label: "Partenaires", icon: Handshake, path: "/admin/partenaires", component: AdminPartenaires, section: "Commerce" },
+  // ── Catalogue ──
   { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts, section: "Catalogue" },
-  { label: "Prix Maisons", icon: Home, path: "/admin/pricing", component: AdminPricing, adminOnly: true, section: "Catalogue" },
-  { label: "Livraison", icon: Truck, path: "/admin/shipping", component: AdminShipping, adminOnly: true, section: "Catalogue" },
-  { label: "Pages & Contenu", icon: FileText, path: "/admin/pages", component: AdminPages, adminOnly: true, section: "Catalogue" },
-  { label: "Header & Footer", icon: Layout, path: "/admin/header-footer", component: AdminHeaderFooter, adminOnly: true, section: "Catalogue" },
-  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, adminOnly: true, section: "Catalogue" },
-  // ── Section : Système ──
-  { label: "Utilisateurs", icon: Users, path: "/admin/users", component: AdminUsers, section: "Système" },
-  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, adminOnly: true, section: "Système" },
-  { label: "Paramètres", icon: Settings, path: "/admin/settings", component: AdminSettings, adminOnly: true, section: "Système" },
+  { label: "Suivi Achats", icon: ShoppingCart, path: "/admin/suivi-achats", component: AdminSuiviAchats, section: "Catalogue" },
+  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, section: "Catalogue" },
+  // ── Configuration ──
+  { label: "Paramètres", icon: Settings, path: "/admin/parametres", component: AdminParametres, adminOnly: true, section: "Configuration" },
+  { label: "Contenu Site", icon: Globe, path: "/admin/contenu", component: AdminContenu, adminOnly: true, section: "Configuration" },
 ];
 
 function groupBySection(items: NavItem[]): NavSection[] {
