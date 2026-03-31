@@ -72,3 +72,44 @@ contact@97import.com
     attachmentName: `${opts.typeDocument}_${opts.numeroDocument}.pdf`,
   });
 }
+
+/**
+ * Envoyer les liens de notices produits après paiement final (solde)
+ */
+export async function sendNoticeLinks(opts: {
+  email: string;
+  nomClient: string;
+  numeroDevis: string;
+  produits: { nom: string; noticeUrl?: string; videoUrl?: string }[];
+}): Promise<boolean> {
+  const produitsAvecNotice = opts.produits.filter(
+    (p) => p.noticeUrl || p.videoUrl,
+  );
+  if (produitsAvecNotice.length === 0) return true; // Rien à envoyer
+
+  const lignes = produitsAvecNotice
+    .map((p) => {
+      let ligne = `- ${p.nom}`;
+      if (p.noticeUrl) ligne += `\n  Notice PDF : ${p.noticeUrl}`;
+      if (p.videoUrl) ligne += `\n  Vidéo : ${p.videoUrl}`;
+      return ligne;
+    })
+    .join("\n\n");
+
+  const subject = `97import.com — Notices de vos produits (${opts.numeroDevis})`;
+  const body = `
+Bonjour ${opts.nomClient},
+
+Suite au règlement de votre commande ${opts.numeroDevis}, voici les liens vers la documentation de vos produits :
+
+${lignes}
+
+Ces documents sont également disponibles dans votre espace client sur 97import.com.
+
+Cordialement,
+L'équipe 97 import
+contact@97import.com
+`.trim();
+
+  return sendEmail({ to: opts.email, subject, body });
+}
