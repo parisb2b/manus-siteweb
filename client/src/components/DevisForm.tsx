@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -6,14 +6,20 @@ import { CheckCircle2, Loader2, FileText, Download } from "lucide-react";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
 import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 
+interface PartnerOption {
+  id: string;
+  nom: string;
+  code: string;
+}
+
 export interface DevisProduit {
   id: string;
   nom: string;
   quantite?: number;
   prixAffiche?: number;
   prixUnitaire?: number;
-  prixAchat?: number;    // prix d'achat brut (pour calculer prixPublic ×1.5)
-  prixPublic?: number;   // prix référence ×1.5 (pour barré VIP)
+  prixAchat?: number;    // prix d'achat brut (pour calculer prixPublic ×2)
+  prixPublic?: number;   // prix référence ×2 (pour barré VIP)
 }
 
 interface DevisFormProps {
@@ -70,6 +76,29 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [numeroDevis, setNumeroDevis] = useState("");
+  const [partners, setPartners] = useState<PartnerOption[]>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
+  const [selectedPartnerCode, setSelectedPartnerCode] = useState<string>("");
+
+  // Charger les partenaires actifs pour la sélection (rôle partner ou admin/collaborateur)
+  useEffect(() => {
+    if (!supabase) return;
+    if (role !== "partner" && role !== "admin" && role !== "collaborateur") return;
+    supabase
+      .from("partners")
+      .select("id, nom, code")
+      .eq("actif", true)
+      .order("nom")
+      .then(({ data }) => {
+        const list = (data as PartnerOption[]) ?? [];
+        setPartners(list);
+        // Auto-sélectionner si l'utilisateur est partner et lié à un seul partenaire
+        if (role === "partner" && list.length === 1) {
+          setSelectedPartnerId(list[0].id);
+          setSelectedPartnerCode(list[0].code);
+        }
+      });
+  }, [role]);
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -92,7 +121,11 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     setError("");
 
     try {
-      const numero = await getNextDevisNum();
+      let numero = await getNextDevisNum();
+      // Appender le code partenaire au numéro de devis si sélectionné
+      if (selectedPartnerCode) {
+        numero = `${numero}-${selectedPartnerCode}`;
+      }
       setNumeroDevis(numero);
 
       const today = new Date().toLocaleDateString("fr-FR", {
@@ -103,8 +136,8 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       const lignes: DevisData["produits"] = produits.map((p) => {
         const pu = p.prixUnitaire ?? p.prixAffiche ?? 0;
         const qty = p.quantite ?? 1;
-        // Prix référence ×1.5 pour affichage barré VIP
-        // Prix public ×1.5 via calculerPrix (source unique)
+        // Prix référence ×2 pour affichage barré VIP
+        // Prix public ×2 via calculerPrix (source unique)
         const prixPublic = p.prixPublic ?? (p.prixAchat
           ? calculerPrix(p.prixAchat, "user").prixAffiche ?? undefined
           : undefined);
@@ -159,6 +192,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
           adresse_client: form.adresse,
           ville_client: form.ville,
           pays_client: form.pays,
+          partner_id: selectedPartnerId || null,
         };
         const { error: dbErr } = await supabase.from("quotes").insert(payload);
         if (dbErr) throw new Error(dbErr.message);
@@ -348,6 +382,47 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9] resize-none"
         />
       </div>
+
+      {/* Sélection du partenaire (visible pour partner, admin, collaborateur) */}
+      {partners.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Partenaire apporteur d'affaire
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setSelectedPartnerId(null); setSelectedPartnerCode(""); }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                !selectedPartnerId
+                  ? "bg-[#4A90D9] text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Direct (aucun)
+            </button>
+            {partners.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => { setSelectedPartnerId(p.id); setSelectedPartnerCode(p.code); }}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  selectedPartnerId === p.id
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <span className="font-mono mr-1">{p.code}</span> {p.nom}
+              </button>
+            ))}
+          </div>
+          {selectedPartnerCode && (
+            <p className="text-xs text-gray-400 mt-1">
+              Le devis sera numéroté avec le suffixe -{selectedPartnerCode}
+            </p>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
