@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Settings, Palette, Globe, Type, Upload } from "lucide-react";
+import { Save, Settings, Palette, Globe, Type, Upload, Building2, CreditCard, Percent } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
+
+interface AdminParam {
+  key: string;
+  value: any;
+  label?: string;
+}
 
 export default function AdminSettings() {
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -10,6 +16,12 @@ export default function AdminSettings() {
   const [saveMessage, setSaveMessage] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Paramètres métier (admin_params)
+  const [emetteur, setEmetteur] = useState<any>({});
+  const [rib, setRib] = useState<any>({});
+  const [acompteDefaut, setAcompteDefaut] = useState<number>(30);
+  const [paramsLoaded, setParamsLoaded] = useState(false);
 
   const uploadLogo = async (file: File) => {
     setUploadingLogo(true);
@@ -24,28 +36,40 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site_content")
-      .single()
-      .then(({ data }) => {
-        if (data?.value && typeof data.value === "object") {
-          setSiteContent(data.value);
-        }
-        setLoading(false);
-      }, () => setLoading(false));
+    // Charger site_content + admin_params en parallèle
+    Promise.all([
+      supabase.from("site_content").select("value").eq("key", "site_content").single(),
+      supabase.from("admin_params").select("*"),
+    ]).then(([scResult, apResult]) => {
+      if (scResult.data?.value && typeof scResult.data.value === "object") {
+        setSiteContent(scResult.data.value);
+      }
+      // Charger params métier
+      const params = (apResult.data as AdminParam[]) ?? [];
+      for (const p of params) {
+        if (p.key === "emetteur") setEmetteur(p.value ?? {});
+        if (p.key === "rib") setRib(p.value ?? {});
+        if (p.key === "acompte_defaut") setAcompteDefaut(p.value?.pourcentage ?? 30);
+      }
+      setParamsLoaded(true);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
     if (!supabase) return;
     setSaving(true);
     setSaveMessage("");
-    const { error } = await supabase
-      .from("site_content")
-      .upsert({ key: "site_content", value: siteContent, updated_at: new Date().toISOString() });
+    const now = new Date().toISOString();
+    const results = await Promise.all([
+      supabase.from("site_content").upsert({ key: "site_content", value: siteContent, updated_at: now }),
+      supabase.from("admin_params").upsert({ key: "emetteur", value: emetteur, label: "Informations \u00E9metteur", updated_at: now }),
+      supabase.from("admin_params").upsert({ key: "rib", value: rib, label: "Coordonn\u00E9es bancaires (RIB)", updated_at: now }),
+      supabase.from("admin_params").upsert({ key: "acompte_defaut", value: { pourcentage: acompteDefaut }, label: "Pourcentage acompte", updated_at: now }),
+    ]);
+    const hasError = results.some((r) => r.error);
     setSaving(false);
-    setSaveMessage(error ? "Erreur lors de la sauvegarde" : "Paramètres sauvegardés avec succès");
+    setSaveMessage(hasError ? "Erreur lors de la sauvegarde" : "Param\u00E8tres sauvegard\u00E9s avec succ\u00E8s");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 
@@ -329,7 +353,108 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Card 4: SEO & Réseaux sociaux */}
+      {/* Card 4: Informations émetteur (documents PDF) */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-[#4A90D9]" />
+          <h2 className="text-lg font-semibold text-gray-800">{"\u00C9metteur (documents PDF)"}</h2>
+        </div>
+        <div className="px-6 py-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Raison sociale</label>
+              <input type="text" value={emetteur.nom ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, nom: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="97 IMPORT / LUXENT LIMITED" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" value={emetteur.email ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="contact@97import.com" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+            <input type="text" value={emetteur.adresse ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, adresse: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="123 rue Example" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ville / CP</label>
+              <input type="text" value={emetteur.ville ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, ville: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="75001 Paris" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+              <input type="text" value={emetteur.pays ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, pays: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="France" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{"\u0054\u00E9l\u00E9phone"}</label>
+              <input type="text" value={emetteur.telephone ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, telephone: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="+33 1 23 45 67 89" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">SIRET / N° entreprise</label>
+              <input type="text" value={emetteur.siret ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, siret: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="XXX XXX XXX XXXXX" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">TVA Intracommunautaire</label>
+              <input type="text" value={emetteur.tva_intra ?? ""} onChange={(e) => setEmetteur((p: any) => ({ ...p, tva_intra: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="FRXX XXXXXXXXX" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Card 5: Coordonnées bancaires (RIB) */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+          <CreditCard className="w-5 h-5 text-[#4A90D9]" />
+          <h2 className="text-lg font-semibold text-gray-800">{"\u0043oordonn\u00E9es bancaires (RIB)"}</h2>
+        </div>
+        <div className="px-6 py-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Banque</label>
+            <input type="text" value={rib.banque ?? ""} onChange={(e) => setRib((p: any) => ({ ...p, banque: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="Banque Example" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+            <input type="text" value={rib.iban ?? ""} onChange={(e) => setRib((p: any) => ({ ...p, iban: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">BIC / SWIFT</label>
+            <input type="text" value={rib.bic ?? ""} onChange={(e) => setRib((p: any) => ({ ...p, bic: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="XXXXXXXX" />
+          </div>
+        </div>
+      </div>
+
+      {/* Card 6: Configuration acomptes */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+          <Percent className="w-5 h-5 text-[#4A90D9]" />
+          <h2 className="text-lg font-semibold text-gray-800">Configuration acomptes</h2>
+        </div>
+        <div className="px-6 py-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Pourcentage acompte par d\u00E9faut</label>
+            <div className="flex items-center gap-3">
+              <input type="number" min={0} max={100} value={acompteDefaut}
+                onChange={(e) => setAcompteDefaut(Number(e.target.value))}
+                className="w-24 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" />
+              <span className="text-sm text-gray-500">%</span>
+              <p className="text-xs text-gray-400 ml-4">Utilis\u00E9 lors de la g\u00E9n\u00E9ration des factures d'acompte</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Card 7: SEO & Réseaux sociaux */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
           <Globe className="w-5 h-5 text-[#4A90D9]" />
