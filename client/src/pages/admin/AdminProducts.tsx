@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2, Database, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from "lucide-react";
 import { invalidateProductsCache } from "@/hooks/useProducts";
 import { supabase } from "@/lib/supabase";
@@ -9,11 +9,19 @@ interface SupabaseProduit {
   nom: string;
   reference?: string;
   reference_interne?: string;
+  nom_en?: string;
+  nom_zh?: string;
   categorie?: string;
   description?: string;
   prix_achat: number;
   prix_public?: number;
   image_url?: string;
+  dimensions?: string;
+  poids_brut?: number;
+  poids_net?: number;
+  code_douanier?: string;
+  notice_url?: string;
+  video_url?: string;
   actif: boolean;
 }
 
@@ -141,6 +149,7 @@ export default function AdminProducts() {
   const [supabaseOpen, setSupabaseOpen] = useState(false);
   const [supabaseEdits, setSupabaseEdits] = useState<Record<string, Partial<SupabaseProduit>>>({});
   const [supabaseSaving, setSupabaseSaving] = useState<string | null>(null);
+  const [expandedSupabaseId, setExpandedSupabaseId] = useState<string | null>(null);
 
   // Unsaved changes warning
   useEffect(() => {
@@ -716,11 +725,11 @@ export default function AdminProducts() {
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
                         <th className="text-left px-4 py-3 font-semibold text-gray-500">Nom</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden lg:table-cell">R\u00E9f interne</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">R\u00E9f / Cat\u00E9gorie</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden lg:table-cell">Réf interne</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">Réf / Catégorie</th>
                         <th className="text-left px-4 py-3 font-semibold text-emerald-600">Achat</th>
-                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public \u00D72</th>
-                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire \u00D71.2</th>
+                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public ×2</th>
+                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire ×1.2</th>
                         <th className="text-left px-4 py-3 font-semibold text-gray-500">Actif</th>
                         <th className="px-4 py-3"></th>
                       </tr>
@@ -729,11 +738,18 @@ export default function AdminProducts() {
                       {supabaseProds.map((prod) => {
                         const ed = supabaseEdits[prod.id] ?? {};
                         const prixAchat = ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat;
+                        const isExpanded = expandedSupabaseId === prod.id;
                         return (
-                          <tr key={prod.id} className="hover:bg-gray-50">
+                          <Fragment key={prod.id}>
+                          <tr className="hover:bg-gray-50">
                             <td className="px-4 py-3">
-                              <div className="font-medium text-gray-800">{prod.nom}</div>
-                              {prod.description && <div className="text-xs text-gray-400 truncate max-w-[200px]">{prod.description}</div>}
+                              <button onClick={() => setExpandedSupabaseId(isExpanded ? null : prod.id)} className="text-left">
+                                <div className="font-medium text-gray-800 flex items-center gap-1">
+                                  {isExpanded ? <ChevronUp className="w-3 h-3 text-gray-400" /> : <ChevronDown className="w-3 h-3 text-gray-400" />}
+                                  {prod.nom}
+                                </div>
+                                {prod.description && <div className="text-xs text-gray-400 truncate max-w-[200px] ml-4">{prod.description}</div>}
+                              </button>
                             </td>
                             <td className="px-4 py-3 hidden lg:table-cell">
                               <input
@@ -745,8 +761,8 @@ export default function AdminProducts() {
                               />
                             </td>
                             <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
-                              <div>{prod.reference ?? "\u2014"}</div>
-                              <div className="text-xs text-gray-400">{prod.categorie ?? "\u2014"}</div>
+                              <div>{prod.reference ?? "—"}</div>
+                              <div className="text-xs text-gray-400">{prod.categorie ?? "—"}</div>
                             </td>
                             <td className="px-4 py-3">
                               <input
@@ -770,12 +786,102 @@ export default function AdminProducts() {
                                   disabled={supabaseSaving === prod.id}
                                   className="flex items-center gap-1 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
                                 >
-                                  {supabaseSaving === prod.id ? <span className="animate-spin">\u231B</span> : <Save className="w-3 h-3" />}
+                                  {supabaseSaving === prod.id ? <span className="animate-spin">⏳</span> : <Save className="w-3 h-3" />}
                                   Sauv.
                                 </button>
                               )}
                             </td>
                           </tr>
+                          {/* Détails étendus du produit */}
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={8} className="bg-gray-50 px-6 py-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Nom anglais</label>
+                                    <input
+                                      type="text"
+                                      value={ed.nom_en !== undefined ? ed.nom_en : prod.nom_en ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "nom_en", e.target.value)}
+                                      placeholder="English name"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Nom chinois</label>
+                                    <input
+                                      type="text"
+                                      value={ed.nom_zh !== undefined ? ed.nom_zh : prod.nom_zh ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "nom_zh", e.target.value)}
+                                      placeholder="中文名称"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Dimensions (L×l×H cm)</label>
+                                    <input
+                                      type="text"
+                                      value={ed.dimensions !== undefined ? ed.dimensions : prod.dimensions ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "dimensions", e.target.value)}
+                                      placeholder="350×150×240"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Poids brut (kg)</label>
+                                    <input
+                                      type="number"
+                                      value={ed.poids_brut !== undefined ? ed.poids_brut : prod.poids_brut ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "poids_brut", e.target.value ? Number(e.target.value) : null)}
+                                      placeholder="1800"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Poids net (kg)</label>
+                                    <input
+                                      type="number"
+                                      value={ed.poids_net !== undefined ? ed.poids_net : prod.poids_net ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "poids_net", e.target.value ? Number(e.target.value) : null)}
+                                      placeholder="1650"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Code douanier (HS)</label>
+                                    <input
+                                      type="text"
+                                      value={ed.code_douanier !== undefined ? ed.code_douanier : prod.code_douanier ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "code_douanier", e.target.value)}
+                                      placeholder="8429.11.00"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">URL notice PDF</label>
+                                    <input
+                                      type="url"
+                                      value={ed.notice_url !== undefined ? ed.notice_url : prod.notice_url ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "notice_url", e.target.value)}
+                                      placeholder="https://…/notice.pdf"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs text-gray-500 mb-1">URL vidéo</label>
+                                    <input
+                                      type="url"
+                                      value={ed.video_url !== undefined ? ed.video_url : prod.video_url ?? ""}
+                                      onChange={(e) => patchSupabase(prod.id, "video_url", e.target.value)}
+                                      placeholder="https://youtube.com/…"
+                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                    />
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          </Fragment>
                         );
                       })}
                     </tbody>
