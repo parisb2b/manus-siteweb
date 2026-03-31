@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
-import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Receipt, Handshake, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Receipt, Handshake, CheckCircle2, Ship, FileCheck, Truck } from "lucide-react";
 // PDF via moteur mutualisé features/pdf
 import { generateDevisPDF, type DevisData } from "@/features/pdf/templates/quote-pdf";
 import { generateFacturePDF, type FactureData } from "@/features/pdf/templates/invoice-pdf";
 import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templates/commission-pdf";
+import { generateFeesPDF, type FeesData } from "@/features/pdf/templates/fees-pdf";
+import { generateDeliveryNotePDF, type DeliveryNoteData } from "@/features/pdf/templates/delivery-note-pdf";
 // Calcul commission depuis source unique features/pricing
 import { prixPartenaire as calcPrixPartenaire } from "@/features/pricing/model/pricing";
 
@@ -273,6 +275,61 @@ export default function AdminQuotes() {
     setSaving(null);
   };
 
+  const genererFrais = async (q: Quote, typeFrais: "maritime" | "dedouanement") => {
+    setSaving("frais_" + q.id);
+    const prefix = typeFrais === "maritime" ? "FM" : "DD";
+    const num = `${prefix}${(q.numero_devis || q.id.slice(0, 6)).replace(/^D/, "")}`;
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const feesData: FeesData = {
+      numeroDocument: num,
+      date: today,
+      type: typeFrais,
+      client: {
+        nom: q.nom,
+        adresse: q.adresse_client,
+        ville: q.ville_client,
+        pays: q.pays_client,
+        email: q.email,
+        telephone: q.telephone,
+      },
+      referenceDevis: q.numero_devis,
+      lignes: [{ designation: typeFrais === "maritime" ? "Frais de transport maritime" : "Frais de d\u00E9douanement", montant: 0 }],
+      totalHT: 0,
+    };
+    const blob = generateFeesPDF(feesData);
+    downloadBlob(blob, `${prefix}_${num}.pdf`);
+    setSaving(null);
+  };
+
+  const genererBL = async (q: Quote) => {
+    setSaving("bl_" + q.id);
+    const blNum = `BL${(q.numero_devis || q.id.slice(0, 6)).replace(/^D/, "")}`;
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const produits = (q.produits || []).map((p: any) => ({
+      designation: p.nom || p.name || p.id,
+      reference: p.reference || "",
+      quantite: p.quantite ?? 1,
+      observations: "",
+    }));
+    const blData: DeliveryNoteData = {
+      numeroBL: blNum,
+      date: today,
+      referenceDevis: q.numero_devis,
+      client: {
+        nom: q.nom,
+        adresse: q.adresse_client,
+        ville: q.ville_client,
+        pays: q.pays_client,
+        email: q.email,
+        telephone: q.telephone,
+      },
+      produits,
+    };
+    const blob = generateDeliveryNotePDF(blData);
+    downloadBlob(blob, `BL_${blNum}.pdf`);
+    setSaving(null);
+  };
+
   const marquerCommissionPayee = async (q: Quote) => {
     if (!supabase) return;
     setSaving("pay_" + q.id);
@@ -418,6 +475,27 @@ export default function AdminQuotes() {
                             className="flex items-center gap-1.5 text-xs text-white bg-teal-600 rounded-lg px-3 py-1.5 hover:bg-teal-700 disabled:opacity-50"
                           >
                             <Receipt className="h-3.5 w-3.5" /> Facture solde
+                          </button>
+                          <button
+                            onClick={() => genererFrais(q, "maritime")}
+                            disabled={saving === "frais_" + q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-cyan-600 rounded-lg px-3 py-1.5 hover:bg-cyan-700 disabled:opacity-50"
+                          >
+                            <Ship className="h-3.5 w-3.5" /> Frais maritimes
+                          </button>
+                          <button
+                            onClick={() => genererFrais(q, "dedouanement")}
+                            disabled={saving === "frais_" + q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-violet-600 rounded-lg px-3 py-1.5 hover:bg-violet-700 disabled:opacity-50"
+                          >
+                            <FileCheck className="h-3.5 w-3.5" /> D\u00E9douanement
+                          </button>
+                          <button
+                            onClick={() => genererBL(q)}
+                            disabled={saving === "bl_" + q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-green-600 rounded-lg px-3 py-1.5 hover:bg-green-700 disabled:opacity-50"
+                          >
+                            <Truck className="h-3.5 w-3.5" /> Bon de livraison
                           </button>
                         </div>
                       </div>
