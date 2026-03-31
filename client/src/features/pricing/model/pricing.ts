@@ -7,7 +7,7 @@
  *
  * Règles métier :
  *   visitor     → null (bouton rouge "Se connecter")
- *   user        → prixAchat × 1.5
+ *   user        → prixAchat × 2
  *   partner     → prixAchat × 1.2
  *   vip         → prixNegocie ?? prixAchat × 1.3
  *   admin/coll. → prixAchat + niveaux affichés
@@ -22,13 +22,13 @@ export {
 
 /** Multiplicateurs par rôle — référence centralisée */
 export const PRICE_MULTIPLIERS = {
-  user:    1.5,
+  user:    2,
   partner: 1.2,
   vip:     1.3,  // fallback si pas de prix_negocie
 } as const;
 
 /**
- * Calcule le prix public (×1.5) depuis un prix d'achat.
+ * Calcule le prix public (×2) depuis un prix d'achat.
  * Équivalent de calculerPrix(prixAchat, "user").prixAffiche
  */
 export function prixPublic(prixAchat: number): number {

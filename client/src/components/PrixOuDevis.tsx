@@ -65,7 +65,7 @@ export default function PrixOuDevis({
             <span className="font-bold text-emerald-600">{formatEur(result.prixAchat!)}</span>
           </div>
           <div>
-            <span className="font-semibold text-gray-700">Public (×1.5)&nbsp;:</span>{" "}
+            <span className="font-semibold text-gray-700">Public (×2)&nbsp;:</span>{" "}
             <span className="font-bold text-[#4A90D9]">{formatEur(result.prixUtilisateur!)}</span>
           </div>
           <div>
@@ -121,7 +121,7 @@ export default function PrixOuDevis({
     );
   }
 
-  // ── USER (connecté, prix public × 1.5) ────────────────────────────────────
+  // ── USER (connecté, prix public × 2) ────────────────────────────────────
   if (role === "user") {
     if (compact) {
       return (
