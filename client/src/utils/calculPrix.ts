@@ -16,7 +16,7 @@ export function calculerPrix(prixAchat: number, role: Role, prixNegocie?: number
         prixAffiche: prixAchat,
         label: "Prix achat",
         prixAchat,
-        prixUtilisateur: Math.round(prixAchat * 1.5),
+        prixUtilisateur: Math.round(prixAchat * 2),
         prixPartenaire: Math.round(prixAchat * 1.2),
       };
     case "collaborateur":
@@ -24,14 +24,14 @@ export function calculerPrix(prixAchat: number, role: Role, prixNegocie?: number
         prixAffiche: prixAchat,
         label: "Prix achat",
         prixAchat,
-        prixUtilisateur: Math.round(prixAchat * 1.5),
+        prixUtilisateur: Math.round(prixAchat * 2),
         prixPartenaire: Math.round(prixAchat * 1.2),
       };
     case "partner":
       return {
         prixAffiche: Math.round(prixAchat * 1.2),
         label: "Prix partenaire HT",
-        prixReference: Math.round(prixAchat * 1.5),
+        prixReference: Math.round(prixAchat * 2),
       };
     case "vip":
       return {
@@ -40,7 +40,7 @@ export function calculerPrix(prixAchat: number, role: Role, prixNegocie?: number
       };
     case "user":
       return {
-        prixAffiche: Math.round(prixAchat * 1.5),
+        prixAffiche: Math.round(prixAchat * 2),
         label: "Prix HT",
       };
     default:
