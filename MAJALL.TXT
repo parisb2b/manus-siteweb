@@ -94,6 +94,44 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-03-31
+TAG : v5.2-design-system-uniforme
+TYPE : refactor
+DESCRIPTION : Design System admin uniforme — AdminUI + refonte toutes pages
+
+PHASES IMPLEMENTEES (v5.2) :
+  Phase 1  : Création AdminUI.tsx — design system centralisé
+             ADMIN_COLORS, BadgeStatut, AdminButton, AdminCard, AdminCardHeader,
+             DocumentRow, PaiementRow, PaiementResume, AdminInput, AdminSelect,
+             SectionLabel — inline styles (pas Tailwind)
+  Phase 2  : Refonte complète AdminQuotes.tsx (Devis & Facturation)
+             — Header navy avec BadgeStatut + badge VIP + total
+             — Layout 2 colonnes (gauche: client/produits/paiements, droite 380px: documents)
+             — DocumentRow pour chaque type: Devis, Facture totale/acompte/solde, FM, DD, BL, NC
+             — PaiementRow acompte 30% + solde 70% avec PaiementResume
+             — Partenaire & Commission avec AdminSelect + badge commission payée
+             — Actions admin avec AdminSelect statut + AdminInput prix + notes
+  Phase 3  : Uniformisation AdminDashboard, AdminUsers, AdminProducts,
+             AdminPartenaires, AdminParametres, AdminContenu
+             — Remplacement Tailwind par inline styles ADMIN_COLORS
+             — Utilisation AdminCard + AdminCardHeader + AdminButton partout
+             — Headers navy, badges colorés, tables stylisées
+
+FICHIER CREE (v5.2) :
+  client/src/components/admin/AdminUI.tsx
+
+FICHIERS MODIFIES (v5.2) :
+  client/src/pages/admin/AdminQuotes.tsx (refonte complète)
+  client/src/pages/admin/AdminDashboard.tsx
+  client/src/pages/admin/AdminUsers.tsx
+  client/src/pages/admin/AdminProducts.tsx
+  client/src/pages/admin/AdminPartenaires.tsx
+  client/src/pages/admin/AdminParametres.tsx
+  client/src/pages/admin/AdminContenu.tsx
+
+PUBLIE : 97import.com
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-03-31
 TAG : v5.0-complet
 TYPE : release
 DESCRIPTION : V5.0 complet — 8 phases détaillées

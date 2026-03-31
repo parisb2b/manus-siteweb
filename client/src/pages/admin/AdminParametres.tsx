@@ -3,12 +3,33 @@ import { Save, Building2, CreditCard, Percent, Settings, Upload, Loader2 } from 
 import { supabase } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
 import { PRICE_MULTIPLIERS } from "@/features/pricing/model/pricing";
+import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
 interface AdminParam {
   key: string;
   value: any;
   label?: string;
 }
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '8px 12px',
+  border: `1px solid ${ADMIN_COLORS.navyBorder}`,
+  borderRadius: '8px',
+  fontSize: '13px',
+  outline: 'none',
+  background: '#fff',
+  color: ADMIN_COLORS.navy,
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: ADMIN_COLORS.grayTextDark,
+  marginBottom: '4px',
+};
 
 function EmetteurCard({
   title,
@@ -21,60 +42,62 @@ function EmetteurCard({
 }) {
   const set = (field: string, value: string) => onChange({ ...data, [field]: value });
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-        <Building2 className="w-5 h-5 text-[#4A90D9]" />
-        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-      </div>
-      <div className="px-6 py-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <AdminCard style={{ marginBottom: '24px' }}>
+      <AdminCardHeader>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Building2 style={{ width: 18, height: 18, color: '#fff' }} />
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{title}</span>
+        </div>
+      </AdminCardHeader>
+      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Raison sociale / Nom</label>
+            <label style={labelStyle}>Raison sociale / Nom</label>
             <input type="text" value={data.nom ?? ""} onChange={(e) => set("nom", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="97 IMPORT / LUXENT LIMITED" />
+              style={inputStyle} placeholder="97 IMPORT / LUXENT LIMITED" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label style={labelStyle}>Email</label>
             <input type="email" value={data.email ?? ""} onChange={(e) => set("email", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="contact@97import.com" />
+              style={inputStyle} placeholder="contact@97import.com" />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+          <label style={labelStyle}>Adresse</label>
           <input type="text" value={data.adresse ?? ""} onChange={(e) => set("adresse", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="123 rue Example" />
+            style={inputStyle} placeholder="123 rue Example" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ville / CP</label>
+            <label style={labelStyle}>Ville / CP</label>
             <input type="text" value={data.ville ?? ""} onChange={(e) => set("ville", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="75001 Paris" />
+              style={inputStyle} placeholder="75001 Paris" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+            <label style={labelStyle}>Pays</label>
             <input type="text" value={data.pays ?? ""} onChange={(e) => set("pays", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="France" />
+              style={inputStyle} placeholder="France" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+            <label style={labelStyle}>Telephone</label>
             <input type="text" value={data.telephone ?? ""} onChange={(e) => set("telephone", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="+33 1 23 45 67 89" />
+              style={inputStyle} placeholder="+33 1 23 45 67 89" />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SIRET / N° entreprise</label>
+            <label style={labelStyle}>SIRET / N. entreprise</label>
             <input type="text" value={data.siret ?? ""} onChange={(e) => set("siret", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="XXX XXX XXX XXXXX" />
+              style={inputStyle} placeholder="XXX XXX XXX XXXXX" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">TVA Intracommunautaire</label>
+            <label style={labelStyle}>TVA Intracommunautaire</label>
             <input type="text" value={data.tva_intra ?? ""} onChange={(e) => set("tva_intra", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="FRXX XXXXXXXXX" />
+              style={inputStyle} placeholder="FRXX XXXXXXXXX" />
           </div>
         </div>
       </div>
-    </div>
+    </AdminCard>
   );
 }
 
@@ -96,51 +119,55 @@ function RibCard({
   const fileRef = useRef<HTMLInputElement>(null);
   const set = (field: string, value: string) => onChange({ ...data, [field]: value });
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-        <CreditCard className="w-5 h-5 text-[#4A90D9]" />
-        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-      </div>
-      <div className="px-6 py-6 space-y-4">
+    <AdminCard style={{ marginBottom: '24px' }}>
+      <AdminCardHeader>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CreditCard style={{ width: 18, height: 18, color: '#fff' }} />
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{title}</span>
+        </div>
+      </AdminCardHeader>
+      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Banque</label>
+          <label style={labelStyle}>Banque</label>
           <input type="text" value={data.banque ?? ""} onChange={(e) => set("banque", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="Banque Example" />
+            style={inputStyle} placeholder="Banque Example" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Titulaire</label>
+          <label style={labelStyle}>Titulaire</label>
           <input type="text" value={data.titulaire ?? ""} onChange={(e) => set("titulaire", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="NOM PRENOM / RAISON SOCIALE" />
+            style={inputStyle} placeholder="NOM PRENOM / RAISON SOCIALE" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+          <label style={labelStyle}>IBAN</label>
           <input type="text" value={data.iban ?? ""} onChange={(e) => set("iban", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
+            style={{ ...inputStyle, fontFamily: 'monospace' }} placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">BIC / SWIFT</label>
+          <label style={labelStyle}>BIC / SWIFT</label>
           <input type="text" value={data.bic ?? ""} onChange={(e) => set("bic", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#4A90D9] outline-none" placeholder="XXXXXXXX" />
+            style={{ ...inputStyle, fontFamily: 'monospace' }} placeholder="XXXXXXXX" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">PDF du RIB</label>
-          <div className="flex items-center gap-3">
-            <input type="file" ref={fileRef} accept=".pdf" className="hidden"
+          <label style={labelStyle}>PDF du RIB</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input type="file" ref={fileRef} accept=".pdf" style={{ display: 'none' }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onPdfUpload(f); }} />
-            <button onClick={() => fileRef.current?.click()} disabled={uploading}
-              className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded-lg text-sm disabled:opacity-50">
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              {uploading ? "Upload..." : "Téléverser PDF"}
-            </button>
+            <AdminButton variant="ghost" size="md" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {uploading ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> : <Upload style={{ width: 16, height: 16 }} />}
+                {uploading ? "Upload..." : "Televerser PDF"}
+              </span>
+            </AdminButton>
             {pdfUrl && (
-              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#4A90D9] hover:underline">
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: '13px', color: ADMIN_COLORS.navyAccent, textDecoration: 'none' }}>
                 Voir le RIB PDF
               </a>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </AdminCard>
   );
 }
 
@@ -229,39 +256,49 @@ export default function AdminParametres() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9] mx-auto" />
-      </div>
+      <AdminCard style={{ padding: '48px', textAlign: 'center' }}>
+        <Loader2 style={{ width: 32, height: 32, color: ADMIN_COLORS.navyAccent, margin: '0 auto', animation: 'spin 1s linear infinite' }} />
+      </AdminCard>
     );
   }
 
   return (
-    <div className="font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <div style={{ fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Settings className="h-6 w-6 text-[#4A90D9]" /> Paramètres
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.navy, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <Settings style={{ width: 24, height: 24, color: ADMIN_COLORS.navyAccent }} /> Parametres
           </h1>
-          <p className="text-gray-500 mt-1">Émetteurs, RIB, acomptes, multiplicateurs</p>
+          <p style={{ color: ADMIN_COLORS.grayText, marginTop: '4px', fontSize: '14px' }}>Emetteurs, RIB, acomptes, multiplicateurs</p>
         </div>
-        <button onClick={handleSave} disabled={saving}
-          className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50">
-          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          {saving ? "Sauvegarde..." : "Sauvegarder"}
-        </button>
+        <AdminButton variant="primary" size="md" onClick={handleSave} disabled={saving}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            {saving ? <Loader2 style={{ width: 18, height: 18, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 18, height: 18 }} />}
+            {saving ? "Sauvegarde..." : "Sauvegarder"}
+          </span>
+        </AdminButton>
       </div>
 
       {saveMessage && (
-        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMessage.includes("Erreur") ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+        <div style={{
+          marginBottom: '16px',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          fontSize: '13px',
+          fontWeight: 500,
+          background: saveMessage.includes("Erreur") ? ADMIN_COLORS.redBg : ADMIN_COLORS.greenBg,
+          color: saveMessage.includes("Erreur") ? ADMIN_COLORS.redText : ADMIN_COLORS.greenText,
+          border: `1px solid ${saveMessage.includes("Erreur") ? ADMIN_COLORS.redBorder : ADMIN_COLORS.greenBorder}`,
+        }}>
           {saveMessage}
         </div>
       )}
 
       {/* Émetteur Professionnel */}
-      <EmetteurCard title="Émetteur professionnel (factures, devis)" data={emetteurPro} onChange={setEmetteurPro} />
+      <EmetteurCard title="Emetteur professionnel (factures, devis)" data={emetteurPro} onChange={setEmetteurPro} />
 
       {/* Émetteur Personnel */}
-      <EmetteurCard title="Émetteur personnel" data={emetteurPerso} onChange={setEmetteurPerso} />
+      <EmetteurCard title="Emetteur personnel" data={emetteurPerso} onChange={setEmetteurPerso} />
 
       {/* RIB Professionnel */}
       <RibCard title="RIB professionnel" data={ribPro} onChange={setRibPro}
@@ -272,61 +309,65 @@ export default function AdminParametres() {
         pdfUrl={ribPersoPdfUrl} onPdfUpload={(f) => uploadRibPdf(f, "perso")} uploading={uploadingPerso} />
 
       {/* Configuration acomptes */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Percent className="w-5 h-5 text-[#4A90D9]" />
-          <h2 className="text-lg font-semibold text-gray-800">Configuration acomptes</h2>
-        </div>
-        <div className="px-6 py-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <AdminCard style={{ marginBottom: '24px' }}>
+        <AdminCardHeader>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Percent style={{ width: 18, height: 18, color: '#fff' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>Configuration acomptes</span>
+          </div>
+        </AdminCardHeader>
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Pourcentage acompte par défaut</label>
-              <div className="flex items-center gap-2">
+              <label style={labelStyle}>Pourcentage acompte par defaut</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input type="number" min={0} max={100} value={acompteMontant}
                   onChange={(e) => setAcompteMontant(Number(e.target.value))}
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" />
-                <span className="text-sm text-gray-500">%</span>
+                  style={{ ...inputStyle, width: '96px' }} />
+                <span style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>%</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">Appliqué lors de la génération des factures d'acompte</p>
+              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginTop: '4px' }}>Applique lors de la generation des factures d'acompte</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre max d'acomptes</label>
-              <div className="flex items-center gap-2">
+              <label style={labelStyle}>Nombre max d'acomptes</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input type="number" min={1} max={10} value={acompteMaxNb}
                   onChange={(e) => setAcompteMaxNb(Number(e.target.value))}
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none" />
-                <span className="text-sm text-gray-500">acomptes</span>
+                  style={{ ...inputStyle, width: '96px' }} />
+                <span style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>acomptes</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">Nombre maximum de factures d'acompte par devis</p>
+              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginTop: '4px' }}>Nombre maximum de factures d'acompte par devis</p>
             </div>
           </div>
         </div>
-      </div>
+      </AdminCard>
 
       {/* Multiplicateurs prix (lecture seule) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Percent className="w-5 h-5 text-orange-500" />
-          <h2 className="text-lg font-semibold text-gray-800">Multiplicateurs prix</h2>
-        </div>
-        <div className="px-6 py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4 text-center">
-              <p className="text-xs text-gray-500 mb-1">Public (user)</p>
-              <p className="text-2xl font-bold text-[#4A90D9]">×{multipliers.user}</p>
+      <AdminCard style={{ marginBottom: '24px' }}>
+        <AdminCardHeader>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Percent style={{ width: 18, height: 18, color: '#fff' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>Multiplicateurs prix</span>
+          </div>
+        </AdminCardHeader>
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div style={{ background: ADMIN_COLORS.infoBg, borderRadius: '8px', padding: '16px', textAlign: 'center', border: `1px solid ${ADMIN_COLORS.infoBorder}` }}>
+              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginBottom: '4px', marginTop: 0 }}>Public (user)</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.infoBtn, margin: 0 }}>x{multipliers.user}</p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-4 text-center">
-              <p className="text-xs text-gray-500 mb-1">Partenaire</p>
-              <p className="text-2xl font-bold text-orange-500">×{multipliers.partner}</p>
+            <div style={{ background: ADMIN_COLORS.orangeBg, borderRadius: '8px', padding: '16px', textAlign: 'center', border: `1px solid ${ADMIN_COLORS.orangeBorder}` }}>
+              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginBottom: '4px', marginTop: 0 }}>Partenaire</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.orangeBtn, margin: 0 }}>x{multipliers.partner}</p>
             </div>
-            <div className="bg-purple-50 rounded-xl p-4 text-center">
-              <p className="text-xs text-gray-500 mb-1">VIP (fallback)</p>
-              <p className="text-2xl font-bold text-purple-600">×{multipliers.vip}</p>
+            <div style={{ background: ADMIN_COLORS.purpleBg, borderRadius: '8px', padding: '16px', textAlign: 'center', border: `1px solid ${ADMIN_COLORS.purpleBorder}` }}>
+              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginBottom: '4px', marginTop: 0 }}>VIP (fallback)</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.purpleBtn, margin: 0 }}>x{multipliers.vip}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-3">Ces multiplicateurs sont définis dans le code source (features/pricing/model/pricing.ts)</p>
+          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginTop: '12px' }}>Ces multiplicateurs sont definis dans le code source (features/pricing/model/pricing.ts)</p>
         </div>
-      </div>
+      </AdminCard>
     </div>
   );
 }

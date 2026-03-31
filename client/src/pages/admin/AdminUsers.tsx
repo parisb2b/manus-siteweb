@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Search, Save, RefreshCw } from "lucide-react";
+import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
 type Role = "user" | "vip" | "partner" | "collaborateur" | "admin";
 
-const ROLE_COLORS: Record<Role, string> = {
-  user: "bg-gray-100 text-gray-600",
-  vip: "bg-purple-100 text-purple-700",
-  partner: "bg-orange-100 text-orange-700",
-  collaborateur: "bg-blue-100 text-blue-700",
-  admin: "bg-red-100 text-red-700",
+const ROLE_STYLE: Record<Role, { bg: string; border: string; text: string }> = {
+  user:          { bg: ADMIN_COLORS.grayBg,    border: ADMIN_COLORS.grayBorder,   text: ADMIN_COLORS.grayTextDark },
+  vip:           { bg: ADMIN_COLORS.purpleBg,   border: ADMIN_COLORS.purpleBorder, text: ADMIN_COLORS.purpleText },
+  partner:       { bg: ADMIN_COLORS.orangeBg,   border: ADMIN_COLORS.orangeBorder, text: ADMIN_COLORS.orangeText },
+  collaborateur: { bg: ADMIN_COLORS.infoBg,     border: ADMIN_COLORS.infoBorder,   text: ADMIN_COLORS.infoText },
+  admin:         { bg: ADMIN_COLORS.redBg,      border: ADMIN_COLORS.redBorder,    text: ADMIN_COLORS.redText },
 };
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -92,102 +93,175 @@ export default function AdminUsers() {
   users.forEach((u) => { countByRole[u.role] = (countByRole[u.role] ?? 0) + 1; });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">Gestion Utilisateurs</h2>
-        <button onClick={load} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#4A90D9]">
-          <RefreshCw className="h-4 w-4" /> Actualiser
-        </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>
+          Gestion Utilisateurs
+        </h2>
+        <AdminButton variant="ghost" size="sm" onClick={load}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <RefreshCw style={{ width: 14, height: 14 }} /> Actualiser
+          </span>
+        </AdminButton>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
-          <div key={r} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{countByRole[r] ?? 0}</div>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[r]}`}>
-              {ROLE_LABELS[r]}
-            </span>
-          </div>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
+        {(Object.keys(ROLE_LABELS) as Role[]).map((r) => {
+          const rs = ROLE_STYLE[r];
+          return (
+            <AdminCard key={r}>
+              <div style={{ padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: ADMIN_COLORS.navy }}>
+                  {countByRole[r] ?? 0}
+                </div>
+                <span style={{
+                  fontSize: '10px', fontWeight: 600,
+                  padding: '2px 10px', borderRadius: '12px',
+                  background: rs.bg, color: rs.text,
+                  border: `0.5px solid ${rs.border}`,
+                }}>
+                  {ROLE_LABELS[r]}
+                </span>
+              </div>
+            </AdminCard>
+          );
+        })}
       </div>
 
       {/* Filtres + Recherche */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 auto', maxWidth: '320px' }}>
+          <Search style={{
+            position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
+            width: 14, height: 14, color: ADMIN_COLORS.grayText,
+          }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par email ou nom…"
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+            placeholder="Rechercher par email ou nom..."
+            style={{
+              width: '100%', paddingLeft: '32px', paddingRight: '10px',
+              paddingTop: '7px', paddingBottom: '7px',
+              border: `0.5px solid ${ADMIN_COLORS.navyBorder}`,
+              borderRadius: '6px', fontSize: '12px', outline: 'none',
+              background: '#fff', color: ADMIN_COLORS.navy,
+              boxSizing: 'border-box' as const,
+            }}
           />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {(["tous", ...Object.keys(ROLE_LABELS)] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => setFilterRole(r as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filterRole === r ? "bg-[#4A90D9] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {r === "tous" ? "Tous" : ROLE_LABELS[r as Role]}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {(["tous", ...Object.keys(ROLE_LABELS)] as const).map((r) => {
+            const active = filterRole === r;
+            return (
+              <button
+                key={r}
+                onClick={() => setFilterRole(r as any)}
+                style={{
+                  padding: '4px 12px', borderRadius: '6px',
+                  fontSize: '11px', fontWeight: 500, cursor: 'pointer',
+                  border: active ? 'none' : `0.5px solid ${ADMIN_COLORS.grayBorder}`,
+                  background: active ? ADMIN_COLORS.navy : ADMIN_COLORS.grayBg,
+                  color: active ? '#fff' : ADMIN_COLORS.grayTextDark,
+                  transition: 'all 0.15s',
+                }}
+              >
+                {r === "tous" ? "Tous" : ROLE_LABELS[r as Role]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Error */}
       {loadError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-700">
-          <p className="font-semibold mb-1">⚠ Problème de chargement</p>
-          <p>{loadError}</p>
-          <button onClick={load} className="mt-2 text-xs font-bold text-red-600 hover:underline">Réessayer</button>
+        <div style={{
+          background: ADMIN_COLORS.redBg, border: `1px solid ${ADMIN_COLORS.redBorder}`,
+          borderRadius: '8px', padding: '14px 18px',
+        }}>
+          <p style={{ fontWeight: 600, fontSize: '13px', color: ADMIN_COLORS.redText, margin: '0 0 4px' }}>
+            ⚠ Problème de chargement
+          </p>
+          <p style={{ fontSize: '12px', color: ADMIN_COLORS.redText, margin: 0 }}>{loadError}</p>
+          <button
+            onClick={load}
+            style={{
+              marginTop: '8px', fontSize: '11px', fontWeight: 700,
+              color: ADMIN_COLORS.redBtn, background: 'transparent',
+              border: 'none', cursor: 'pointer', textDecoration: 'underline',
+              padding: 0,
+            }}
+          >
+            Réessayer
+          </button>
         </div>
       )}
 
+      {/* Table */}
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+          <Loader2 style={{ width: 32, height: 32, color: ADMIN_COLORS.navyAccent, animation: 'spin 1s linear infinite' }} />
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <AdminCard>
+          <AdminCardHeader>
+            <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}>
+              Liste des utilisateurs
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px' }}>
+              {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
+            </span>
+          </AdminCardHeader>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-left">
-                  <th className="px-5 py-3 font-semibold text-gray-500">Nom</th>
-                  <th className="px-5 py-3 font-semibold text-gray-500">Email</th>
-                  <th className="px-5 py-3 font-semibold text-gray-500">Rôle</th>
-                  <th className="px-5 py-3 font-semibold text-gray-500">Prix négocié (€)</th>
-                  <th className="px-5 py-3 font-semibold text-gray-500">Inscrit le</th>
-                  <th className="px-5 py-3 font-semibold text-gray-500"></th>
+                <tr style={{ background: ADMIN_COLORS.navyLight, borderBottom: `1px solid ${ADMIN_COLORS.navyBorder}` }}>
+                  {['Nom', 'Email', 'Rôle', 'Prix négocié (€)', 'Inscrit le', ''].map((h, i) => (
+                    <th key={i} style={{
+                      padding: '10px 14px', textAlign: 'left',
+                      fontSize: '10px', fontWeight: 600, color: ADMIN_COLORS.navy,
+                      textTransform: 'uppercase', letterSpacing: '0.5px',
+                    }}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.map((u) => {
+              <tbody>
+                {filtered.map((u, idx) => {
                   const ed = edits[u.id] ?? {};
                   const currentRole = (ed.role ?? u.role) as Role;
+                  const rs = ROLE_STYLE[currentRole];
                   return (
-                    <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-medium text-gray-800">
+                    <tr key={u.id} style={{
+                      borderBottom: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
+                      background: idx % 2 === 0 ? '#fff' : ADMIN_COLORS.grayBg,
+                    }}>
+                      <td style={{ padding: '10px 14px', fontWeight: 500, color: ADMIN_COLORS.navy }}>
                         {u.first_name} {u.last_name}
-                        {!u.first_name && !u.last_name && <span className="text-gray-400">—</span>}
+                        {!u.first_name && !u.last_name && <span style={{ color: ADMIN_COLORS.grayText }}>—</span>}
                       </td>
-                      <td className="px-5 py-3 text-gray-600">{u.email}</td>
-                      <td className="px-5 py-3">
+                      <td style={{ padding: '10px 14px', color: ADMIN_COLORS.grayTextDark }}>{u.email}</td>
+                      <td style={{ padding: '10px 14px' }}>
                         <select
                           value={currentRole}
                           onChange={(e) => patch(u.id, "role", e.target.value)}
-                          className={`px-2 py-1 rounded-full text-xs font-semibold border-0 focus:outline-none focus:ring-2 focus:ring-[#4A90D9] cursor-pointer ${ROLE_COLORS[currentRole] ?? ROLE_COLORS.user}`}
+                          style={{
+                            padding: '3px 8px', borderRadius: '12px',
+                            fontSize: '10px', fontWeight: 600, cursor: 'pointer',
+                            border: `0.5px solid ${rs.border}`,
+                            background: rs.bg, color: rs.text,
+                            outline: 'none',
+                          }}
                         >
                           {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
                             <option key={r} value={r}>{ROLE_LABELS[r]}</option>
                           ))}
                         </select>
                       </td>
-                      <td className="px-5 py-3">
+                      <td style={{ padding: '10px 14px' }}>
                         {(currentRole === "vip") && (
                           <input
                             type="number"
@@ -196,23 +270,27 @@ export default function AdminUsers() {
                               const val = e.target.value ? Number(e.target.value) : null;
                               patch(u.id, "prix_negocie", val ? { default: val } : null);
                             }}
-                            className="w-24 border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                            style={{
+                              width: '80px', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`,
+                              borderRadius: '4px', padding: '4px 8px', fontSize: '11px',
+                              outline: 'none', background: '#fff', color: ADMIN_COLORS.navy,
+                            }}
                           />
                         )}
                       </td>
-                      <td className="px-5 py-3 text-gray-400 text-xs">
+                      <td style={{ padding: '10px 14px', color: ADMIN_COLORS.grayText, fontSize: '11px' }}>
                         {u.created_at ? new Date(u.created_at).toLocaleDateString("fr-FR") : "—"}
                       </td>
-                      <td className="px-5 py-3">
+                      <td style={{ padding: '10px 14px' }}>
                         {edits[u.id] && (
-                          <button
-                            onClick={() => save(u.id)}
-                            disabled={saving === u.id}
-                            className="flex items-center gap-1.5 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
-                          >
-                            {saving === u.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                            Sauv.
-                          </button>
+                          <AdminButton variant="primary" size="sm" onClick={() => save(u.id)} disabled={saving === u.id}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              {saving === u.id
+                                ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />
+                                : <Save style={{ width: 12, height: 12 }} />}
+                              Sauv.
+                            </span>
+                          </AdminButton>
                         )}
                       </td>
                     </tr>
@@ -221,10 +299,15 @@ export default function AdminUsers() {
               </tbody>
             </table>
           </div>
-          <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-            <p className="text-xs text-gray-400">{filtered.length} utilisateur{filtered.length !== 1 ? "s" : ""}</p>
+          <div style={{
+            padding: '10px 14px', background: ADMIN_COLORS.grayBg,
+            borderTop: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
+          }}>
+            <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: 0 }}>
+              {filtered.length} utilisateur{filtered.length !== 1 ? "s" : ""}
+            </p>
           </div>
-        </div>
+        </AdminCard>
       )}
     </div>
   );

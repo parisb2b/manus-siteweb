@@ -21,14 +21,14 @@ import {
   UserCheck,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
-const STATUT_COLORS: Record<string, string> = {
-  nouveau: "bg-blue-100 text-blue-700",
-  en_cours: "bg-orange-100 text-orange-700",
-  negociation: "bg-purple-100 text-purple-700",
-  accepte: "bg-emerald-100 text-emerald-700",
-  refuse: "bg-red-100 text-red-700",
-};
+import {
+  ADMIN_COLORS,
+  AdminCard,
+  AdminCardHeader,
+  AdminButton,
+  BadgeStatut,
+  SectionLabel,
+} from "@/components/admin/AdminUI";
 
 const STATUT_LABELS: Record<string, string> = {
   nouveau: "Nouveau",
@@ -38,12 +38,20 @@ const STATUT_LABELS: Record<string, string> = {
   refuse: "Refusé",
 };
 
-const ROLE_COLORS: Record<string, string> = {
-  user: "bg-gray-100 text-gray-600",
-  vip: "bg-purple-100 text-purple-700",
-  partner: "bg-orange-100 text-orange-700",
-  collaborateur: "bg-blue-100 text-blue-700",
-  admin: "bg-red-100 text-red-700",
+const STATUT_BADGE_COLORS: Record<string, { bg: string; color: string }> = {
+  nouveau:     { bg: ADMIN_COLORS.infoBg,    color: ADMIN_COLORS.infoBtn },
+  en_cours:    { bg: ADMIN_COLORS.orangeBg,  color: ADMIN_COLORS.orangeBtn },
+  negociation: { bg: ADMIN_COLORS.purpleBg,  color: ADMIN_COLORS.purpleBtn },
+  accepte:     { bg: ADMIN_COLORS.greenBg,   color: ADMIN_COLORS.greenBtn },
+  refuse:      { bg: ADMIN_COLORS.redBg,     color: ADMIN_COLORS.redBtn },
+};
+
+const ROLE_BADGE_COLORS: Record<string, { bg: string; color: string }> = {
+  user:          { bg: ADMIN_COLORS.grayBg,    color: ADMIN_COLORS.grayText },
+  vip:           { bg: ADMIN_COLORS.purpleBg,  color: ADMIN_COLORS.purpleBtn },
+  partner:       { bg: ADMIN_COLORS.orangeBg,  color: ADMIN_COLORS.orangeBtn },
+  collaborateur: { bg: ADMIN_COLORS.infoBg,    color: ADMIN_COLORS.infoBtn },
+  admin:         { bg: ADMIN_COLORS.redBg,     color: ADMIN_COLORS.redBtn },
 };
 
 interface QuoteRow { id: string; nom: string; email: string; statut: string; created_at: string; prix_total_calcule?: number; }
@@ -93,165 +101,249 @@ export default function AdminDashboard() {
     { label: "Paramètres", desc: "Config avancée", icon: Settings, path: "/admin/settings" },
   ];
 
+  const inlineBadge = (text: string, colors: { bg: string; color: string }) => (
+    <span style={{
+      fontSize: '10px',
+      fontWeight: 600,
+      padding: '2px 10px',
+      borderRadius: '12px',
+      background: colors.bg,
+      color: colors.color,
+      textTransform: 'capitalize' as const,
+    }}>
+      {text}
+    </span>
+  );
+
   return (
-    <div className="font-sans space-y-6">
+    <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Bienvenue sur le panneau d'administration de 97 import</p>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>Dashboard</h1>
+        <p style={{ color: ADMIN_COLORS.grayText, marginTop: '4px', fontSize: '14px' }}>
+          Bienvenue sur le panneau d'administration de 97 import
+        </p>
       </div>
 
       {/* ── Supabase stats ── */}
       {supabaseConfigured && (
         <>
           {/* Devis par statut */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#4A90D9]" />
-              Devis — {supabaseLoading ? "..." : totalQuotes} total
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <AdminCard>
+            <AdminCardHeader>
+              <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare style={{ width: 16, height: 16 }} />
+                Devis — {supabaseLoading ? "..." : totalQuotes} total
+              </span>
+            </AdminCardHeader>
+            <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
               {Object.entries(STATUT_LABELS).map(([key, label]) => (
-                <div key={key} className="text-center bg-gray-50 rounded-xl p-3">
-                  <div className="text-2xl font-bold text-gray-800">{supabaseLoading ? "…" : (quotesByStatut[key] ?? 0)}</div>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUT_COLORS[key]}`}>{label}</span>
+                <div key={key} style={{
+                  textAlign: 'center',
+                  background: ADMIN_COLORS.grayBg,
+                  borderRadius: '12px',
+                  padding: '12px',
+                }}>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.navy }}>
+                    {supabaseLoading ? "..." : (quotesByStatut[key] ?? 0)}
+                  </div>
+                  <BadgeStatut statut={key} />
                 </div>
               ))}
             </div>
-          </div>
+          </AdminCard>
 
           {/* Utilisateurs par rôle */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-[#4A90D9]" />
-              Utilisateurs — {supabaseLoading ? "..." : totalUsers} total
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {(["user", "vip", "partner", "collaborateur", "admin"] as const).map((role) => (
-                <div key={role} className="text-center bg-gray-50 rounded-xl p-3">
-                  <div className="text-2xl font-bold text-gray-800">{supabaseLoading ? "…" : (usersByRole[role] ?? 0)}</div>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[role]}`}>{role}</span>
-                </div>
-              ))}
+          <AdminCard>
+            <AdminCardHeader>
+              <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <UserCheck style={{ width: 16, height: 16 }} />
+                Utilisateurs — {supabaseLoading ? "..." : totalUsers} total
+              </span>
+            </AdminCardHeader>
+            <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
+              {(["user", "vip", "partner", "collaborateur", "admin"] as const).map((role) => {
+                const colors = ROLE_BADGE_COLORS[role] ?? { bg: ADMIN_COLORS.grayBg, color: ADMIN_COLORS.grayText };
+                return (
+                  <div key={role} style={{
+                    textAlign: 'center',
+                    background: ADMIN_COLORS.grayBg,
+                    borderRadius: '12px',
+                    padding: '12px',
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: 700, color: ADMIN_COLORS.navy }}>
+                      {supabaseLoading ? "..." : (usersByRole[role] ?? 0)}
+                    </div>
+                    {inlineBadge(role, colors)}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </AdminCard>
 
           {/* Last 5 devis + last 5 users */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
             {/* Last quotes */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#4A90D9]" />
-                Derniers devis
-              </h3>
-              {supabaseLoading ? (
-                <p className="text-sm text-gray-400">Chargement...</p>
-              ) : lastQuotes.length === 0 ? (
-                <p className="text-sm text-gray-400">Aucun devis</p>
-              ) : (
-                <ul className="space-y-2">
-                  {lastQuotes.map((q) => (
-                    <li key={q.id} className="flex items-center justify-between text-sm">
-                      <div>
-                        <p className="font-medium text-gray-800">{q.nom}</p>
-                        <p className="text-xs text-gray-400">{q.email}</p>
+            <AdminCard>
+              <AdminCardHeader>
+                <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText style={{ width: 16, height: 16 }} />
+                  Derniers devis
+                </span>
+              </AdminCardHeader>
+              <div style={{ padding: '16px' }}>
+                {supabaseLoading ? (
+                  <p style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>Chargement...</p>
+                ) : lastQuotes.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>Aucun devis</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {lastQuotes.map((q) => (
+                      <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                        <div>
+                          <p style={{ fontWeight: 500, color: ADMIN_COLORS.navy, margin: 0 }}>{q.nom}</p>
+                          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: 0 }}>{q.email}</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <BadgeStatut statut={q.statut} />
+                          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: '4px 0 0' }}>
+                            {new Date(q.created_at).toLocaleDateString("fr-FR")}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUT_COLORS[q.statut] ?? "bg-gray-100 text-gray-600"}`}>
-                          {STATUT_LABELS[q.statut] ?? q.statut}
-                        </span>
-                        <p className="text-xs text-gray-400 mt-0.5">{new Date(q.created_at).toLocaleDateString("fr-FR")}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AdminCard>
 
             {/* Last users */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#4A90D9]" />
-                Derniers inscrits
-              </h3>
-              {supabaseLoading ? (
-                <p className="text-sm text-gray-400">Chargement...</p>
-              ) : lastUsers.length === 0 ? (
-                <p className="text-sm text-gray-400">Aucun utilisateur</p>
-              ) : (
-                <ul className="space-y-2">
-                  {lastUsers.map((u) => (
-                    <li key={u.id} className="flex items-center justify-between text-sm">
-                      <div>
-                        <p className="font-medium text-gray-800">{u.first_name} {u.last_name} {!u.first_name && !u.last_name && <span className="text-gray-400">—</span>}</p>
-                        <p className="text-xs text-gray-400">{u.email}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-gray-100 text-gray-600"}`}>{u.role}</span>
-                        <p className="text-xs text-gray-400 mt-0.5">{new Date(u.created_at).toLocaleDateString("fr-FR")}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <AdminCard>
+              <AdminCardHeader>
+                <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users style={{ width: 16, height: 16 }} />
+                  Derniers inscrits
+                </span>
+              </AdminCardHeader>
+              <div style={{ padding: '16px' }}>
+                {supabaseLoading ? (
+                  <p style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>Chargement...</p>
+                ) : lastUsers.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>Aucun utilisateur</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {lastUsers.map((u) => {
+                      const colors = ROLE_BADGE_COLORS[u.role] ?? { bg: ADMIN_COLORS.grayBg, color: ADMIN_COLORS.grayText };
+                      return (
+                        <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                          <div>
+                            <p style={{ fontWeight: 500, color: ADMIN_COLORS.navy, margin: 0 }}>
+                              {u.first_name} {u.last_name} {!u.first_name && !u.last_name && <span style={{ color: ADMIN_COLORS.grayText }}>—</span>}
+                            </p>
+                            <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: 0 }}>{u.email}</p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            {inlineBadge(u.role, colors)}
+                            <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: '4px 0 0' }}>
+                              {new Date(u.created_at).toLocaleDateString("fr-FR")}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </AdminCard>
           </div>
         </>
       )}
 
       {/* Quick links */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#4A90D9]" />
-          Accès rapides
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <AdminCard>
+        <AdminCardHeader>
+          <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Activity style={{ width: 16, height: 16 }} />
+            Accès rapides
+          </span>
+        </AdminCardHeader>
+        <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '4px' }}>
           {quickLinks.map((link) => {
             const Icon = link.icon;
             return (
               <a
                 key={link.path}
                 href={link.path}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = ADMIN_COLORS.navyLight; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
-                <div className="bg-gray-100 group-hover:bg-[#4A90D9]/10 p-2 rounded-lg transition-colors">
-                  <Icon className="w-4 h-4 text-gray-500 group-hover:text-[#4A90D9] transition-colors" />
+                <div style={{
+                  background: ADMIN_COLORS.grayBg,
+                  padding: '8px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Icon style={{ width: 16, height: 16, color: ADMIN_COLORS.navyAccent }} />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-[#4A90D9] transition-colors">{link.label}</p>
-                  <p className="text-xs text-gray-400 truncate">{link.desc}</p>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: '13px', fontWeight: 500, color: ADMIN_COLORS.navy, margin: 0 }}>{link.label}</p>
+                  <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.desc}</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-300 ml-auto group-hover:text-[#4A90D9] transition-colors flex-shrink-0" />
+                <ChevronRight style={{ width: 14, height: 14, color: ADMIN_COLORS.grayBorder, flexShrink: 0 }} />
               </a>
             );
           })}
         </div>
-      </div>
+      </AdminCard>
 
       {/* System status */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#4A90D9]" />
-          Statut du système
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Déploiement</span>
-            <span className="flex items-center gap-1.5 text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> Vercel SPA</span>
+      <AdminCard>
+        <AdminCardHeader>
+          <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 style={{ width: 16, height: 16 }} />
+            Statut du système
+          </span>
+        </AdminCardHeader>
+        <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', fontSize: '13px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: ADMIN_COLORS.grayText }}>Déploiement</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: ADMIN_COLORS.greenText, fontWeight: 500 }}>
+              <span style={{ width: 8, height: 8, background: ADMIN_COLORS.greenBtn, borderRadius: '50%', display: 'inline-block' }} />
+              Vercel SPA
+            </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Supabase</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: ADMIN_COLORS.grayText }}>Supabase</span>
             {supabaseConfigured ? (
-              <span className="flex items-center gap-1.5 text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> Configuré</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: ADMIN_COLORS.greenText, fontWeight: 500 }}>
+                <span style={{ width: 8, height: 8, background: ADMIN_COLORS.greenBtn, borderRadius: '50%', display: 'inline-block' }} />
+                Configuré
+              </span>
             ) : (
-              <span className="text-amber-600 text-xs font-medium">Non configuré</span>
+              <span style={{ color: ADMIN_COLORS.orangeText, fontSize: '12px', fontWeight: 500 }}>Non configuré</span>
             )}
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Heure</span>
-            <span className="text-xs text-gray-500">{new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: ADMIN_COLORS.grayText, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Clock style={{ width: 14, height: 14 }} /> Heure
+            </span>
+            <span style={{ fontSize: '12px', color: ADMIN_COLORS.grayTextDark }}>
+              {new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </span>
           </div>
         </div>
-      </div>
+      </AdminCard>
     </div>
   );
 }

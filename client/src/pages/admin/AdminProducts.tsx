@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowL
 import { invalidateProductsCache } from "@/hooks/useProducts";
 import { supabase } from "@/lib/supabase";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
+import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
 interface SupabaseProduit {
   id: string;
@@ -673,208 +674,210 @@ export default function AdminProducts() {
 
   // ========= LIST VIEW =========
   return (
-    <div className="font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <div style={{ fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Produits</h1>
-          <p className="text-gray-500 mt-1">Gérez le catalogue de produits ({products.length})</p>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>Produits</h1>
+          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: '2px 0 0' }}>Gérez le catalogue de produits ({products.length})</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {canRestore && (
-            <button onClick={handleRestore} disabled={restoring}
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50">
-              <Undo2 className="w-4 h-4" /> {restoring ? "Restauration..." : "Annuler dernière modification"}
-            </button>
+            <AdminButton variant="warning" size="md" onClick={handleRestore} disabled={restoring}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Undo2 style={{ width: 14, height: 14 }} /> {restoring ? "Restauration..." : "Annuler dernière modification"}
+              </span>
+            </AdminButton>
           )}
-          <button onClick={openAdd} className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors">
-            <Plus className="w-5 h-5" /> Ajouter un produit
-          </button>
+          <AdminButton variant="primary" size="md" onClick={openAdd}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Plus style={{ width: 14, height: 14 }} /> Ajouter un produit
+            </span>
+          </AdminButton>
         </div>
       </div>
 
       {saveMessage && (
-        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMessage.includes("Erreur") ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+        <div style={{
+          marginBottom: '12px', padding: '8px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 500,
+          background: saveMessage.includes("Erreur") ? ADMIN_COLORS.redBg : ADMIN_COLORS.greenBg,
+          color: saveMessage.includes("Erreur") ? ADMIN_COLORS.redText : ADMIN_COLORS.greenText,
+          border: `0.5px solid ${saveMessage.includes("Erreur") ? ADMIN_COLORS.redBorder : ADMIN_COLORS.greenBorder}`,
+        }}>
           {saveMessage}
         </div>
       )}
 
       {/* ── Supabase Prix Catalogue ── */}
       {supabase && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <AdminCard style={{ marginBottom: '12px' }}>
           <button
             onClick={() => setSupabaseOpen(!supabaseOpen)}
-            className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 text-left"
+            style={{
+              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+            }}
           >
-            <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-[#4A90D9]" />
-              <span className="font-semibold text-gray-800">Prix Catalogue Supabase</span>
-              {supabaseProds.length > 0 && <span className="text-xs text-gray-400">({supabaseProds.length} produits)</span>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Database style={{ width: 14, height: 14, color: ADMIN_COLORS.navyAccent }} />
+              <span style={{ fontWeight: 600, fontSize: '13px', color: ADMIN_COLORS.navy }}>Prix Catalogue Supabase</span>
+              {supabaseProds.length > 0 && <span style={{ fontSize: '10px', color: ADMIN_COLORS.grayText }}>({supabaseProds.length} produits)</span>}
             </div>
-            {supabaseOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+            {supabaseOpen ? <ChevronUp style={{ width: 14, height: 14, color: ADMIN_COLORS.grayText }} /> : <ChevronDown style={{ width: 14, height: 14, color: ADMIN_COLORS.grayText }} />}
           </button>
 
           {supabaseOpen && (
-            <div className="border-t border-gray-100">
+            <div style={{ borderTop: `0.5px solid ${ADMIN_COLORS.grayBorder}` }}>
               {supabaseLoading ? (
-                <div className="p-8 text-center text-gray-400">Chargement...</div>
+                <div style={{ padding: '32px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Chargement...</div>
               ) : supabaseProds.length === 0 ? (
-                <div className="p-8 text-center text-gray-400">Aucun produit dans Supabase.</div>
+                <div style={{ padding: '32px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Aucun produit dans Supabase.</div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-100">
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500">Nom</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden lg:table-cell">Réf interne</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500 hidden md:table-cell">Réf / Catégorie</th>
-                        <th className="text-left px-4 py-3 font-semibold text-emerald-600">Achat</th>
-                        <th className="text-left px-4 py-3 font-semibold text-[#4A90D9]">Public ×2</th>
-                        <th className="text-left px-4 py-3 font-semibold text-orange-500">Partenaire ×1.2</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-500">Actif</th>
-                        <th className="px-4 py-3"></th>
+                      <tr style={{ background: ADMIN_COLORS.navyLight, borderBottom: `0.5px solid ${ADMIN_COLORS.navyBorder}` }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Nom</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Réf interne</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Réf / Catégorie</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.greenText, fontSize: '10px' }}>Achat</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navyAccent, fontSize: '10px' }}>Public ×2</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.orangeBtn, fontSize: '10px' }}>Partenaire ×1.2</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Actif</th>
+                        <th style={{ padding: '8px 12px' }}></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody>
                       {supabaseProds.map((prod) => {
                         const ed = supabaseEdits[prod.id] ?? {};
                         const prixAchat = ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat;
                         const isExpanded = expandedSupabaseId === prod.id;
+                        const inputSt: React.CSSProperties = { width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' };
+                        const tdSt: React.CSSProperties = { padding: '6px 12px', borderBottom: `0.5px solid ${ADMIN_COLORS.grayBorder}` };
                         return (
                           <Fragment key={prod.id}>
-                          <tr className="hover:bg-gray-50">
-                            <td className="px-4 py-3">
-                              <button onClick={() => setExpandedSupabaseId(isExpanded ? null : prod.id)} className="text-left">
-                                <div className="font-medium text-gray-800 flex items-center gap-1">
-                                  {isExpanded ? <ChevronUp className="w-3 h-3 text-gray-400" /> : <ChevronDown className="w-3 h-3 text-gray-400" />}
+                          <tr>
+                            <td style={tdSt}>
+                              <button onClick={() => setExpandedSupabaseId(isExpanded ? null : prod.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                                <div style={{ fontWeight: 600, color: ADMIN_COLORS.navy, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
+                                  {isExpanded ? <ChevronUp style={{ width: 10, height: 10, color: ADMIN_COLORS.grayText }} /> : <ChevronDown style={{ width: 10, height: 10, color: ADMIN_COLORS.grayText }} />}
                                   {prod.nom}
                                 </div>
-                                {prod.description && <div className="text-xs text-gray-400 truncate max-w-[200px] ml-4">{prod.description}</div>}
+                                {prod.description && <div style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: '14px' }}>{prod.description}</div>}
                               </button>
                             </td>
-                            <td className="px-4 py-3 hidden lg:table-cell">
-                              <input
-                                type="text"
-                                value={ed.reference_interne !== undefined ? ed.reference_interne : prod.reference_interne ?? ""}
-                                onChange={(e) => patchSupabase(prod.id, "reference_interne", e.target.value)}
-                                placeholder="REF-001"
-                                className="w-28 border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-                              />
+                            <td style={tdSt}>
+                              <input type="text" value={ed.reference_interne !== undefined ? ed.reference_interne : prod.reference_interne ?? ""}
+                                onChange={(e) => patchSupabase(prod.id, "reference_interne", e.target.value)} placeholder="REF-001"
+                                style={{ ...inputSt, width: '100px', fontFamily: 'monospace', fontSize: '10px' }} />
                             </td>
-                            <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
+                            <td style={{ ...tdSt, color: ADMIN_COLORS.grayText, fontSize: '11px' }}>
                               <div>{prod.reference ?? "—"}</div>
-                              <div className="text-xs text-gray-400">{prod.categorie ?? "—"}</div>
+                              <div style={{ fontSize: '9px', color: ADMIN_COLORS.grayText }}>{prod.categorie ?? "—"}</div>
                             </td>
-                            <td className="px-4 py-3">
-                              <input
-                                type="number"
-                                value={ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat}
+                            <td style={tdSt}>
+                              <input type="number" value={ed.prix_achat !== undefined ? ed.prix_achat : prod.prix_achat}
                                 onChange={(e) => patchSupabase(prod.id, "prix_achat", e.target.value ? Number(e.target.value) : 0)}
-                                className="w-28 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-                              />
+                                style={{ ...inputSt, width: '100px' }} />
                             </td>
-                            <td className="px-4 py-3 font-semibold text-[#4A90D9]">{formatEur(calculerPrix(prixAchat, "user").prixAffiche!)}</td>
-                            <td className="px-4 py-3 font-semibold text-orange-500">{formatEur(calculerPrix(prixAchat, "partner").prixAffiche!)}</td>
-                            <td className="px-4 py-3">
-                              <button onClick={() => toggleActif(prod)} className="text-gray-400 hover:text-[#4A90D9]">
-                                {prod.actif ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-gray-300" />}
+                            <td style={{ ...tdSt, fontWeight: 600, color: ADMIN_COLORS.navyAccent, fontSize: '11px' }}>{formatEur(calculerPrix(prixAchat, "user").prixAffiche!)}</td>
+                            <td style={{ ...tdSt, fontWeight: 600, color: ADMIN_COLORS.orangeBtn, fontSize: '11px' }}>{formatEur(calculerPrix(prixAchat, "partner").prixAffiche!)}</td>
+                            <td style={tdSt}>
+                              <button onClick={() => toggleActif(prod)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                {prod.actif ? <ToggleRight style={{ width: 20, height: 20, color: ADMIN_COLORS.greenBtn }} /> : <ToggleLeft style={{ width: 20, height: 20, color: ADMIN_COLORS.grayText }} />}
                               </button>
                             </td>
-                            <td className="px-4 py-3">
+                            <td style={tdSt}>
                               {supabaseEdits[prod.id] && (
-                                <button
-                                  onClick={() => saveSupabase(prod.id)}
-                                  disabled={supabaseSaving === prod.id}
-                                  className="flex items-center gap-1 bg-[#4A90D9] hover:bg-[#3A7BC8] text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
-                                >
-                                  {supabaseSaving === prod.id ? <span className="animate-spin">⏳</span> : <Save className="w-3 h-3" />}
-                                  Sauv.
-                                </button>
+                                <AdminButton variant="primary" size="sm" onClick={() => saveSupabase(prod.id)} disabled={supabaseSaving === prod.id}>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    {supabaseSaving === prod.id ? <span>⏳</span> : <Save style={{ width: 10, height: 10 }} />} Sauv.
+                                  </span>
+                                </AdminButton>
                               )}
                             </td>
                           </tr>
-                          {/* Détails étendus du produit */}
                           {isExpanded && (
                             <tr>
-                              <td colSpan={8} className="bg-gray-50 px-6 py-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+                              <td colSpan={8} style={{ background: ADMIN_COLORS.grayBg, padding: '12px 16px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', maxWidth: '800px' }}>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Nom anglais</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Nom anglais</label>
                                     <input
                                       type="text"
                                       value={ed.nom_en !== undefined ? ed.nom_en : prod.nom_en ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "nom_en", e.target.value)}
                                       placeholder="English name"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Nom chinois</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Nom chinois</label>
                                     <input
                                       type="text"
                                       value={ed.nom_zh !== undefined ? ed.nom_zh : prod.nom_zh ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "nom_zh", e.target.value)}
                                       placeholder="中文名称"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Dimensions (L×l×H cm)</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Dimensions (L×l×H cm)</label>
                                     <input
                                       type="text"
                                       value={ed.dimensions !== undefined ? ed.dimensions : prod.dimensions ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "dimensions", e.target.value)}
                                       placeholder="350×150×240"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Poids brut (kg)</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Poids brut (kg)</label>
                                     <input
                                       type="number"
                                       value={ed.poids_brut !== undefined ? ed.poids_brut : prod.poids_brut ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "poids_brut", e.target.value ? Number(e.target.value) : null)}
                                       placeholder="1800"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Poids net (kg)</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Poids net (kg)</label>
                                     <input
                                       type="number"
                                       value={ed.poids_net !== undefined ? ed.poids_net : prod.poids_net ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "poids_net", e.target.value ? Number(e.target.value) : null)}
                                       placeholder="1650"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Code douanier (HS)</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>Code douanier (HS)</label>
                                     <input
                                       type="text"
                                       value={ed.code_douanier !== undefined ? ed.code_douanier : prod.code_douanier ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "code_douanier", e.target.value)}
                                       placeholder="8429.11.00"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', fontFamily: 'monospace', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">URL notice PDF</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>URL notice PDF</label>
                                     <input
                                       type="url"
                                       value={ed.notice_url !== undefined ? ed.notice_url : prod.notice_url ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "notice_url", e.target.value)}
                                       placeholder="https://…/notice.pdf"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-xs text-gray-500 mb-1">URL vidéo</label>
+                                    <label style={{ display: 'block', fontSize: '10px', color: ADMIN_COLORS.grayText, marginBottom: '3px' }}>URL vidéo</label>
                                     <input
                                       type="url"
                                       value={ed.video_url !== undefined ? ed.video_url : prod.video_url ?? ""}
                                       onChange={(e) => patchSupabase(prod.id, "video_url", e.target.value)}
                                       placeholder="https://youtube.com/…"
-                                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
+                                      style={{ width: '100%', border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', outline: 'none', background: '#fff', color: ADMIN_COLORS.navy, boxSizing: 'border-box' as const }}
                                     />
                                   </div>
                                 </div>
@@ -890,53 +893,57 @@ export default function AdminProducts() {
               )}
             </div>
           )}
-        </div>
+        </AdminCard>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <AdminCard>
         {loading ? (
-          <div className="p-12 text-center text-gray-500">Chargement...</div>
+          <div style={{ padding: '48px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Chargement...</div>
         ) : products.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">Aucun produit trouvé.</div>
+          <div style={{ padding: '48px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Aucun produit trouvé.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Image</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Nom</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">Catégorie</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Prix</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Statut</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Actions</th>
+                <tr style={{ background: ADMIN_COLORS.navy }}>
+                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Image</th>
+                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Nom</th>
+                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Catégorie</th>
+                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Prix</th>
+                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Statut</th>
+                  <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 600, color: '#fff', fontSize: '10px' }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {products.map(product => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => openEdit(product)}>
-                    <td className="px-4 py-3">
+                  <tr key={product.id} onClick={() => openEdit(product)} style={{ cursor: 'pointer', borderBottom: `0.5px solid ${ADMIN_COLORS.grayBorder}` }}>
+                    <td style={{ padding: '6px 12px' }}>
                       {product.image ? (
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" onError={e => (e.target as HTMLImageElement).style.display = "none"} />
+                        <img src={product.image} alt={product.name} style={{ width: 36, height: 36, borderRadius: '6px', objectFit: 'cover', background: ADMIN_COLORS.grayBg }} onError={e => (e.target as HTMLImageElement).style.display = "none"} />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center"><ImageIcon className="w-5 h-5 text-gray-400" /></div>
+                        <div style={{ width: 36, height: 36, borderRadius: '6px', background: ADMIN_COLORS.grayBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImageIcon style={{ width: 16, height: 16, color: ADMIN_COLORS.grayText }} /></div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{product.name}</td>
-                    <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{product.category}</td>
-                    <td className="px-4 py-3 text-gray-800 font-medium">{product.priceDisplay || `${product.price} €`}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${product.active !== false ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                    <td style={{ padding: '6px 12px', fontWeight: 600, color: ADMIN_COLORS.navy }}>{product.name}</td>
+                    <td style={{ padding: '6px 12px', color: ADMIN_COLORS.grayTextDark }}>{product.category}</td>
+                    <td style={{ padding: '6px 12px', color: ADMIN_COLORS.navy, fontWeight: 600 }}>{product.priceDisplay || `${product.price} €`}</td>
+                    <td style={{ padding: '6px 12px' }}>
+                      <span style={{
+                        display: 'inline-flex', padding: '2px 10px', borderRadius: '12px', fontSize: '10px', fontWeight: 500,
+                        background: product.active !== false ? ADMIN_COLORS.greenBg : ADMIN_COLORS.redBg,
+                        color: product.active !== false ? ADMIN_COLORS.greenText : ADMIN_COLORS.redText,
+                      }}>
                         {product.active !== false ? "Actif" : "Inactif"}
                       </span>
                     </td>
-                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => openEdit(product)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#4A90D9] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
-                          <Pencil className="w-3.5 h-3.5" /> Modifier
-                        </button>
-                        <button onClick={() => setDeleteConfirm(product.id)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                    <td style={{ padding: '6px 12px' }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                        <AdminButton variant="ghost" size="sm" onClick={() => openEdit(product)}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Pencil style={{ width: 10, height: 10 }} /> Modifier</span>
+                        </AdminButton>
+                        <AdminButton variant="danger" size="sm" onClick={() => setDeleteConfirm(product.id)}>
+                          <Trash2 style={{ width: 10, height: 10 }} />
+                        </AdminButton>
                       </div>
                     </td>
                   </tr>
@@ -945,16 +952,16 @@ export default function AdminProducts() {
             </table>
           </div>
         )}
-      </div>
+      </AdminCard>
 
       {deleteConfirm !== null && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Confirmer la suppression</h3>
-            <p className="text-gray-600 text-sm mb-6">Êtes-vous sûr de vouloir supprimer ce produit ?</p>
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Annuler</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors">Supprimer</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '380px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: ADMIN_COLORS.navy, marginBottom: '8px' }}>Confirmer la suppression</h3>
+            <p style={{ color: ADMIN_COLORS.grayTextDark, fontSize: '12px', marginBottom: '20px' }}>Êtes-vous sûr de vouloir supprimer ce produit ?</p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <AdminButton variant="ghost" size="md" onClick={() => setDeleteConfirm(null)}>Annuler</AdminButton>
+              <AdminButton variant="danger" size="md" onClick={() => handleDelete(deleteConfirm)}>Supprimer</AdminButton>
             </div>
           </div>
         </div>

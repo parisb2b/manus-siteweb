@@ -7,6 +7,10 @@ import {
   ChevronDown, ChevronUp, Download, Handshake,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import {
+  ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton,
+  SectionLabel, AdminInput,
+} from "@/components/admin/AdminUI";
 
 interface Partner {
   id: string;
@@ -193,119 +197,122 @@ export default function AdminPartenaires() {
   }, [stats]);
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <Handshake className="h-6 w-6 text-orange-500" /> Partenaires
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.navy, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+          <Handshake style={{ width: 22, height: 22, color: ADMIN_COLORS.orangeBtn }} /> Partenaires
         </h2>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={exportAllCommissions} className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-800 px-3 py-1.5 bg-orange-50 rounded-lg">
-            <Download className="h-4 w-4" /> Export commissions
-          </button>
-          <button onClick={load} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#4A90D9]">
-            <RefreshCw className="h-4 w-4" /> Actualiser
-          </button>
-          <button
-            onClick={() => setShowAdd((v) => !v)}
-            className="flex items-center gap-2 text-sm bg-[#4A90D9] text-white px-3 py-1.5 rounded-lg hover:bg-[#3A7BC8] transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Ajouter
-          </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <AdminButton variant="warning" size="sm" onClick={exportAllCommissions}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Download style={{ width: 14, height: 14 }} /> Export commissions
+            </span>
+          </AdminButton>
+          <AdminButton variant="ghost" size="sm" onClick={load}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <RefreshCw style={{ width: 14, height: 14 }} /> Actualiser
+            </span>
+          </AdminButton>
+          <AdminButton variant="primary" size="sm" onClick={() => setShowAdd((v) => !v)}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Plus style={{ width: 14, height: 14 }} /> Ajouter
+            </span>
+          </AdminButton>
         </div>
       </div>
 
       {/* Résumé global */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-400">Partenaires actifs</p>
-          <p className="text-2xl font-bold text-gray-800">{partners.filter((p) => p.actif).length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-400">Total devis</p>
-          <p className="text-2xl font-bold text-[#4A90D9]">{quotesData.length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-400">Commissions totales</p>
-          <p className="text-2xl font-bold text-orange-500">{formatEur(totaux.total)}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-400">Commissions impayées</p>
-          <p className="text-2xl font-bold text-red-500">{formatEur(totaux.impayees)}</p>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+        <AdminCard style={{ padding: '14px' }}>
+          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: '0 0 4px' }}>Partenaires actifs</p>
+          <p style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>{partners.filter((p) => p.actif).length}</p>
+        </AdminCard>
+        <AdminCard style={{ padding: '14px' }}>
+          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: '0 0 4px' }}>Total devis</p>
+          <p style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.navyAccent, margin: 0 }}>{quotesData.length}</p>
+        </AdminCard>
+        <AdminCard style={{ padding: '14px' }}>
+          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: '0 0 4px' }}>Commissions totales</p>
+          <p style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.orangeBtn, margin: 0 }}>{formatEur(totaux.total)}</p>
+        </AdminCard>
+        <AdminCard style={{ padding: '14px' }}>
+          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: '0 0 4px' }}>Commissions impayées</p>
+          <p style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.redBtn, margin: 0 }}>{formatEur(totaux.impayees)}</p>
+        </AdminCard>
       </div>
 
       {/* Flash message */}
       {msg && (
-        <div className={`rounded-lg px-4 py-2.5 text-sm font-medium ${msg.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+        <div style={{
+          borderRadius: '6px',
+          padding: '8px 14px',
+          fontSize: '12px',
+          fontWeight: 500,
+          background: msg.type === "ok" ? ADMIN_COLORS.greenBg : ADMIN_COLORS.redBg,
+          color: msg.type === "ok" ? ADMIN_COLORS.greenText : ADMIN_COLORS.redText,
+          border: `0.5px solid ${msg.type === "ok" ? ADMIN_COLORS.greenBorder : ADMIN_COLORS.redBorder}`,
+        }}>
           {msg.text}
         </div>
       )}
 
       {/* Formulaire ajout */}
       {showAdd && (
-        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
-          <p className="text-sm font-bold text-gray-700">Nouveau partenaire</p>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Nom *</label>
-              <input
-                value={newPartner.nom}
-                onChange={(e) => {
-                  const nom = e.target.value;
-                  setNewPartner((p) => ({ ...p, nom, code: p.code || generateCode(nom) }));
-                }}
-                placeholder="Thomas Dupont"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Code (2 lettres)</label>
-              <input
-                value={newPartner.code}
-                onChange={(e) => setNewPartner((p) => ({ ...p, code: e.target.value.toUpperCase().slice(0, 3) }))}
-                placeholder="TD"
-                maxLength={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Email</label>
-              <input
-                value={newPartner.email}
-                onChange={(e) => setNewPartner((p) => ({ ...p, email: e.target.value }))}
-                placeholder="email@exemple.com"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Téléphone</label>
-              <input
-                value={newPartner.telephone}
-                onChange={(e) => setNewPartner((p) => ({ ...p, telephone: e.target.value }))}
-                placeholder="+33 6 …"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A90D9]"
-              />
-            </div>
+        <AdminCard style={{ padding: '16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: '0 0 12px' }}>Nouveau partenaire</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+            <AdminInput
+              label="Nom *"
+              value={newPartner.nom}
+              onChange={(v) => {
+                const nom = v;
+                setNewPartner((p) => ({ ...p, nom, code: p.code || generateCode(nom) }));
+              }}
+              placeholder="Thomas Dupont"
+            />
+            <AdminInput
+              label="Code (2 lettres)"
+              value={newPartner.code}
+              onChange={(v) => setNewPartner((p) => ({ ...p, code: v.toUpperCase().slice(0, 3) }))}
+              placeholder="TD"
+            />
+            <AdminInput
+              label="Email"
+              value={newPartner.email}
+              onChange={(v) => setNewPartner((p) => ({ ...p, email: v }))}
+              placeholder="email@exemple.com"
+            />
+            <AdminInput
+              label="Téléphone"
+              value={newPartner.telephone}
+              onChange={(v) => setNewPartner((p) => ({ ...p, telephone: v }))}
+              placeholder="+33 6 …"
+            />
           </div>
-          <div className="flex gap-2 justify-end">
-            <button onClick={() => setShowAdd(false)} className="text-sm text-gray-500 px-3 py-1.5 hover:bg-gray-100 rounded-lg">Annuler</button>
-            <button
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' }}>
+            <AdminButton variant="ghost" size="sm" onClick={() => setShowAdd(false)}>Annuler</AdminButton>
+            <AdminButton
+              variant="primary"
+              size="sm"
               onClick={addPartner}
               disabled={saving === "new" || !newPartner.nom.trim()}
-              className="flex items-center gap-1.5 text-sm bg-[#4A90D9] text-white px-4 py-1.5 rounded-lg hover:bg-[#3A7BC8] disabled:opacity-50"
             >
-              {saving === "new" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Ajouter
-            </button>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                {saving === "new" ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Check style={{ width: 14, height: 14 }} />}
+                Ajouter
+              </span>
+            </AdminButton>
           </div>
-        </div>
+        </AdminCard>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+          <Loader2 style={{ width: 28, height: 28, color: ADMIN_COLORS.navyAccent, animation: 'spin 1s linear infinite' }} />
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {partners.map((p) => {
             const s = stats[p.id] ?? { nb_devis: 0, total_commissions: 0, commissions_payees: 0, commissions_impayees: 0 };
             const isOpen = expandedId === p.id;
@@ -313,111 +320,113 @@ export default function AdminPartenaires() {
             const isAdminPartner = p.id === ADMIN_ID;
 
             return (
-              <div key={p.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isAdminPartner ? "border-orange-200" : "border-gray-100"}`}>
-                <div className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
+              <AdminCard key={p.id} style={isAdminPartner ? { border: `0.5px solid ${ADMIN_COLORS.orangeBorder}` } : undefined}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     {/* Badge code */}
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${isAdminPartner ? "bg-orange-500" : p.actif ? "bg-[#4A90D9]" : "bg-gray-400"}`}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 700, fontSize: '12px',
+                      background: isAdminPartner ? ADMIN_COLORS.orangeBtn : p.actif ? ADMIN_COLORS.navyAccent : ADMIN_COLORS.grayText,
+                    }}>
                       {p.code || p.nom.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
                       {isEditing ? (
-                        <div className="flex gap-2 items-center flex-wrap">
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                           <input
                             value={editData.nom ?? p.nom}
                             onChange={(e) => setEditData((d) => ({ ...d, nom: e.target.value }))}
-                            className="border border-gray-200 rounded px-2 py-1 text-sm w-36"
+                            style={{ border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', width: 140, outline: 'none' }}
                           />
                           <input
                             value={editData.code ?? p.code ?? ""}
                             onChange={(e) => setEditData((d) => ({ ...d, code: e.target.value.toUpperCase().slice(0, 3) }))}
                             placeholder="Code"
                             maxLength={3}
-                            className="border border-gray-200 rounded px-2 py-1 text-sm w-16 font-mono uppercase"
+                            style={{ border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', width: 56, fontFamily: 'monospace', textTransform: 'uppercase' as const, outline: 'none' }}
                           />
                           <input
                             value={editData.email ?? p.email ?? ""}
                             onChange={(e) => setEditData((d) => ({ ...d, email: e.target.value }))}
                             placeholder="email"
-                            className="border border-gray-200 rounded px-2 py-1 text-sm w-40"
+                            style={{ border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', width: 160, outline: 'none' }}
                           />
                           <input
                             value={editData.telephone ?? p.telephone ?? ""}
                             onChange={(e) => setEditData((d) => ({ ...d, telephone: e.target.value }))}
                             placeholder="téléphone"
-                            className="border border-gray-200 rounded px-2 py-1 text-sm w-32"
+                            style={{ border: `0.5px solid ${ADMIN_COLORS.navyBorder}`, borderRadius: '4px', padding: '4px 8px', fontSize: '11px', width: 120, outline: 'none' }}
                           />
                         </div>
                       ) : (
                         <>
-                          <p className="font-semibold text-gray-800">
+                          <p style={{ fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '13px', margin: 0 }}>
                             {p.nom}
-                            <span className="ml-2 text-xs font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{p.code}</span>
-                            {isAdminPartner && <span className="ml-2 text-xs text-orange-500 font-normal">(direct)</span>}
-                            {!p.actif && <span className="ml-2 text-xs text-gray-400 font-normal">(inactif)</span>}
+                            <span style={{
+                              marginLeft: '8px', fontSize: '10px', fontFamily: 'monospace',
+                              background: ADMIN_COLORS.grayBg, color: ADMIN_COLORS.grayTextDark,
+                              padding: '2px 6px', borderRadius: '4px',
+                            }}>{p.code}</span>
+                            {isAdminPartner && <span style={{ marginLeft: '8px', fontSize: '10px', color: ADMIN_COLORS.orangeBtn, fontWeight: 400 }}>(direct)</span>}
+                            {!p.actif && <span style={{ marginLeft: '8px', fontSize: '10px', color: ADMIN_COLORS.grayText, fontWeight: 400 }}>(inactif)</span>}
                           </p>
-                          <p className="text-xs text-gray-400">{p.email ?? "—"} {p.telephone ? `· ${p.telephone}` : ""}</p>
+                          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: '2px 0 0' }}>{p.email ?? "—"} {p.telephone ? `· ${p.telephone}` : ""}</p>
                         </>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     {/* Stats résumé */}
-                    <div className="hidden sm:flex gap-4 text-sm text-right">
+                    <div style={{ display: 'flex', gap: '16px', fontSize: '12px', textAlign: 'right' }}>
                       <div>
-                        <p className="text-xs text-gray-400">Devis</p>
-                        <p className="font-bold text-gray-700">{s.nb_devis}</p>
+                        <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: 0 }}>Devis</p>
+                        <p style={{ fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>{s.nb_devis}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Commissions</p>
-                        <p className="font-bold text-orange-500">{formatEur(s.total_commissions)}</p>
+                        <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: 0 }}>Commissions</p>
+                        <p style={{ fontWeight: 700, color: ADMIN_COLORS.orangeText, margin: 0 }}>{formatEur(s.total_commissions)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Impayées</p>
-                        <p className="font-bold text-red-500">{formatEur(s.commissions_impayees)}</p>
+                        <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, margin: 0 }}>Impayées</p>
+                        <p style={{ fontWeight: 700, color: ADMIN_COLORS.redText, margin: 0 }}>{formatEur(s.commissions_impayees)}</p>
                       </div>
                     </div>
 
                     {/* Actions */}
                     {isEditing ? (
-                      <div className="flex gap-1">
-                        <button onClick={() => saveEdit(p.id)} disabled={saving === p.id} className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
-                          {saving === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                        </button>
-                        <button onClick={() => { setEditingId(null); setEditData({}); }} className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
-                          <X className="h-4 w-4" />
-                        </button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <AdminButton variant="success" size="sm" onClick={() => saveEdit(p.id)} disabled={saving === p.id}>
+                          {saving === p.id ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Check style={{ width: 14, height: 14 }} />}
+                        </AdminButton>
+                        <AdminButton variant="ghost" size="sm" onClick={() => { setEditingId(null); setEditData({}); }}>
+                          <X style={{ width: 14, height: 14 }} />
+                        </AdminButton>
                       </div>
                     ) : (
-                      <div className="flex gap-1">
+                      <div style={{ display: 'flex', gap: '4px' }}>
                         {!isAdminPartner && (
                           <>
-                            <button
-                              onClick={() => { setEditingId(p.id); setEditData({ nom: p.nom, code: p.code, email: p.email, telephone: p.telephone }); }}
-                              className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"
-                              title="Modifier"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
+                            <AdminButton variant="ghost" size="sm" onClick={() => { setEditingId(p.id); setEditData({ nom: p.nom, code: p.code, email: p.email, telephone: p.telephone }); }}>
+                              <Pencil style={{ width: 14, height: 14 }} />
+                            </AdminButton>
+                            <AdminButton
+                              variant={p.actif ? "success" : "ghost"}
+                              size="sm"
                               onClick={() => toggleActif(p)}
-                              className={`px-2 py-1 rounded-lg text-xs font-medium ${p.actif ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}
                             >
                               {p.actif ? "Actif" : "Inactif"}
-                            </button>
+                            </AdminButton>
                           </>
                         )}
-                        <button
-                          onClick={() => exportCommissions(p)}
-                          className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100"
-                          title="Export Excel commissions"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => setExpandedId(isOpen ? null : p.id)} className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
-                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </button>
+                        <AdminButton variant="warning" size="sm" onClick={() => exportCommissions(p)}>
+                          <Download style={{ width: 14, height: 14 }} />
+                        </AdminButton>
+                        <AdminButton variant="ghost" size="sm" onClick={() => setExpandedId(isOpen ? null : p.id)}>
+                          {isOpen ? <ChevronUp style={{ width: 14, height: 14 }} /> : <ChevronDown style={{ width: 14, height: 14 }} />}
+                        </AdminButton>
                       </div>
                     )}
                   </div>
@@ -425,11 +434,11 @@ export default function AdminPartenaires() {
 
                 {/* Détail étendu */}
                 {isOpen && (
-                  <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
+                  <div style={{ borderTop: `0.5px solid ${ADMIN_COLORS.grayBorder}`, padding: '14px 18px', background: ADMIN_COLORS.grayBg }}>
                     <PartnerDevis partnerId={p.id} quotes={quotesData.filter((q: any) => q.partner_id === p.id)} />
                   </div>
                 )}
-              </div>
+              </AdminCard>
             );
           })}
         </div>
@@ -439,34 +448,46 @@ export default function AdminPartenaires() {
 }
 
 function PartnerDevis({ partnerId, quotes }: { partnerId: string; quotes: any[] }) {
-  if (quotes.length === 0) return <p className="text-sm text-gray-400 py-2">Aucun devis attribué à ce partenaire.</p>;
+  if (quotes.length === 0) return <p style={{ fontSize: '12px', color: ADMIN_COLORS.grayText, padding: '8px 0' }}>Aucun devis attribué à ce partenaire.</p>;
 
   return (
     <div>
-      <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
-        <Users className="h-3.5 w-3.5" /> Devis attribués ({quotes.length})
-      </p>
-      <div className="space-y-2">
+      <SectionLabel>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Users style={{ width: 13, height: 13 }} /> Devis attribués ({quotes.length})
+        </span>
+      </SectionLabel>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {quotes.map((d: any) => (
-          <div key={d.numero_devis || d.partner_id + d.created_at} className="flex items-center justify-between bg-white rounded-lg px-3 py-2.5 text-sm border border-gray-100">
-            <div>
-              <span className="font-semibold text-gray-700">{d.numero_devis || "—"}</span>
-              <span className="text-gray-400 mx-2">·</span>
-              <span className="text-gray-600">{d.nom}</span>
-              <span className="text-gray-400 mx-2">·</span>
-              <span className="text-xs text-gray-400">{new Date(d.created_at).toLocaleDateString("fr-FR")}</span>
+          <AdminCard key={d.numero_devis || d.partner_id + d.created_at} style={{ padding: '8px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
+              <div>
+                <span style={{ fontWeight: 600, color: ADMIN_COLORS.navy }}>{d.numero_devis || "—"}</span>
+                <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
+                <span style={{ color: ADMIN_COLORS.grayTextDark }}>{d.nom}</span>
+                <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
+                <span style={{ fontSize: '10px', color: ADMIN_COLORS.grayText }}>{new Date(d.created_at).toLocaleDateString("fr-FR")}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontWeight: 700, color: ADMIN_COLORS.orangeText }}>
+                  {d.commission_montant ? formatEur(d.commission_montant) : "—"}
+                </span>
+                {d.commission_payee ? (
+                  <span style={{
+                    fontSize: '9px', background: ADMIN_COLORS.greenBg, color: ADMIN_COLORS.greenText,
+                    fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
+                    border: `0.5px solid ${ADMIN_COLORS.greenBorder}`,
+                  }}>Payée</span>
+                ) : (
+                  <span style={{
+                    fontSize: '9px', background: ADMIN_COLORS.orangeBg, color: ADMIN_COLORS.orangeText,
+                    fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
+                    border: `0.5px solid ${ADMIN_COLORS.orangeBorder}`,
+                  }}>En attente</span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-orange-500">
-                {d.commission_montant ? formatEur(d.commission_montant) : "—"}
-              </span>
-              {d.commission_payee ? (
-                <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">Payée</span>
-              ) : (
-                <span className="text-xs bg-orange-100 text-orange-700 font-medium px-2 py-0.5 rounded-full">En attente</span>
-              )}
-            </div>
-          </div>
+          </AdminCard>
         ))}
       </div>
     </div>

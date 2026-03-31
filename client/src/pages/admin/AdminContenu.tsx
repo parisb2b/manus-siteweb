@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Save, Globe, Loader2, Type, Phone, Truck, Layout } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
 export default function AdminContenu() {
   const [content, setContent] = useState<any>(null);
@@ -50,184 +51,245 @@ export default function AdminContenu() {
     }));
   };
 
+  // Shared styles
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: ADMIN_COLORS.grayTextDark,
+    marginBottom: '4px',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 12px',
+    fontSize: '13px',
+    border: `1px solid ${ADMIN_COLORS.navyBorder}`,
+    borderRadius: '6px',
+    outline: 'none',
+    background: '#fff',
+    color: ADMIN_COLORS.navy,
+    boxSizing: 'border-box' as const,
+  };
+
+  const textareaStyle: React.CSSProperties = {
+    ...inputStyle,
+    resize: 'vertical' as const,
+  };
+
+  const helperStyle: React.CSSProperties = {
+    fontSize: '11px',
+    color: ADMIN_COLORS.grayText,
+    marginTop: '4px',
+  };
+
+  const sectionBodyStyle: React.CSSProperties = {
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  };
+
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '16px',
+  };
+
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4A90D9] mx-auto" />
-      </div>
+      <AdminCard style={{ padding: '48px', textAlign: 'center' }}>
+        <Loader2 style={{ height: 32, width: 32, color: ADMIN_COLORS.navyAccent, margin: '0 auto' }} className="animate-spin" />
+      </AdminCard>
     );
   }
 
   if (!content) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-red-500">
+      <AdminCard style={{ padding: '48px', textAlign: 'center', color: ADMIN_COLORS.redText }}>
         Impossible de charger le contenu du site.
-      </div>
+      </AdminCard>
     );
   }
 
   return (
-    <div className="font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <div style={{ fontFamily: 'sans-serif' }}>
+      {/* Page header */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', gap: '16px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Globe className="h-6 w-6 text-[#4A90D9]" /> Contenu Site
+          <h1 style={{ fontSize: '20px', fontWeight: 700, color: ADMIN_COLORS.navy, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <Globe style={{ width: 22, height: 22, color: ADMIN_COLORS.navyAccent }} /> Contenu Site
           </h1>
-          <p className="text-gray-500 mt-1">Bannière, contact, footer, livraison</p>
+          <p style={{ color: ADMIN_COLORS.grayText, marginTop: '4px', fontSize: '13px' }}>Bannière, contact, footer, livraison</p>
         </div>
-        <button onClick={handleSave} disabled={saving}
-          className="inline-flex items-center gap-2 bg-[#4A90D9] hover:bg-[#357ABD] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50">
-          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          {saving ? "Sauvegarde..." : "Sauvegarder"}
-        </button>
+        <AdminButton onClick={handleSave} disabled={saving} variant="primary" size="md">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            {saving ? <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" /> : <Save style={{ width: 16, height: 16 }} />}
+            {saving ? "Sauvegarde..." : "Sauvegarder"}
+          </span>
+        </AdminButton>
       </div>
 
+      {/* Save message */}
       {saveMessage && (
-        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMessage.includes("Erreur") ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+        <div style={{
+          marginBottom: '16px',
+          padding: '10px 16px',
+          borderRadius: '8px',
+          fontSize: '13px',
+          fontWeight: 500,
+          background: saveMessage.includes("Erreur") ? ADMIN_COLORS.redBg : ADMIN_COLORS.greenBg,
+          color: saveMessage.includes("Erreur") ? ADMIN_COLORS.redText : ADMIN_COLORS.greenText,
+          border: `1px solid ${saveMessage.includes("Erreur") ? ADMIN_COLORS.redBorder : ADMIN_COLORS.greenBorder}`,
+        }}>
           {saveMessage}
         </div>
       )}
 
       {/* Bannière */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Type className="w-5 h-5 text-[#4A90D9]" />
-          <h2 className="text-lg font-semibold text-gray-800">Bannière en haut du site</h2>
-        </div>
-        <div className="px-6 py-6 space-y-4">
+      <AdminCard style={{ marginBottom: '20px' }}>
+        <AdminCardHeader>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 600 }}>
+            <Type style={{ width: 18, height: 18 }} /> Bannière en haut du site
+          </span>
+        </AdminCardHeader>
+        <div style={sectionBodyStyle}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Texte du bandeau</label>
+            <label style={labelStyle}>Texte du bandeau</label>
             <input type="text" value={get("topBanner")} onChange={(e) => set("topBanner", e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+              style={inputStyle}
               placeholder="Livraison DOM-TOM — contactez-nous pour un devis personnalisé" />
-            <p className="text-xs text-gray-400 mt-1">Affiché dans la barre bleue en haut du site. Laissez vide pour masquer.</p>
+            <p style={helperStyle}>Affiché dans la barre bleue en haut du site. Laissez vide pour masquer.</p>
           </div>
         </div>
-      </div>
+      </AdminCard>
 
       {/* Contact */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Phone className="w-5 h-5 text-[#4A90D9]" />
-          <h2 className="text-lg font-semibold text-gray-800">Informations de contact</h2>
-        </div>
-        <div className="px-6 py-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <AdminCard style={{ marginBottom: '20px' }}>
+        <AdminCardHeader>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 600 }}>
+            <Phone style={{ width: 18, height: 18 }} /> Informations de contact
+          </span>
+        </AdminCardHeader>
+        <div style={sectionBodyStyle}>
+          <div style={gridStyle}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email de contact</label>
+              <label style={labelStyle}>Email de contact</label>
               <input type="email" value={get("contactEmail")} onChange={(e) => set("contactEmail", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="contact@97import.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+              <label style={labelStyle}>Téléphone</label>
               <input type="tel" value={get("contactPhone")} onChange={(e) => set("contactPhone", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="+596 596 00 00 00" />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div style={gridStyle}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+              <label style={labelStyle}>WhatsApp</label>
               <input type="tel" value={get("whatsappNumber")} onChange={(e) => set("whatsappNumber", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="+596696000000" />
-              <p className="text-xs text-gray-400 mt-1">Format international sans espaces</p>
+              <p style={helperStyle}>Format international sans espaces</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+              <label style={labelStyle}>Adresse</label>
               <input type="text" value={get("contactAddress")} onChange={(e) => set("contactAddress", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="Fort-de-France, Martinique" />
             </div>
           </div>
         </div>
-      </div>
+      </AdminCard>
 
       {/* Footer */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Layout className="w-5 h-5 text-[#4A90D9]" />
-          <h2 className="text-lg font-semibold text-gray-800">Footer</h2>
-        </div>
-        <div className="px-6 py-6 space-y-4">
+      <AdminCard style={{ marginBottom: '20px' }}>
+        <AdminCardHeader>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 600 }}>
+            <Layout style={{ width: 18, height: 18 }} /> Footer
+          </span>
+        </AdminCardHeader>
+        <div style={sectionBodyStyle}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Texte copyright</label>
+            <label style={labelStyle}>Texte copyright</label>
             <input type="text" value={get("footerText")} onChange={(e) => set("footerText", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+              style={inputStyle}
               placeholder="97 import — Tous droits réservés" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description footer</label>
+            <label style={labelStyle}>Description footer</label>
             <textarea value={get("footerDescription")} onChange={(e) => set("footerDescription", e.target.value)}
-              rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none resize-vertical"
+              rows={3} style={textareaStyle}
               placeholder="Description de l'entreprise affichée dans le pied de page" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div style={gridStyle}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL TikTok</label>
+              <label style={labelStyle}>URL TikTok</label>
               <input type="url" value={get("tiktokUrl")} onChange={(e) => set("tiktokUrl", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="https://www.tiktok.com/@votre-compte" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL YouTube</label>
+              <label style={labelStyle}>URL YouTube</label>
               <input type="url" value={get("youtubeUrl")} onChange={(e) => set("youtubeUrl", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="https://www.youtube.com/@votre-chaine" />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div style={gridStyle}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Logo header (URL)</label>
+              <label style={labelStyle}>Logo header (URL)</label>
               <input type="text" value={get("headerLogo")} onChange={(e) => set("headerLogo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="/images/logo_header.png" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Logo footer (URL)</label>
+              <label style={labelStyle}>Logo footer (URL)</label>
               <input type="text" value={get("footerLogo")} onChange={(e) => set("footerLogo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+                style={inputStyle}
                 placeholder="/images/logo_footer.png" />
             </div>
           </div>
         </div>
-      </div>
+      </AdminCard>
 
       {/* Livraison DOM-TOM */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-          <Truck className="w-5 h-5 text-[#4A90D9]" />
-          <h2 className="text-lg font-semibold text-gray-800">Livraison DOM-TOM</h2>
-        </div>
-        <div className="px-6 py-6 space-y-4">
+      <AdminCard style={{ marginBottom: '20px' }}>
+        <AdminCardHeader>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 600 }}>
+            <Truck style={{ width: 18, height: 18 }} /> Livraison DOM-TOM
+          </span>
+        </AdminCardHeader>
+        <div style={sectionBodyStyle}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titre section livraison</label>
+            <label style={labelStyle}>Titre section livraison</label>
             <input type="text" value={getShipping("title")} onChange={(e) => setShipping("title", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+              style={inputStyle}
               placeholder="Livraison DOM-TOM" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description livraison</label>
+            <label style={labelStyle}>Description livraison</label>
             <textarea value={getShipping("description")} onChange={(e) => setShipping("description", e.target.value)}
-              rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none resize-vertical"
+              rows={4} style={textareaStyle}
               placeholder="Informations sur les conditions de livraison vers les DOM-TOM…" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message d'avertissement</label>
+            <label style={labelStyle}>Message d'avertissement</label>
             <input type="text" value={getShipping("warning")} onChange={(e) => setShipping("warning", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#4A90D9] outline-none"
+              style={inputStyle}
               placeholder="Contactez notre partenaire logistique pour les DOM-TOM" />
-            <p className="text-xs text-gray-400 mt-1">Affiché sous les prix et dans le panier</p>
+            <p style={helperStyle}>Affiché sous les prix et dans le panier</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Destinations disponibles (une par ligne)</label>
+            <label style={labelStyle}>Destinations disponibles (une par ligne)</label>
             <textarea value={getShipping("destinations")} onChange={(e) => setShipping("destinations", e.target.value)}
-              rows={5} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#4A90D9] outline-none resize-vertical"
+              rows={5} style={{ ...textareaStyle, fontFamily: 'monospace' }}
               placeholder={"Martinique\nGuadeloupe\nGuyane\nLa Réunion\nMayotte"} />
           </div>
         </div>
-      </div>
+      </AdminCard>
     </div>
   );
 }
