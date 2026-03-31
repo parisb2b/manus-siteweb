@@ -9,6 +9,7 @@ import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templ
 import { generateFeesPDF, type FeesData } from "@/features/pdf/templates/fees-pdf";
 import { generateDeliveryNotePDF, type DeliveryNoteData } from "@/features/pdf/templates/delivery-note-pdf";
 import { generateSuiviAchatsExcel, type SuiviAchatRow } from "@/features/excel/suivi-achats";
+import { sendDocumentNotification } from "@/lib/notifications";
 // Calcul commission depuis source unique features/pricing
 import { prixPartenaire as calcPrixPartenaire } from "@/features/pricing/model/pricing";
 
@@ -329,6 +330,23 @@ export default function AdminQuotes() {
     const blob = generateDeliveryNotePDF(blData);
     downloadBlob(blob, `BL_${blNum}.pdf`);
     setSaving(null);
+  };
+
+  const envoyerDocument = async (q: Quote, typeDoc: string, numDoc: string) => {
+    setSaving("email_" + q.id);
+    const ok = await sendDocumentNotification({
+      email: q.email,
+      nomClient: q.nom,
+      typeDocument: typeDoc,
+      numeroDocument: numDoc,
+    });
+    setSaving(null);
+    if (ok) {
+      setVipMsg((prev) => ({ ...prev, [q.id]: `\u2709 ${typeDoc} ${numDoc} envoy\u00E9 \u00E0 ${q.email}` }));
+    } else {
+      setVipMsg((prev) => ({ ...prev, [q.id]: `\u26A0 Envoi non disponible (configurer Edge Function "send-email")` }));
+    }
+    setTimeout(() => setVipMsg((prev) => { const n = { ...prev }; delete n[q.id]; return n; }), 5000);
   };
 
   const marquerCommissionPayee = async (q: Quote) => {
