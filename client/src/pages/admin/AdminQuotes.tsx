@@ -119,12 +119,12 @@ function buildFactureData(q: Quote): FactureData {
 }
 
 // Commission = prix_negocie - prix_partenaire (prix_achat × 1.2)
-// prix_achat ≈ prix_total_calcule / 1.5 (public price)
+// prix_achat ≈ prix_total_calcule / 2 (public price user ×2)
 // Utilise calcPrixPartenaire() depuis features/pricing — source unique du multiplicateur ×1.2
 function calcCommission(q: Quote): { prixPartenaire: number; commission: number } {
   const prixNegocie = q.prix_negocie ?? q.prix_total_calcule ?? 0;
   const prixPublic = q.prix_total_calcule ?? 0;
-  const prixAchat = prixPublic > 0 ? prixPublic / 1.5 : prixNegocie / 1.3;
+  const prixAchat = prixPublic > 0 ? prixPublic / 2 : prixNegocie / 1.3;
   const prixPartenaireVal = calcPrixPartenaire(prixAchat);
   const commission = Math.max(0, Math.round(prixNegocie - prixPartenaireVal));
   return { prixPartenaire: prixPartenaireVal, commission };
@@ -191,12 +191,54 @@ export default function AdminQuotes() {
     await load();
   };
 
-  const genererFacture = async (q: Quote) => {
+  const genererFacture = async (q: Quote, typeFacture: "standard" | "acompte" | "solde" = "standard") => {
     if (!supabase) return;
     setSaving(q.id);
-    const blob = generateFacturePDF(buildFactureData(q));
+
+    // Obtenir numéro de facture séquentiel
+    let factureNum: string;
+    const { data: numData } = await supabase.rpc("get_next_facture_numero");
+    factureNum = numData ?? `FA${Date.now().toString().slice(-6)}`;
+
+    const totalHT = q.prix_negocie ?? q.prix_total_calcule ?? 0;
+    const acomptePct = 30; // 30% par défaut
+    let montant = totalHT;
+    let subtitle = "";
+
+    if (typeFacture === "acompte") {
+      montant = Math.round(totalHT * acomptePct / 100);
+      subtitle = `Acompte ${acomptePct}% sur devis ${q.numero_devis || ""}`;
+    } else if (typeFacture === "solde") {
+      // Chercher les acomptes déjà émis pour ce devis
+      const { data: existingInv } = await supabase
+        .from("invoices")
+        .select("montant_ht")
+        .eq("quote_id", q.id)
+        .eq("type_facture", "acompte");
+      const totalAcomptes = (existingInv || []).reduce((s: number, inv: any) => s + (inv.montant_ht ?? 0), 0);
+      montant = Math.max(0, totalHT - totalAcomptes);
+      subtitle = `Solde sur devis ${q.numero_devis || ""} (acomptes déduits : ${formatEur(totalAcomptes)})`;
+    }
+
+    const factureData = buildFactureData(q);
+    factureData.numeroFacture = factureNum;
+    factureData.totalHT = montant;
+
+    const blob = generateFacturePDF(factureData);
+
+    // Enregistrer dans table invoices
+    await supabase.from("invoices").insert({
+      numero_facture: factureNum,
+      quote_id: q.id,
+      user_id: null, // sera rempli si on a le user_id
+      montant_ht: montant,
+      montant_acompte: typeFacture === "acompte" ? montant : 0,
+      type_facture: typeFacture,
+      statut: "emise",
+    });
+
     await supabase.from("quotes").update({ facture_generee: true }).eq("id", q.id);
-    downloadBlob(blob, `Facture_${(q.numero_devis || "D00001").replace("D", "F")}.pdf`);
+    downloadBlob(blob, `Facture_${factureNum}.pdf`);
     setSaving(null);
     await load();
   };
@@ -348,7 +390,7 @@ export default function AdminQuotes() {
                             </li>
                           ))}
                         </ul>
-                        {/* PDF devis / facture */}
+                        {/* PDF devis / factures */}
                         <div className="flex gap-2 mt-4 flex-wrap">
                           <button
                             onClick={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${q.numero_devis || q.id.slice(0,8)}.pdf`)}
@@ -356,22 +398,27 @@ export default function AdminQuotes() {
                           >
                             <Download className="h-3.5 w-3.5" /> Devis PDF
                           </button>
-                          {q.facture_generee ? (
-                            <button
-                              onClick={() => downloadBlob(generateFacturePDF(buildFactureData(q)), `Facture_${(q.numero_devis||"D00001").replace("D","F")}.pdf`)}
-                              className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium border border-emerald-500 rounded-lg px-3 py-1.5 hover:bg-emerald-50"
-                            >
-                              <Download className="h-3.5 w-3.5" /> Facture PDF
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => genererFacture(q)}
-                              disabled={saving === q.id}
-                              className="flex items-center gap-1.5 text-xs text-white bg-emerald-600 rounded-lg px-3 py-1.5 hover:bg-emerald-700 disabled:opacity-50"
-                            >
-                              <Receipt className="h-3.5 w-3.5" /> Générer facture
-                            </button>
-                          )}
+                          <button
+                            onClick={() => genererFacture(q, "standard")}
+                            disabled={saving === q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-emerald-600 rounded-lg px-3 py-1.5 hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            <Receipt className="h-3.5 w-3.5" /> Facture totale
+                          </button>
+                          <button
+                            onClick={() => genererFacture(q, "acompte")}
+                            disabled={saving === q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-amber-500 rounded-lg px-3 py-1.5 hover:bg-amber-600 disabled:opacity-50"
+                          >
+                            <Receipt className="h-3.5 w-3.5" /> Acompte 30%
+                          </button>
+                          <button
+                            onClick={() => genererFacture(q, "solde")}
+                            disabled={saving === q.id}
+                            className="flex items-center gap-1.5 text-xs text-white bg-teal-600 rounded-lg px-3 py-1.5 hover:bg-teal-700 disabled:opacity-50"
+                          >
+                            <Receipt className="h-3.5 w-3.5" /> Facture solde
+                          </button>
                         </div>
                       </div>
                     </div>
