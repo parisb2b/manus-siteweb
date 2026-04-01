@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Globe, Loader2, Type, Phone, Truck, Layout } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
 export default function AdminContenu() {

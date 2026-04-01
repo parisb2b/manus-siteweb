@@ -94,6 +94,34 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.10-parcours-client-complet
+TYPE : feat + fix
+DESCRIPTION : Parcours client post-devis, sessions auth isolées, corrections admin + PDF
+
+MODIFICATIONS :
+  - Parcours client : pop-up partenaire + pop-up acompte 3 étapes après devis
+  - Panier vidé après génération devis (localStorage + sessionStorage + event)
+  - Suivi paiements back-office : ENCAISSER uniquement si acompte en_attente
+  - Commission masquée si aucun partenaire rattaché au devis
+  - Documents admin : suppression Facture acompte 30% et Facture solde (FA cumulative seule)
+  - Sessions auth isolées : storageKey '97import-client-auth' vs '97import-admin-auth'
+  - 18 fichiers admin migrés vers supabaseAdmin
+  - PDF facture : constantes pageWidth/marginRight/xLabel/xValue/fontSizeNormal/fontSizeSolde
+  - Enrichissement produits via jointure products (enrichProduits async)
+  - numero_interne éditable dans AdminProducts (interface + colonne table)
+
+FICHIERS :
+  client/src/components/DevisForm.tsx (pop-ups partenaire + acompte)
+  client/src/lib/supabase.ts (supabase + supabaseAdmin avec storageKey)
+  client/src/pages/admin/*.tsx (18 fichiers → import supabaseAdmin)
+  client/src/pages/admin/AdminQuotes.tsx (commission conditionnelle, docs progressifs, enrichProduits)
+  client/src/pages/admin/AdminProducts.tsx (numero_interne interface + colonne)
+  client/src/features/pdf/templates/invoice-pdf.ts (constantes alignement totaux)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.10-pdf-uniformes
 TYPE : feat
 DESCRIPTION : Uniformisation de TOUS les PDFs — colonnes, prix barré gris + violet, suppression Description

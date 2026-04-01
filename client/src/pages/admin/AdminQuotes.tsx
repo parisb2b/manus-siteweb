@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
 import { Loader2, RefreshCw, ChevronDown, ChevronUp, Save, Crown, Download, Handshake, CheckCircle2 } from "lucide-react";
 // PDF via moteur mutualisé features/pdf
@@ -72,6 +72,38 @@ function downloadBlob(blob: Blob, filename: string) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/** Enrichir les produits d'un devis avec prix_achat + numero_interne depuis la table products */
+async function enrichProduits(produits: any[]): Promise<any[]> {
+  if (!supabase || !produits || produits.length === 0) return produits;
+  // Try by id first
+  const productIds = produits.map((p: any) => p.id || p.product_id).filter(Boolean);
+  let dbProducts: any[] = [];
+  if (productIds.length > 0) {
+    const { data } = await supabase.from("products").select("id, prix_achat, numero_interne, reference_interne").in("id", productIds);
+    dbProducts = data || [];
+  }
+  // Fallback: try by name for products without IDs
+  if (dbProducts.length < produits.length) {
+    const nomsManquants = produits
+      .filter((p: any) => !dbProducts.find((d: any) => d.id === (p.id || p.product_id)))
+      .map((p: any) => p.nom || p.name)
+      .filter(Boolean);
+    if (nomsManquants.length > 0) {
+      const { data } = await supabase.from("products").select("nom, prix_achat, numero_interne, reference_interne").in("nom", nomsManquants);
+      if (data) dbProducts.push(...data.map((d: any) => ({ ...d, id: d.nom })));
+    }
+  }
+  return produits.map((p: any) => {
+    const db = dbProducts.find((d: any) => d.id === (p.id || p.product_id) || d.nom === (p.nom || p.name));
+    return {
+      ...p,
+      prix_achat: p.prix_achat || db?.prix_achat || null,
+      numero_interne: p.numero_interne || db?.numero_interne || db?.reference_interne || undefined,
+      reference_interne: p.reference_interne || db?.reference_interne || db?.numero_interne || undefined,
+    };
+  });
 }
 
 function buildDevisData(q: Quote): DevisData {
@@ -836,6 +868,12 @@ export default function AdminQuotes() {
                               <Handshake style={{ width: 12, height: 12 }} /> Partenaire & Commission
                             </span>
                           </SectionLabel>
+                          {!q.partner_id && !selectedPartnerId ? (
+                            <p style={{ color: '#9CA3AF', fontSize: '11px', fontFamily: ADMIN_COLORS.font, margin: '4px 0' }}>
+                              Aucun partenaire rattaché à ce devis
+                            </p>
+                          ) : (
+                          <>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
                             <AdminSelect
                               label="Partenaire"
@@ -878,6 +916,8 @@ export default function AdminQuotes() {
                               </AdminButton>
                             )}
                           </div>
+                          </>
+                          )}
                         </div>
 
                         {/* Actions admin */}
@@ -1025,77 +1065,7 @@ export default function AdminQuotes() {
                           </div>
                         </div>
 
-                        {/* ── Facture acompte 30% ── green */}
-                        <div style={{
-                          background: '#F0FDF4', border: '0.5px solid #86EFAC',
-                          borderRadius: '6px', padding: '8px 10px',
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534', fontFamily: ADMIN_COLORS.font }}>
-                                Facture acompte 30%
-                              </span>
-                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
-                                {formatEur(Math.round(total * 0.3))}
-                              </span>
-                            </div>
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              <button
-                                onClick={() => {
-                                  const fd = buildFactureData(q);
-                                  fd.totalHT = Math.round(total * 0.3);
-                                  fd.numeroFacture = factureNum + "-AC";
-                                  downloadBlob(generateFacturePDF(fd), `Acompte_${factureNum}.pdf`);
-                                }}
-                                style={docBtnStyle('#166534')}
-                              >
-                                PDF
-                              </button>
-                              <button
-                                onClick={() => envoyerDocument(q, "Facture acompte", factureNum + "-AC")}
-                                style={docBtnStyle('#16A34A')}
-                              >
-                                → Client
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ── Facture solde ── green */}
-                        <div style={{
-                          background: '#F0FDF4', border: '0.5px solid #86EFAC',
-                          borderRadius: '6px', padding: '8px 10px',
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534', fontFamily: ADMIN_COLORS.font }}>
-                                Facture solde
-                              </span>
-                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
-                                {formatEur(Math.round(total * 0.7))}
-                              </span>
-                            </div>
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              <button
-                                onClick={() => {
-                                  const fd = buildFactureData(q);
-                                  fd.totalHT = Math.round(total * 0.7);
-                                  fd.numeroFacture = factureNum + "-SO";
-                                  downloadBlob(generateFacturePDF(fd), `Solde_${factureNum}.pdf`);
-                                }}
-                                style={docBtnStyle('#166534')}
-                              >
-                                PDF
-                              </button>
-                              <button
-                                onClick={() => envoyerDocument(q, "Facture solde", factureNum + "-SO")}
-                                style={docBtnStyle('#16A34A')}
-                              >
-                                → Client
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                        {/* Facture acompte 30% et solde SUPPRIMÉS — une seule FA cumulative */}
 
                         {/* ── Frais Maritimes FM ── blue */}
                         <div style={{

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
 import { generateSuiviAchatsExcel, type SuiviAchatRow } from "@/features/excel/suivi-achats";
 import {

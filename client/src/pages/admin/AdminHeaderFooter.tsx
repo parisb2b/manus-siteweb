@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
 import {
   Save, Upload, Image as ImageIcon, Link, Phone, Mail,

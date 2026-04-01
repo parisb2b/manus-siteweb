@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileText, Save, ChevronRight, Plus, Trash2, Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 const PAGE_LABELS: Record<string, string> = {
   home: "Accueil",

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { Plus, Pencil, Trash2, X, Save, Image as ImageIcon, ChevronRight, ArrowLeft, Undo2, Database, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from "lucide-react";
 import { invalidateProductsCache } from "@/hooks/useProducts";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
 import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
 
@@ -10,6 +10,7 @@ interface SupabaseProduit {
   nom: string;
   reference?: string;
   reference_interne?: string;
+  numero_interne?: string;
   nom_en?: string;
   nom_zh?: string;
   categorie?: string;
@@ -738,6 +739,7 @@ export default function AdminProducts() {
                       <tr style={{ background: ADMIN_COLORS.navyLight, borderBottom: `0.5px solid ${ADMIN_COLORS.navyBorder}` }}>
                         <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Nom</th>
                         <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Réf interne</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>N° Interne</th>
                         <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navy, fontSize: '10px' }}>Réf / Catégorie</th>
                         <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.greenText, fontSize: '10px' }}>Achat</th>
                         <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: ADMIN_COLORS.navyAccent, fontSize: '10px' }}>Public ×2</th>
@@ -769,6 +771,11 @@ export default function AdminProducts() {
                               <input type="text" value={ed.reference_interne !== undefined ? ed.reference_interne : prod.reference_interne ?? ""}
                                 onChange={(e) => patchSupabase(prod.id, "reference_interne", e.target.value)} placeholder="REF-001"
                                 style={{ ...inputSt, width: '100px', fontFamily: 'monospace', fontSize: '10px' }} />
+                            </td>
+                            <td style={tdSt}>
+                              <input type="text" value={ed.numero_interne !== undefined ? ed.numero_interne : prod.numero_interne ?? ""}
+                                onChange={(e) => patchSupabase(prod.id, "numero_interne", e.target.value)} placeholder="MP-R18-001"
+                                style={{ ...inputSt, width: '110px', fontFamily: 'monospace', fontSize: '10px' }} />
                             </td>
                             <td style={{ ...tdSt, color: ADMIN_COLORS.grayText, fontSize: '11px' }}>
                               <div>{prod.reference ?? "—"}</div>

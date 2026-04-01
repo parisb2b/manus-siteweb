@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Truck, Plus, Trash2, Package } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 export default function AdminShipping() {
   const [siteContent, setSiteContent] = useState<any>(null);

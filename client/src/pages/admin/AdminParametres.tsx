@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Building2, CreditCard, Percent, Settings, Upload, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
 import { PRICE_MULTIPLIERS } from "@/features/pricing/model/pricing";
 import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";

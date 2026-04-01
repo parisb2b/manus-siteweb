@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Home, Loader2, RefreshCw } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
 
 interface HousePrice {

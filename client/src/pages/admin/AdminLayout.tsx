@@ -29,7 +29,7 @@ import AdminSuiviAchats from "./AdminSuiviAchats";
 import AdminParametres from "./AdminParametres";
 import AdminContenu from "./AdminContenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 interface NavItem {
   label: string;

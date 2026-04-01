@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();

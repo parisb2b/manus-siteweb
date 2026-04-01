@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { formatEur } from "@/utils/calculPrix";
 import { Loader2, RefreshCw, Plus, Pencil, Check, X, Users, ChevronDown, ChevronUp } from "lucide-react";
 

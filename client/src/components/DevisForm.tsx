@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { sendEmail } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, FileText, Download } from "lucide-react";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
@@ -80,6 +81,18 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [selectedPartnerCode, setSelectedPartnerCode] = useState<string>("");
 
+  // Post-devis flow state
+  const [showPartenaireModal, setShowPartenaireModal] = useState(false);
+  const [showAcompteModal, setShowAcompteModal] = useState(false);
+  const [acompteStep, setAcompteStep] = useState<1 | 2 | 3>(1);
+  const [acompteMontant, setAcompteMontant] = useState(500);
+  const [compteType, setCompteType] = useState<"perso" | "pro">("perso");
+  const [acompteSaving, setAcompteSaving] = useState(false);
+  const [newQuoteId, setNewQuoteId] = useState<string | null>(null);
+  const [allPartners, setAllPartners] = useState<{ id: string; nom: string; code: string }[]>([]);
+  const [selectedNewPartner, setSelectedNewPartner] = useState<{ id: string; nom: string; code: string } | null>(null);
+  const [adminParams, setAdminParams] = useState<Record<string, any>>({});
+
   // Charger les partenaires actifs pour la sélection (rôle partner ou admin/collaborateur)
   useEffect(() => {
     if (!supabase) return;
@@ -99,6 +112,19 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
         }
       });
   }, [role]);
+
+  // Charger tous les partenaires (pour le pop-up post-devis) et les admin_params
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.from("partners").select("id,nom,code").eq("actif", true).order("nom")
+      .then(({ data }) => setAllPartners((data as any[]) || []));
+    supabase.from("admin_params").select("*")
+      .then(({ data }) => {
+        const map: Record<string, any> = {};
+        (data || []).forEach((p: any) => { map[p.key] = p.value; });
+        setAdminParams(map);
+      });
+  }, []);
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -218,6 +244,32 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       // Télécharger le PDF
       downloadBlob(blob, `Devis_${numero}.pdf`);
 
+      // Clear cart
+      try {
+        localStorage.removeItem('cart');
+        sessionStorage.removeItem('cart');
+        window.dispatchEvent(new Event('storage'));
+      } catch {}
+
+      // Get the quote ID from the insert
+      if (supabase) {
+        const { data: insertedQuote } = await supabase
+          .from("quotes")
+          .select("id")
+          .eq("numero_devis", numero)
+          .single();
+        if (insertedQuote) {
+          setNewQuoteId(insertedQuote.id);
+        }
+      }
+
+      // Show partenaire modal (skip if already selected via partner role)
+      if (selectedPartnerId) {
+        setShowAcompteModal(true);
+      } else {
+        setShowPartenaireModal(true);
+      }
+
       setSuccess(true);
       onSuccess?.();
     } catch (err: any) {
@@ -227,17 +279,321 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     }
   };
 
+  const handleSansPartenaire = () => {
+    setShowPartenaireModal(false);
+    setShowAcompteModal(true);
+  };
+
+  const handleConfirmPartenaire = async () => {
+    if (!supabase || !newQuoteId || !selectedNewPartner) return;
+    await supabase.from("quotes").update({
+      partner_id: selectedNewPartner.id,
+    }).eq("id", newQuoteId);
+    setShowPartenaireModal(false);
+    setShowAcompteModal(true);
+  };
+
+  const submitPostAcompte = async () => {
+    if (!supabase || !newQuoteId) return;
+    setAcompteSaving(true);
+    const newAcompte = {
+      numero: 1,
+      montant: acompteMontant,
+      type: compteType,
+      statut: "en_attente",
+      date: new Date().toISOString(),
+    };
+    await supabase.from("quotes").update({ acomptes: [newAcompte] }).eq("id", newQuoteId);
+
+    // Send admin notification
+    try {
+      await sendEmail({
+        to: "parisb2b@gmail.com",
+        subject: `Virement client — ${numeroDevis} — À encaisser`,
+        html: `<h2>Nouveau virement déclaré</h2>
+          <table style="border-collapse:collapse;font-family:sans-serif;">
+            <tr><td style="padding:4px 12px;font-weight:bold;">Devis</td><td style="padding:4px 12px;">${numeroDevis}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Client</td><td style="padding:4px 12px;">${form.nom}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Email</td><td style="padding:4px 12px;">${form.email}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Montant</td><td style="padding:4px 12px;">${acompteMontant.toLocaleString("fr-FR")} €</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Type</td><td style="padding:4px 12px;">${compteType === "pro" ? "Professionnel" : "Personnel"}</td></tr>
+          </table>`,
+      });
+    } catch { console.warn("[DevisForm] Email notification failed"); }
+
+    setAcompteSaving(false);
+    setShowAcompteModal(false);
+    window.location.href = "/mon-compte.html";
+  };
+
   if (success) {
     return (
-      <div className="text-center py-10">
-        <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Devis généré !</h3>
-        <p className="text-gray-600 mb-1">
-          Votre devis <span className="font-bold text-[#4A90D9]">{numeroDevis}</span> a été téléchargé.
-        </p>
-        <p className="text-gray-500 text-sm">
-          Il est aussi disponible dans votre espace client sous "Mes devis".
-        </p>
+      <div>
+        <div className="text-center py-6">
+          <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-gray-800 mb-1">Devis {numeroDevis} généré !</h3>
+          <p className="text-gray-500 text-sm">
+            Votre devis a été téléchargé et enregistré dans votre espace client.
+          </p>
+        </div>
+
+        {/* POP-UP PARTENAIRE */}
+        {showPartenaireModal && (
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000,
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: '12px',
+              padding: '24px', maxWidth: '420px', width: '90%',
+            }}>
+              <h3 style={{ color: '#1E3A5F', margin: '0 0 8px', fontSize: '16px', fontWeight: 700 }}>
+                Avez-vous un partenaire commercial ?
+              </h3>
+              <p style={{ color: '#6B7280', fontSize: '12px', margin: '0 0 20px' }}>
+                Si un de nos partenaires vous a recommandé 97import, sélectionnez-le ci-dessous.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                {allPartners.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedNewPartner(p)}
+                    style={{
+                      background: selectedNewPartner?.id === p.id ? '#7C3AED' : '#F3F4F6',
+                      color: selectedNewPartner?.id === p.id ? '#fff' : '#374151',
+                      border: 'none', borderRadius: '8px',
+                      padding: '10px 20px', fontSize: '13px',
+                      fontWeight: 600, cursor: 'pointer',
+                    }}
+                  >
+                    {p.code}
+                  </button>
+                ))}
+                {allPartners.length === 0 && (
+                  <p style={{ color: '#9CA3AF', fontSize: '12px' }}>Aucun partenaire disponible</p>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={handleSansPartenaire}
+                  style={{
+                    flex: 1, background: '#F9FAFB',
+                    color: '#6B7280', border: '0.5px solid #E5E7EB',
+                    borderRadius: '8px', padding: '10px',
+                    fontSize: '12px', cursor: 'pointer',
+                  }}
+                >
+                  Sans partenaire
+                </button>
+                {selectedNewPartner && (
+                  <button
+                    onClick={handleConfirmPartenaire}
+                    style={{
+                      flex: 1, background: '#7C3AED',
+                      color: '#fff', border: 'none',
+                      borderRadius: '8px', padding: '10px',
+                      fontSize: '12px', fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Confirmer {selectedNewPartner.code} →
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* POP-UP ACOMPTE */}
+        {showAcompteModal && (
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000,
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: '12px',
+              padding: '24px', maxWidth: '420px', width: '90%',
+              maxHeight: '85vh', overflowY: 'auto',
+            }}>
+              {/* Steps indicator */}
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+                {[1, 2, 3].map(s => (
+                  <div key={s} style={{
+                    flex: 1, height: '3px', borderRadius: '2px',
+                    background: s <= acompteStep ? '#EA580C' : '#E5E7EB',
+                  }} />
+                ))}
+              </div>
+
+              {/* STEP 1 - Montant */}
+              {acompteStep === 1 && (
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
+                    Étape 1 — Montant du virement
+                  </h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '12px' }}>
+                    <span style={{ color: '#6B7280' }}>Total devis</span>
+                    <span style={{ fontWeight: 600 }}>{formatEur(prixTotalCalcule || 0)}</span>
+                  </div>
+                  <label style={{ fontSize: '11px', color: '#6B7280', display: 'block', marginBottom: '4px' }}>
+                    Montant à virer (€)
+                  </label>
+                  <input
+                    type="number"
+                    value={acompteMontant}
+                    onChange={(e) => setAcompteMontant(Number(e.target.value))}
+                    min={1}
+                    style={{
+                      width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px',
+                      fontSize: '16px', fontWeight: 700, textAlign: 'center', boxSizing: 'border-box',
+                    }}
+                  />
+                  <button
+                    onClick={() => setAcompteStep(2)}
+                    disabled={acompteMontant <= 0}
+                    style={{
+                      width: '100%', background: '#EA580C', color: '#fff', border: 'none',
+                      borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: 600,
+                      cursor: 'pointer', marginTop: '12px',
+                    }}
+                  >
+                    Continuer →
+                  </button>
+                  <button
+                    onClick={() => { setShowAcompteModal(false); window.location.href = '/mon-compte.html'; }}
+                    style={{
+                      width: '100%', background: 'none', border: '1px solid #D1D5DB',
+                      borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#6B7280',
+                      cursor: 'pointer', marginTop: '8px',
+                    }}
+                  >
+                    Plus tard → accéder à mes devis
+                  </button>
+                </div>
+              )}
+
+              {/* STEP 2 - Type compte */}
+              {acompteStep === 2 && (
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
+                    Étape 2 — Type de compte
+                  </h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(["perso", "pro"] as const).map(t => (
+                      <button
+                        key={t}
+                        onClick={() => { setCompteType(t); setAcompteStep(3); }}
+                        style={{
+                          flex: 1, padding: '16px', border: `2px solid ${compteType === t ? '#EA580C' : '#E5E7EB'}`,
+                          borderRadius: '8px', background: compteType === t ? '#FFF7ED' : '#fff',
+                          cursor: 'pointer', textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontSize: '24px', marginBottom: '6px' }}>{t === 'perso' ? '👤' : '🏢'}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827' }}>
+                          {t === 'perso' ? 'Compte particulier' : 'Compte professionnel'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setAcompteStep(1)}
+                    style={{
+                      width: '100%', background: 'none', border: '1px solid #D1D5DB',
+                      borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#6B7280',
+                      cursor: 'pointer', marginTop: '12px',
+                    }}
+                  >
+                    ← Retour
+                  </button>
+                </div>
+              )}
+
+              {/* STEP 3 - RIB */}
+              {acompteStep === 3 && (() => {
+                const ribKey = compteType === 'pro' ? 'rib_pro' : 'rib_perso';
+                const emKey = compteType === 'pro' ? 'emetteur_pro' : 'emetteur_perso';
+                const rib = adminParams[ribKey] || adminParams['rib'] || {};
+                const emetteur = adminParams[emKey] || adminParams['emetteur'] || {};
+                const ref = numeroDevis ? 'FA' + numeroDevis.replace(/^D/, '') : '';
+                return (
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
+                      Étape 3 — Coordonnées bancaires
+                    </h3>
+                    <div style={{
+                      background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '8px',
+                      padding: '14px', fontSize: '12px', marginBottom: '12px',
+                    }}>
+                      {emetteur.nom && (
+                        <div style={{ marginBottom: '8px' }}>
+                          <span style={{ color: '#6B7280', fontSize: '10px' }}>Bénéficiaire</span>
+                          <p style={{ fontWeight: 600, color: '#111827', margin: '2px 0 0' }}>{emetteur.nom}</p>
+                        </div>
+                      )}
+                      {rib.iban && (
+                        <div style={{ marginBottom: '8px' }}>
+                          <span style={{ color: '#6B7280', fontSize: '10px' }}>IBAN</span>
+                          <p style={{ fontWeight: 600, color: '#111827', margin: '2px 0 0', fontFamily: 'monospace' }}>{rib.iban}</p>
+                        </div>
+                      )}
+                      {rib.bic && (
+                        <div style={{ marginBottom: '8px' }}>
+                          <span style={{ color: '#6B7280', fontSize: '10px' }}>BIC</span>
+                          <p style={{ fontWeight: 600, color: '#111827', margin: '2px 0 0', fontFamily: 'monospace' }}>{rib.bic}</p>
+                        </div>
+                      )}
+                      <div>
+                        <span style={{ color: '#6B7280', fontSize: '10px' }}>Référence à indiquer</span>
+                        <p style={{ fontWeight: 700, color: '#EA580C', margin: '2px 0 0', fontSize: '14px' }}>{ref}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '12px' }}>
+                      <span style={{ color: '#6B7280' }}>Montant à virer</span>
+                      <span style={{ fontWeight: 700, color: '#EA580C' }}>{formatEur(acompteMontant)}</span>
+                    </div>
+                    {rib.pdf_url && (
+                      <a href={rib.pdf_url} target="_blank" rel="noopener noreferrer"
+                        style={{
+                          display: 'block', textAlign: 'center', background: '#EFF6FF',
+                          border: '1px solid #BFDBFE', borderRadius: '6px', padding: '8px',
+                          color: '#1E3A5F', fontSize: '12px', fontWeight: 600,
+                          textDecoration: 'none', marginBottom: '8px',
+                        }}>
+                        📄 Télécharger le RIB PDF
+                      </a>
+                    )}
+                    <button
+                      onClick={submitPostAcompte}
+                      disabled={acompteSaving}
+                      style={{
+                        width: '100%', background: '#059669', color: '#fff', border: 'none',
+                        borderRadius: '6px', padding: '12px', fontSize: '13px', fontWeight: 700,
+                        cursor: 'pointer', opacity: acompteSaving ? 0.6 : 1,
+                      }}
+                    >
+                      {acompteSaving ? 'Enregistrement...' : "J'ai effectué le virement ✓"}
+                    </button>
+                    <button
+                      onClick={() => setAcompteStep(2)}
+                      style={{
+                        width: '100%', background: 'none', border: '1px solid #D1D5DB',
+                        borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#6B7280',
+                        cursor: 'pointer', marginTop: '6px',
+                      }}
+                    >
+                      ← Retour
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Settings, Palette, Globe, Type, Upload, Building2, CreditCard, Percent } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
 
 interface AdminParam {

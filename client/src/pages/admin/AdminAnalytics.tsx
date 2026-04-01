@@ -5,7 +5,7 @@ import {
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 interface DayPoint { date: string; devis: number; inscriptions: number; }
 interface StatutCount { statut: string; count: number; }

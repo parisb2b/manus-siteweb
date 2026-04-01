@@ -20,7 +20,7 @@ import {
   MessageSquare,
   UserCheck,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import {
   ADMIN_COLORS,
   AdminCard,

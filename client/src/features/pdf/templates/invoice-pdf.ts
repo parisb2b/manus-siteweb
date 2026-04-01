@@ -180,18 +180,21 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  const W = doc.internal.pageSize.getWidth();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const marginRight = pageWidth - 14;
   const L = 15;
-  const xLabel = L + 104;
-  const xValue = L + 176;
-  const boxX = L + 100;
-  const boxW = 80;
+  const xLabel = marginRight - 80;
+  const xValue = marginRight;
+  const boxX = xLabel - 4;
+  const boxW = marginRight - boxX + 1;
+  const fontSizeNormal = 9;
+  const fontSizeSolde = 11;
 
   // ── Total HT ──
   doc.setFillColor(239, 246, 255);
   doc.roundedRect(boxX, y, boxW, 12, 1.5, 1.5, "F");
+  doc.setFontSize(fontSizeNormal + 1);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
   doc.setTextColor(...GREEN_ACC);
   doc.text("Total HT", xLabel, y + 8);
   doc.text(formatPrix(totalHT), xValue, y + 8, { align: "right" });
@@ -210,8 +213,8 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
     // Lignes individuelles acomptes (vert)
     for (const a of acomptes) {
+      doc.setFontSize(fontSizeNormal);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
       doc.setTextColor(4, 120, 87);
       doc.text(`Acompte ${a.numero}`, xLabel, y + 4);
       doc.text(`\u2212 ${formatPrix(a.montant)}`, xValue, y + 4, { align: "right" });
@@ -223,8 +226,8 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
     // Total acomptes versés (fond vert)
     doc.setFillColor(236, 253, 245);
     doc.roundedRect(boxX, y, boxW, 11, 1.5, 1.5, "F");
+    doc.setFontSize(fontSizeNormal);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
     doc.setTextColor(4, 120, 87);
     doc.text("Total acomptes vers\u00E9s", xLabel, y + 7.5);
     doc.text(`\u2212 ${formatPrix(totalAcomptes)}`, xValue, y + 7.5, { align: "right" });
@@ -234,16 +237,16 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
     const solde = totalHT - totalAcomptes;
     if (solde <= 0) {
       doc.setFillColor(236, 253, 245);
-      doc.roundedRect(L, y, W - L * 2, 13, 1.5, 1.5, "F");
+      doc.roundedRect(L, y, pageWidth - L * 2, 13, 1.5, 1.5, "F");
+      doc.setFontSize(fontSizeSolde);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
       doc.setTextColor(4, 120, 87);
-      doc.text("ENTI\u00C8REMENT SOLD\u00C9E \u2713", W / 2, y + 9, { align: "center" });
+      doc.text("ENTI\u00C8REMENT SOLD\u00C9E \u2713", pageWidth / 2, y + 9, { align: "center" });
     } else {
       doc.setFillColor(255, 247, 237);
       doc.roundedRect(boxX, y, boxW, 13, 1.5, 1.5, "F");
+      doc.setFontSize(fontSizeSolde);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
       doc.setTextColor(234, 88, 12);
       doc.text("SOLDE RESTANT", xLabel, y + 9);
       doc.text(formatPrix(solde), xValue, y + 9, { align: "right" });
@@ -253,7 +256,7 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
   // Mention "Date de paiement"
   doc.setFillColor(236, 253, 245);
-  doc.roundedRect(L, y, W - L * 2, 9, 1.5, 1.5, "F");
+  doc.roundedRect(L, y, pageWidth - L * 2, 9, 1.5, 1.5, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...GREEN_ACC);
