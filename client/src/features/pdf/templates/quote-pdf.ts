@@ -1,7 +1,7 @@
 /**
  * quote-pdf.ts — Génération PDF devis (style minimaliste)
- * v5.8: VIP = 2 lignes par produit (prix public barré gris + prix remisé violet)
- * Appel autoTable DIRECT
+ * v5.10: Colonnes uniformes Réf. Interne | Produit | Prix HT | Qté | Total HT
+ * buildProductRows partagé — 2 lignes gris barré + violet VIP
  */
 
 import autoTable from "jspdf-autotable";
@@ -14,8 +14,8 @@ import {
   addConditionsPage,
   addPageFooter,
 } from "../lib/pdf-engine";
-import { NAVY, STRIKE } from "../lib/pdf-theme";
-import { formatPrix } from "../lib/pdf-helpers";
+import { NAVY } from "../lib/pdf-theme";
+import { buildProductRows, productTableHooks } from "../lib/pdf-helpers";
 
 export interface QuoteProduit {
   nom: string;
@@ -26,6 +26,7 @@ export interface QuoteProduit {
   quantite: number;
   total: number;
   reference_interne?: string;
+  numero_interne?: string;
 }
 
 export interface QuoteData {
@@ -42,18 +43,12 @@ export interface QuoteData {
   produits: QuoteProduit[];
   totalHT: number;
   role: string;
+  prixNegocie?: number | null;
+  prixTotalCalcule?: number;
 }
 
 /** Parse robuste */
-function parseProduits(raw: any): Array<{
-  nom: string;
-  description: string;
-  prixUnitaire: number;
-  quantite: number;
-  prixPublic?: number;
-  remise?: number;
-  reference_interne?: string;
-}> {
+function parseProduits(raw: any): any[] {
   let arr: any[] = [];
   if (Array.isArray(raw)) {
     arr = raw;
@@ -75,15 +70,29 @@ function parseProduits(raw: any): Array<{
     prixUnitaire: Number(i.prixUnitaire ?? i.prixAffiche ?? i.prix ?? 0),
     quantite: Number(i.quantite ?? i.qty ?? i.quantity ?? 1),
     prixPublic: i.prixPublic != null ? Number(i.prixPublic) : (i.prix_public != null ? Number(i.prix_public) : undefined),
+    prix_achat: i.prix_achat != null ? Number(i.prix_achat) : undefined,
     remise: i.remise != null ? Number(i.remise) : undefined,
     reference_interne: i.reference_interne || i.ref || undefined,
+    numero_interne: i.numero_interne || undefined,
   }));
 }
 
 export function generateQuotePDF(data: QuoteData): Blob {
   const doc = createDocument();
-  const isVip = data.role === "vip";
   const produits = parseProduits(data.produits);
+
+  // Calcul totalHT réel
+  const totalHT = produits.reduce(
+    (sum: number, p: any) => sum + (Number(p.prixUnitaire) || 0) * (Number(p.quantite) || 1),
+    0,
+  );
+
+  // Build rows via shared function
+  const rows = buildProductRows(
+    produits,
+    data.prixNegocie ?? (data.totalHT < totalHT ? data.totalHT : null),
+    totalHT,
+  );
 
   // ── Page 1 ───────────────────────────────────────────────────────
   let y = addPageHeader(doc, {
@@ -102,138 +111,63 @@ export function generateQuotePDF(data: QuoteData): Blob {
 
   y = addParties(doc, { destinataire: { nom: data.client.nom, lignes: clientLignes } }, y);
 
-  // ── Tableau produits ────────────────────────────────────────
-  const body: any[][] = [];
-  const totalHT = produits.reduce(
-    (sum, p) => sum + p.prixUnitaire * p.quantite,
-    0,
-  );
-
-  if (isVip) {
-    // VIP: 2 lignes par produit — prix public barré + prix remisé violet
-    for (const p of produits) {
-      const ref = p.reference_interne ? `${p.reference_interne} — ` : "";
-      const total = p.prixUnitaire * p.quantite;
-
-      // Ligne 1 — prix public barré (gris clair italic)
-      if (p.prixPublic && p.prixPublic > p.prixUnitaire) {
-        body.push([
-          { content: `${ref}${p.nom} (prix public)`, styles: { textColor: [180, 180, 180] as any, fontStyle: "italic" as const } },
-          { content: formatPrix(p.prixPublic), styles: { textColor: [180, 180, 180] as any, fontStyle: "italic" as const } },
-          { content: String(p.quantite), styles: { textColor: [180, 180, 180] as any } },
-          { content: formatPrix(p.prixPublic * p.quantite), styles: { textColor: [180, 180, 180] as any, fontStyle: "italic" as const } },
-        ]);
+  // ── Tableau produits — colonnes uniformes ────────────────────────
+  autoTable(doc, {
+    startY: y,
+    head: [["R\u00E9f. Interne", "Produit", "Prix HT", "Qt\u00E9", "Total HT"]],
+    body: rows.map((r) => [r.ref_interne, r.designation, r.prix, r.qte, r.total]),
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+      overflow: "linebreak",
+      textColor: NAVY as any,
+      lineColor: [191, 219, 254] as any,
+      lineWidth: 0.3,
+      minCellHeight: 10,
+    },
+    headStyles: {
+      fillColor: [239, 246, 255] as any,
+      textColor: NAVY as any,
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 9,
+    },
+    columnStyles: {
+      0: { cellWidth: 30, halign: "left" as const },
+      1: { cellWidth: 80, halign: "left" as const },
+      2: { cellWidth: 25, halign: "right" as const },
+      3: { cellWidth: 15, halign: "center" as const },
+      4: { cellWidth: 30, halign: "right" as const, fontStyle: "bold" as const },
+    },
+    margin: { left: 15, right: 15 },
+    tableWidth: 180,
+    willDrawCell: (hookData: any) => {
+      // Map _style from original rows array
+      const rowIdx = hookData.row?.index;
+      if (hookData.section === "body" && rowIdx != null && rows[rowIdx]?._style) {
+        hookData.cell.styles.textColor = rows[rowIdx]._style.textColor;
+        hookData.cell.styles.fontStyle = rows[rowIdx]._style.fontStyle;
       }
-
-      // Ligne 2 — prix remisé violet
-      const isRemise = p.prixPublic && p.prixPublic > p.prixUnitaire;
-      const txtColor = isRemise ? [107, 33, 168] : NAVY; // violet si remisé
-      body.push([
-        { content: `${ref}${p.nom}${isRemise ? " \u2605 VIP" : ""}`, styles: { fontStyle: "bold" as const, textColor: txtColor as any } },
-        { content: formatPrix(p.prixUnitaire), styles: { fontStyle: "bold" as const, textColor: txtColor as any } },
-        { content: String(p.quantite), styles: { textColor: txtColor as any } },
-        { content: formatPrix(total), styles: { fontStyle: "bold" as const, textColor: txtColor as any } },
-      ]);
-    }
-
-    autoTable(doc, {
-      startY: y,
-      head: [["D\u00E9signation", "Prix HT", "Qt\u00E9", "Total HT"]],
-      body: body,
-      theme: "grid",
-      styles: {
-        font: "helvetica",
-        fontSize: 9,
-        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
-        overflow: "linebreak",
-        textColor: NAVY as any,
-        lineColor: [191, 219, 254] as any,
-        lineWidth: 0.3,
-        minCellHeight: 10,
-      },
-      headStyles: {
-        fillColor: [239, 246, 255] as any,
-        textColor: NAVY as any,
-        fontStyle: "bold",
-        halign: "center",
-        fontSize: 9,
-      },
-      columnStyles: {
-        0: { cellWidth: 90, halign: "left" as const },
-        1: { cellWidth: 30, halign: "right" as const },
-        2: { cellWidth: 16, halign: "center" as const },
-        3: { cellWidth: 30, halign: "right" as const },
-      },
-      margin: { left: 15, right: 15 },
-      tableWidth: 180,
-      didDrawCell: (hookData: any) => {
-        // Strikethrough on grey lines (prix public barré)
-        if (hookData.section === "body") {
-          const cellStyles = hookData.cell.styles;
-          if (cellStyles && cellStyles.textColor &&
-              Array.isArray(cellStyles.textColor) &&
-              cellStyles.textColor[0] === 180 && cellStyles.textColor[1] === 180) {
-            const cell = hookData.cell;
-            if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
-              const textY = cell.y + cell.height / 2;
-              doc.setDrawColor(180, 180, 180);
-              doc.setLineWidth(0.4);
-              doc.line(cell.x + 2, textY, cell.x + cell.width - 2, textY);
-            }
-          }
+    },
+    didDrawCell: (hookData: any) => {
+      const rowIdx = hookData.row?.index;
+      if (hookData.section === "body" && rowIdx != null && rows[rowIdx]?._barre) {
+        const cell = hookData.cell;
+        if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
+          const textY = cell.y + cell.height / 2;
+          doc.setDrawColor(192, 192, 192);
+          doc.setLineWidth(0.3);
+          doc.line(cell.x + 1, textY, cell.x + cell.width - 1, textY);
         }
-      },
-    });
-  } else {
-    // Standard : 5 colonnes
-    for (const p of produits) {
-      const total = p.prixUnitaire * p.quantite;
-      body.push([
-        p.nom,
-        p.description,
-        formatPrix(p.prixUnitaire),
-        String(p.quantite),
-        formatPrix(total),
-      ]);
-    }
-
-    autoTable(doc, {
-      startY: y,
-      head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
-      body: body,
-      theme: "grid",
-      styles: {
-        font: "helvetica",
-        fontSize: 9,
-        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
-        overflow: "linebreak",
-        textColor: NAVY as any,
-        lineColor: [191, 219, 254] as any,
-        lineWidth: 0.3,
-        minCellHeight: 10,
-      },
-      headStyles: {
-        fillColor: [239, 246, 255] as any,
-        textColor: NAVY as any,
-        fontStyle: "bold",
-        halign: "center",
-        fontSize: 9,
-      },
-      columnStyles: {
-        0: { cellWidth: 52, halign: "left" as const, fontStyle: "bold" as const },
-        1: { cellWidth: 50, halign: "left" as const },
-        2: { cellWidth: 32, halign: "right" as const },
-        3: { cellWidth: 14, halign: "center" as const },
-        4: { cellWidth: 32, halign: "right" as const, fontStyle: "bold" as const },
-      },
-      margin: { left: 15, right: 15 },
-      tableWidth: 180,
-    });
-  }
+      }
+    },
+  });
 
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  y = addTotal(doc, { montant: totalHT, accent: NAVY }, y);
+  y = addTotal(doc, { montant: data.totalHT, accent: NAVY }, y);
   addTVAMention(doc, y);
   addPageFooter(doc, { numeroDoc: data.numeroDevis, page: 1, totalPages: 2 });
 

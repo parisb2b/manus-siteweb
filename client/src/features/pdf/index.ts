@@ -10,3 +10,9 @@ export type { InvoiceData, FactureData } from "./templates/invoice-pdf";
 
 export { generateCommissionPDF } from "./templates/commission-pdf";
 export type { CommissionData } from "./templates/commission-pdf";
+
+export { generateDeliveryNotePDF } from "./templates/delivery-note-pdf";
+export type { DeliveryNoteData } from "./templates/delivery-note-pdf";
+
+export { generateFeesPDF } from "./templates/fees-pdf";
+export type { FeesData } from "./templates/fees-pdf";

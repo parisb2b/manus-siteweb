@@ -94,6 +94,37 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.10-pdf-uniformes
+TYPE : feat
+DESCRIPTION : Uniformisation de TOUS les PDFs — colonnes, prix barré gris + violet, suppression Description
+
+MODIFICATIONS :
+  - Tous les PDFs produits : colonne Description supprimée
+  - Tous les PDFs produits : Désignation → Produit
+  - Tous les PDFs produits : colonne Réf. Interne ajoutée avant Produit
+  - Devis + Facture : 2 lignes par produit (gris barré prix public + violet prix VIP)
+    via buildProductRows() partagé dans pdf-helpers.ts
+  - Fonction buildProductRows + productTableHooks mutualisées dans pdf-helpers.ts
+  - BL : colonnes Réf. Interne | Produit | Qté | État (35+95+20+30=180mm)
+  - FM + DD : colonnes Libellé | Montant HT (140+40=180mm), Description supprimée
+  - NC commission : colonnes Réf. devis | Client | Produit | Prix remisé | Prix partenaire | Commission
+  - AdminQuotes buildDevisData/buildFactureData : passage reference_interne, numero_interne, prix_achat
+  - QuoteData + InvoiceData : ajout prixNegocie, prixTotalCalcule pour calcul ratio VIP
+
+FICHIERS :
+  client/src/features/pdf/lib/pdf-helpers.ts (buildProductRows + productTableHooks)
+  client/src/features/pdf/templates/quote-pdf.ts (colonnes uniformes + buildProductRows)
+  client/src/features/pdf/templates/invoice-pdf.ts (colonnes uniformes + buildProductRows)
+  client/src/features/pdf/templates/delivery-note-pdf.ts (Réf. Interne + Produit + Qté + État)
+  client/src/features/pdf/templates/fees-pdf.ts (Libellé + Montant HT)
+  client/src/features/pdf/templates/commission-pdf.ts (colonnes corrigées)
+  client/src/features/pdf/index.ts (exports delivery-note + fees)
+  client/src/pages/admin/AdminQuotes.tsx (buildDevisData + buildFactureData enrichis)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.9-pdf-corrections-notif
 TYPE : fix
 DESCRIPTION : PDF facture totals rewrite + PDF devis strikethrough + notification email admin acompte

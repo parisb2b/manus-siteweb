@@ -1,6 +1,6 @@
 /**
  * commission-pdf.ts — Génération PDF note de commission (style minimaliste)
- * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
+ * v5.10: Colonnes corrigées — Réf. devis | Client | Produit | Prix remisé | Prix partenaire | Commission
  */
 
 import autoTable from "jspdf-autotable";
@@ -59,10 +59,10 @@ export function generateCommissionPDF(data: CommissionData): Blob {
     },
   }, y);
 
-  // ── Tableau commission — appel autoTable DIRECT ──────────────────
+  // ── Tableau commission ──────────────────────────────────────────
   autoTable(doc, {
     startY: y,
-    head: [["R\u00E9f. devis", "Client", "Produit(s)", "Prix n\u00E9goci\u00E9", "Prix partenaire", "Commission"]],
+    head: [["R\u00E9f. devis", "Client", "Produit", "Prix remis\u00E9", "Prix partenaire", "Commission"]],
     body: [[
       data.devis.numeroDevis,
       data.devis.nomClient,

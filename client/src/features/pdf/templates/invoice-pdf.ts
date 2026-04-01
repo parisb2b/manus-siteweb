@@ -1,7 +1,8 @@
 /**
  * invoice-pdf.ts — Génération PDF facture (style minimaliste)
- * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
- * v5.6: prix public barré + VIP violet, section acomptes cumulés
+ * v5.10: Colonnes uniformes Réf. Interne | Produit | Prix HT | Qté | Total HT
+ * buildProductRows partagé — 2 lignes gris barré + violet VIP
+ * Section totaux : Total HT → séparateur → Acomptes → Solde
  */
 
 import autoTable from "jspdf-autotable";
@@ -13,8 +14,8 @@ import {
   addConditionsPage,
   addPageFooter,
 } from "../lib/pdf-engine";
-import { GREEN_ACC, STRIKE, NAVY } from "../lib/pdf-theme";
-import { formatPrix } from "../lib/pdf-helpers";
+import { GREEN_ACC, NAVY } from "../lib/pdf-theme";
+import { formatPrix, buildProductRows } from "../lib/pdf-helpers";
 
 export interface InvoiceProduit {
   nom: string;
@@ -23,6 +24,8 @@ export interface InvoiceProduit {
   prixPublic?: number;
   quantite: number;
   total: number;
+  reference_interne?: string;
+  numero_interne?: string;
 }
 
 export interface InvoiceAcompte {
@@ -51,16 +54,12 @@ export interface InvoiceData {
     nom: string;
     lignes: string[];
   };
+  prixNegocie?: number | null;
+  prixTotalCalcule?: number;
 }
 
 /** Parse robuste — gère Array, string JSON, double stringify, objet */
-function parseProduits(raw: any): Array<{
-  nom: string;
-  description: string;
-  prixUnitaire: number;
-  prixPublic: number;
-  quantite: number;
-}> {
+function parseProduits(raw: any): any[] {
   let arr: any[] = [];
   if (Array.isArray(raw)) {
     arr = raw;
@@ -81,13 +80,30 @@ function parseProduits(raw: any): Array<{
     description: String(i.description ?? ""),
     prixUnitaire: Number(i.prixUnitaire ?? i.prixAffiche ?? i.prix ?? 0),
     prixPublic: Number(i.prixPublic ?? i.prix_public ?? 0),
+    prix_achat: i.prix_achat != null ? Number(i.prix_achat) : undefined,
     quantite: Number(i.quantite ?? i.qty ?? i.quantity ?? 1),
+    reference_interne: i.reference_interne || i.ref || undefined,
+    numero_interne: i.numero_interne || undefined,
   }));
 }
 
 export function generateInvoicePDF(data: InvoiceData): Blob {
   const doc = createDocument();
   const produits = parseProduits(data.produits);
+
+  // Calcul totalHT réel
+  const totalHTCalc = produits.reduce(
+    (sum: number, p: any) => sum + (Number(p.prixUnitaire) || 0) * (Number(p.quantite) || 1),
+    0,
+  );
+  const totalHT = data.totalHT || totalHTCalc;
+
+  // Build rows via shared function
+  const rows = buildProductRows(
+    produits,
+    data.prixNegocie ?? (totalHT < totalHTCalc ? totalHT : null),
+    totalHTCalc,
+  );
 
   // ── Page 1 ───────────────────────────────────────────────────────
   let y = addPageHeader(doc, {
@@ -109,44 +125,11 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
   if (data.emetteur) partiesOpts.emetteur = data.emetteur;
   y = addParties(doc, partiesOpts, y);
 
-  // ── Tableau produits — appel autoTable DIRECT ────────────────────
-  const body: any[][] = [];
-  for (let idx = 0; idx < produits.length; idx++) {
-    const p = produits[idx];
-    const total = p.prixUnitaire * p.quantite;
-
-    // Ligne prix public barré si différent du prix facturé
-    if (p.prixPublic && p.prixPublic > p.prixUnitaire) {
-      body.push([
-        { content: `${p.nom} (prix public)`, styles: { textColor: STRIKE as any, fontStyle: "italic" as const } },
-        { content: "", styles: { textColor: STRIKE as any } },
-        { content: formatPrix(p.prixPublic), styles: { textColor: STRIKE as any, fontStyle: "italic" as const } },
-        { content: String(p.quantite), styles: { textColor: STRIKE as any } },
-        { content: formatPrix(p.prixPublic * p.quantite), styles: { textColor: STRIKE as any, fontStyle: "italic" as const } },
-      ]);
-    }
-
-    // Ligne prix facturé (normal ou violet si remisé)
-    const isRemise = p.prixPublic && p.prixPublic > p.prixUnitaire;
-    const txtColor = isRemise ? [107, 33, 168] : NAVY; // violet #6B21A8 si remisé
-    body.push([
-      { content: p.nom, styles: { fontStyle: "bold" as const, textColor: txtColor as any } },
-      { content: p.description, styles: { textColor: txtColor as any } },
-      { content: formatPrix(p.prixUnitaire), styles: { textColor: txtColor as any } },
-      { content: String(p.quantite), styles: { textColor: txtColor as any } },
-      { content: formatPrix(total), styles: { fontStyle: "bold" as const, textColor: txtColor as any } },
-    ]);
-  }
-
-  const totalHT = produits.reduce(
-    (sum, p) => sum + p.prixUnitaire * p.quantite,
-    0,
-  );
-
+  // ── Tableau produits — colonnes uniformes ────────────────────────
   autoTable(doc, {
     startY: y,
-    head: [["D\u00E9signation", "Description", "Prix HT", "Qt\u00E9", "Total HT"]],
-    body: body,
+    head: [["R\u00E9f. Interne", "Produit", "Prix HT", "Qt\u00E9", "Total HT"]],
+    body: rows.map((r) => [r.ref_interne, r.designation, r.prix, r.qte, r.total]),
     theme: "grid",
     styles: {
       font: "helvetica",
@@ -166,28 +149,30 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
       fontSize: 9,
     },
     columnStyles: {
-      0: { cellWidth: 52, halign: "left" as const, fontStyle: "bold" as const },
-      1: { cellWidth: 50, halign: "left" as const },
-      2: { cellWidth: 32, halign: "right" as const },
-      3: { cellWidth: 14, halign: "center" as const },
-      4: { cellWidth: 32, halign: "right" as const, fontStyle: "bold" as const },
+      0: { cellWidth: 30, halign: "left" as const },
+      1: { cellWidth: 80, halign: "left" as const },
+      2: { cellWidth: 25, halign: "right" as const },
+      3: { cellWidth: 15, halign: "center" as const },
+      4: { cellWidth: 30, halign: "right" as const, fontStyle: "bold" as const },
     },
     margin: { left: 15, right: 15 },
     tableWidth: 180,
+    willDrawCell: (hookData: any) => {
+      const rowIdx = hookData.row?.index;
+      if (hookData.section === "body" && rowIdx != null && rows[rowIdx]?._style) {
+        hookData.cell.styles.textColor = rows[rowIdx]._style.textColor;
+        hookData.cell.styles.fontStyle = rows[rowIdx]._style.fontStyle;
+      }
+    },
     didDrawCell: (hookData: any) => {
-      // Strikethrough on STRIKE-colored lines (prix public barré)
-      if (hookData.section === "body") {
-        const cellStyles = hookData.cell.styles;
-        if (cellStyles && cellStyles.textColor &&
-            Array.isArray(cellStyles.textColor) &&
-            cellStyles.textColor[0] === STRIKE[0] && cellStyles.textColor[1] === STRIKE[1]) {
-          const cell = hookData.cell;
-          if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
-            const textY = cell.y + cell.height / 2;
-            doc.setDrawColor(...(STRIKE as [number, number, number]));
-            doc.setLineWidth(0.4);
-            doc.line(cell.x + 2, textY, cell.x + cell.width - 2, textY);
-          }
+      const rowIdx = hookData.row?.index;
+      if (hookData.section === "body" && rowIdx != null && rows[rowIdx]?._barre) {
+        const cell = hookData.cell;
+        if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
+          const textY = cell.y + cell.height / 2;
+          doc.setDrawColor(192, 192, 192);
+          doc.setLineWidth(0.3);
+          doc.line(cell.x + 1, textY, cell.x + cell.width - 1, textY);
         }
       }
     },

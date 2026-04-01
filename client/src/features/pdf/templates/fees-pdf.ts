@@ -1,6 +1,6 @@
 /**
  * fees-pdf.ts — Génération PDF Frais Maritimes (FM) et Dédouanement (DD)
- * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
+ * v5.10: Colonnes corrigées — Libellé | Montant HT (pas de colonne Description)
  */
 
 import autoTable from "jspdf-autotable";
@@ -13,7 +13,7 @@ import {
   addPageFooter,
   type DocType,
 } from "../lib/pdf-engine";
-import { BLUE, NAVY, LIGHT_BLUE, MUTED } from "../lib/pdf-theme";
+import { NAVY } from "../lib/pdf-theme";
 import { formatPrix } from "../lib/pdf-helpers";
 
 export interface FeeLigne {
@@ -67,20 +67,21 @@ export function generateFeesPDF(data: FeesData): Blob {
 
   y = addParties(doc, { destinataire: { nom: data.client.nom, lignes: clientLignes } }, y);
 
-  // ── Tableau frais — autoTable DIRECT ─────────────────────────────
+  // ── Tableau frais — Libellé | Montant HT ────────────────────────
   const body: string[][] = [];
-  for (let idx = 0; idx < data.lignes.length; idx++) {
-    const l = data.lignes[idx];
+  for (const l of data.lignes) {
+    const label = l.description
+      ? `${l.designation} — ${l.description}`
+      : l.designation;
     body.push([
-      l.designation,
-      l.description || "",
+      label,
       formatPrix(l.montant),
     ]);
   }
 
   autoTable(doc, {
     startY: y,
-    head: [["D\u00E9signation", "D\u00E9tail", "Montant HT"]],
+    head: [["Libell\u00E9", "Montant HT"]],
     body,
     theme: "grid",
     styles: {
@@ -101,9 +102,8 @@ export function generateFeesPDF(data: FeesData): Blob {
       fontSize: 9,
     },
     columnStyles: {
-      0: { cellWidth: 70, halign: "left" as const, fontStyle: "bold" as const },
-      1: { cellWidth: 74, halign: "left" as const },
-      2: { cellWidth: 36, halign: "right" as const, fontStyle: "bold" as const },
+      0: { cellWidth: 140, halign: "left" as const, fontStyle: "bold" as const },
+      1: { cellWidth: 40, halign: "right" as const, fontStyle: "bold" as const },
     },
     margin: { left: L, right: L },
     tableWidth: 180,

@@ -1,6 +1,7 @@
 /**
  * delivery-note-pdf.ts — Génération PDF Bon de Livraison (BL)
- * Appel autoTable DIRECT — contourne addProductTable pour fiabilité
+ * v5.10: Colonnes uniformes Réf. Interne | Produit | Qté | État
+ * Pas de prix sur le BL — pas de 2 lignes
  */
 
 import autoTable from "jspdf-autotable";
@@ -14,9 +15,14 @@ import { NAVY, LIGHT_BLUE, MUTED } from "../lib/pdf-theme";
 
 export interface BLProduit {
   designation: string;
+  nom?: string;
+  name?: string;
   reference?: string;
+  reference_interne?: string;
+  numero_interne?: string;
   quantite: number;
   observations?: string;
+  etat?: string;
 }
 
 export interface DeliveryNoteData {
@@ -82,26 +88,27 @@ export function generateDeliveryNotePDF(data: DeliveryNoteData): Blob {
     doc.setFontSize(8.5);
     doc.setTextColor(...MUTED);
     doc.text(data.adresseLivraison.adresse, L + 4, y + 11);
-    doc.text(`${data.adresseLivraison.ville}${data.adresseLivraison.pays ? ` — ${data.adresseLivraison.pays}` : ""}`, L + 4, y + 15.5);
+    doc.text(`${data.adresseLivraison.ville}${data.adresseLivraison.pays ? ` \u2014 ${data.adresseLivraison.pays}` : ""}`, L + 4, y + 15.5);
 
     y += 22;
   }
 
-  // ── Tableau produits — autoTable DIRECT ──────────────────────────
+  // ── Tableau produits — Réf. Interne | Produit | Qté | État ──────
   const body: string[][] = [];
-  for (let idx = 0; idx < data.produits.length; idx++) {
-    const p = data.produits[idx];
+  for (const p of data.produits) {
+    const ref = p.numero_interne || p.reference_interne || p.reference || "\u2014";
+    const nom = p.designation || p.nom || p.name || "";
     body.push([
-      p.designation,
-      p.reference || "",
+      ref,
+      nom,
       String(p.quantite),
-      p.observations || "",
+      p.etat || p.observations || "Conforme \u2705",
     ]);
   }
 
   autoTable(doc, {
     startY: y,
-    head: [["D\u00E9signation", "R\u00E9f\u00E9rence", "Qt\u00E9", "Observations"]],
+    head: [["R\u00E9f. Interne", "Produit", "Qt\u00E9", "\u00C9tat"]],
     body,
     theme: "grid",
     styles: {
@@ -122,10 +129,10 @@ export function generateDeliveryNotePDF(data: DeliveryNoteData): Blob {
       fontSize: 9,
     },
     columnStyles: {
-      0: { cellWidth: 60, halign: "left" as const, fontStyle: "bold" as const },
-      1: { cellWidth: 35, halign: "left" as const },
+      0: { cellWidth: 35, halign: "left" as const },
+      1: { cellWidth: 95, halign: "left" as const, fontStyle: "bold" as const },
       2: { cellWidth: 20, halign: "center" as const },
-      3: { cellWidth: 65, halign: "left" as const },
+      3: { cellWidth: 30, halign: "center" as const },
     },
     margin: { left: L, right: L },
     tableWidth: 180,

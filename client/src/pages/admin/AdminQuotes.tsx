@@ -81,8 +81,12 @@ function buildDevisData(q: Quote): DevisData {
   const lignes = (q.produits || []).map((p: any) => ({
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
+    prixPublic: p.prix_public ?? p.prixPublic ?? (p.prix_achat ? p.prix_achat * 2 : 0),
+    prix_achat: p.prix_achat ?? undefined,
     quantite: p.quantite ?? 1,
     total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
+    reference_interne: p.reference_interne || p.ref || undefined,
+    numero_interne: p.numero_interne || undefined,
   }));
   return {
     numeroDevis: q.numero_devis || q.id.slice(0, 8).toUpperCase(),
@@ -94,6 +98,8 @@ function buildDevisData(q: Quote): DevisData {
     },
     produits: lignes,
     totalHT: q.prix_negocie ?? q.prix_total_calcule ?? 0,
+    prixNegocie: q.prix_negocie ?? null,
+    prixTotalCalcule: q.prix_total_calcule ?? 0,
     role: q.role_client ?? "user",
   };
 }
@@ -105,8 +111,11 @@ function buildFactureData(q: Quote): FactureData {
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
     prixPublic: p.prix_public ?? p.prixPublic ?? (p.prix_achat ? p.prix_achat * 2 : 0),
+    prix_achat: p.prix_achat ?? undefined,
     quantite: p.quantite ?? 1,
     total: (p.prixAffiche ?? p.prixUnitaire ?? 0) * (p.quantite ?? 1),
+    reference_interne: p.reference_interne || p.ref || undefined,
+    numero_interne: p.numero_interne || undefined,
   }));
   const factureNum = "FA" + (q.numero_devis || `D${q.id.slice(0, 5)}`).replace(/^D/, "");
   return {
@@ -119,6 +128,8 @@ function buildFactureData(q: Quote): FactureData {
     },
     produits: lignes,
     totalHT: q.prix_negocie ?? q.prix_total_calcule ?? 0,
+    prixNegocie: q.prix_negocie ?? null,
+    prixTotalCalcule: q.prix_total_calcule ?? 0,
     acomptes: (q as any).acomptes?.filter((a: any) => a.statut === "valide") || [],
   };
 }
