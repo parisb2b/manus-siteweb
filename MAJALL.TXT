@@ -94,6 +94,33 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.8-acomptes-pdf-roles
+TYPE : fix
+DESCRIPTION : Encaisser acompte fix + PDF facture/devis structure + roles partenaires + message 3eme acompte
+
+MODIFICATIONS :
+  - AdminQuotes PaiementRow : acomptes dynamiques depuis quote.acomptes,
+    bouton Encaisser → update statut + totaux + PDF cumulative + upload Storage + upsert invoices
+  - Invoice PDF : Total HT + Acomptes versés + Reste à payer (orange ou SOLDÉE vert)
+  - Quote PDF VIP : 2 lignes par produit (prix public barré gris 180,180,180 + prix remisé violet)
+  - AdminPartenaires : filtrage actif=true, order desc
+  - AdminParametres : section acomptes remplacée par texte informatif
+  - QuotesTab pop-up : message warning 3ème acompte, solde forcé au 4ème+
+  - SQL : 68 refs internes + contrainte partners.user_id + colonnes acomptes/totaux
+
+FICHIERS :
+  scripts/v58-fixes.sql (NOUVEAU — à exécuter dans Supabase)
+  client/src/pages/admin/AdminQuotes.tsx (PaiementRow dynamique + encaisser)
+  client/src/features/pdf/templates/invoice-pdf.ts (acomptes cumulés)
+  client/src/features/pdf/templates/quote-pdf.ts (VIP 2 lignes barré+violet)
+  client/src/pages/admin/AdminPartenaires.tsx (filtre actif)
+  client/src/pages/admin/AdminParametres.tsx (section acomptes simplifiée)
+  client/src/features/account/tabs/QuotesTab.tsx (message 3ème acompte)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.6-client-space-redesign
 TYPE : fix
 DESCRIPTION : Espace client redesign + réf interne produit + cohérence partenaires + facture PDF

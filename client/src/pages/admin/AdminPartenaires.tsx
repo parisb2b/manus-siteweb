@@ -76,7 +76,8 @@ export default function AdminPartenaires() {
     const { data: pList } = await supabase
       .from("partners")
       .select("*")
-      .order("created_at", { ascending: true });
+      .eq("actif", true)
+      .order("created_at", { ascending: false });
     setPartners((pList as Partner[]) ?? []);
 
     const { data: qData } = await supabase

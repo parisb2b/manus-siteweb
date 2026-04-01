@@ -308,39 +308,19 @@ export default function AdminParametres() {
       <RibCard title="RIB personnel" data={ribPerso} onChange={setRibPerso}
         pdfUrl={ribPersoPdfUrl} onPdfUpload={(f) => uploadRibPdf(f, "perso")} uploading={uploadingPerso} />
 
-      {/* Configuration acomptes */}
-      <AdminCard style={{ marginBottom: '24px' }}>
-        <AdminCardHeader>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Percent style={{ width: 18, height: 18, color: '#fff' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>Configuration acomptes</span>
-          </div>
-        </AdminCardHeader>
-        <div style={{ padding: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-            <div>
-              <label style={labelStyle}>Pourcentage acompte par defaut</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input type="number" min={0} max={100} value={acompteMontant}
-                  onChange={(e) => setAcompteMontant(Number(e.target.value))}
-                  style={{ ...inputStyle, width: '96px' }} />
-                <span style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>%</span>
-              </div>
-              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginTop: '4px' }}>Applique lors de la generation des factures d'acompte</p>
-            </div>
-            <div>
-              <label style={labelStyle}>Nombre max d'acomptes</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input type="number" min={1} max={10} value={acompteMaxNb}
-                  onChange={(e) => setAcompteMaxNb(Number(e.target.value))}
-                  style={{ ...inputStyle, width: '96px' }} />
-                <span style={{ fontSize: '13px', color: ADMIN_COLORS.grayText }}>acomptes</span>
-              </div>
-              <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, marginTop: '4px' }}>Nombre maximum de factures d'acompte par devis</p>
-            </div>
-          </div>
-        </div>
-      </AdminCard>
+      {/* Règle des acomptes — info seulement */}
+      <div style={{
+        background: '#F9FAFB', border: '0.5px solid #E5E7EB', borderRadius: '6px',
+        padding: '10px 14px', fontSize: '11px', color: '#6B7280', marginBottom: '24px',
+      }}>
+        <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#374151' }}>
+          Règle des acomptes
+        </p>
+        <p style={{ margin: 0 }}>
+          Maximum 3 acomptes par devis. Le client choisit librement le montant de chaque acompte.
+          Au 3ème acompte, un message l'informera que le prochain paiement devra solder la totalité.
+        </p>
+      </div>
 
       {/* Multiplicateurs prix (lecture seule) */}
       <AdminCard style={{ marginBottom: '24px' }}>

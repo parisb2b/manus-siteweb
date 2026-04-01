@@ -716,39 +716,102 @@ export default function AdminQuotes() {
                           </div>
                         </div>
 
-                        {/* Paiements (acompte / solde) */}
+                        {/* Paiements dynamiques depuis acomptes */}
                         <div>
                           <SectionLabel>Suivi paiements</SectionLabel>
-                          <PaiementRow
-                            numero={1}
-                            montant={Math.round(total * 0.3)}
-                            type="acompte 30%"
-                            statut="en_attente"
-                            onEncaisser={() => genererFacture(q, "acompte")}
-                            onPdf={() => {
-                              const factData = buildFactureData(q);
-                              factData.totalHT = Math.round(total * 0.3);
-                              factData.numeroFacture = factureNum + "-AC";
-                              downloadBlob(generateFacturePDF(factData), `Acompte_${factureNum}.pdf`);
-                            }}
-                          />
-                          <PaiementRow
-                            numero={2}
-                            montant={Math.round(total * 0.7)}
-                            type="solde 70%"
-                            statut="en_attente"
-                            onEncaisser={() => genererFacture(q, "solde")}
-                            onPdf={() => {
-                              const factData = buildFactureData(q);
-                              factData.totalHT = Math.round(total * 0.7);
-                              factData.numeroFacture = factureNum + "-SO";
-                              downloadBlob(generateFacturePDF(factData), `Solde_${factureNum}.pdf`);
-                            }}
-                          />
-                          <PaiementResume
-                            totalEncaisse={0}
-                            soldeRestant={total}
-                          />
+                          {(() => {
+                            const acomptes: any[] = Array.isArray((q as any).acomptes) ? (q as any).acomptes : [];
+                            const totalEncaisse = acomptes
+                              .filter((a: any) => a.statut === "encaisse" || a.statut === "valide")
+                              .reduce((s: number, a: any) => s + Number(a.montant || 0), 0);
+                            const soldeRestant = total - totalEncaisse;
+
+                            return (
+                              <>
+                                {acomptes.map((a: any, idx: number) => (
+                                  <PaiementRow
+                                    key={idx}
+                                    numero={a.numero ?? idx + 1}
+                                    montant={Number(a.montant || 0)}
+                                    type={a.type === "pro" ? "virement pro" : a.type === "perso" ? "virement perso" : `acompte ${idx + 1}`}
+                                    statut={a.statut === "encaisse" || a.statut === "valide" ? "paye" : "en_attente"}
+                                    onEncaisser={
+                                      a.statut !== "encaisse" && a.statut !== "valide"
+                                        ? async () => {
+                                            if (!supabase) return;
+                                            setSaving("enc_" + q.id + "_" + idx);
+                                            const updated = [...acomptes];
+                                            updated[idx] = { ...updated[idx], statut: "encaisse", date_encaissement: new Date().toISOString() };
+                                            const newTotalEnc = updated
+                                              .filter((x: any) => x.statut === "encaisse" || x.statut === "valide")
+                                              .reduce((s: number, x: any) => s + Number(x.montant || 0), 0);
+                                            const newSolde = total - newTotalEnc;
+                                            await supabase.from("quotes").update({
+                                              acomptes: updated,
+                                              total_encaisse: newTotalEnc,
+                                              solde_restant: newSolde,
+                                            }).eq("id", q.id);
+                                            // Générer facture cumulative
+                                            const factData = buildFactureData({ ...q, acomptes: updated } as any);
+                                            factData.acomptes = updated.filter((x: any) => x.statut === "encaisse" || x.statut === "valide").map((x: any, i: number) => ({
+                                              numero: x.numero ?? i + 1,
+                                              montant: Number(x.montant || 0),
+                                              date: x.date_encaissement || x.date || new Date().toISOString(),
+                                            }));
+                                            const blob = generateFacturePDF(factData);
+                                            downloadBlob(blob, `Facture_${factureNum}.pdf`);
+                                            // Upload PDF
+                                            try {
+                                              const fileName = `FA${factureNum.replace(/^FA/, "")}.pdf`;
+                                              await supabase.storage.from("invoices").upload(fileName, blob, { contentType: "application/pdf", upsert: true });
+                                              const { data: urlData } = supabase.storage.from("invoices").getPublicUrl(fileName);
+                                              await supabase.from("invoices").upsert({
+                                                numero_facture: factureNum,
+                                                quote_id: q.id,
+                                                montant_ht: total,
+                                                montant_acompte: newTotalEnc,
+                                                type_facture: newSolde <= 0 ? "solde" : "acompte",
+                                                type_paiement: a.type || null,
+                                                pdf_url: urlData?.publicUrl || null,
+                                                statut: "emise",
+                                                envoye_client: false,
+                                              }, { onConflict: "numero_facture" });
+                                            } catch (e) { console.warn("Upload facture:", e); }
+                                            // Email notification
+                                            if (q.email) {
+                                              sendAcompteNotification({
+                                                email: q.email, nomClient: q.nom || "Client",
+                                                montant: Number(a.montant), numeroDevis: q.numero_devis || q.id.slice(0, 8),
+                                              }).catch(() => {});
+                                            }
+                                            setSaving(null);
+                                            await load();
+                                          }
+                                        : undefined
+                                    }
+                                    onPdf={() => {
+                                      const factData = buildFactureData({ ...q, acomptes } as any);
+                                      factData.acomptes = acomptes.filter((x: any) => x.statut === "encaisse" || x.statut === "valide").map((x: any, i: number) => ({
+                                        numero: x.numero ?? i + 1,
+                                        montant: Number(x.montant || 0),
+                                        date: x.date_encaissement || x.date || new Date().toISOString(),
+                                      }));
+                                      downloadBlob(generateFacturePDF(factData), `Facture_${factureNum}.pdf`);
+                                    }}
+                                  />
+                                ))}
+                                {acomptes.length === 0 && (
+                                  <div style={{ fontSize: "11px", color: ADMIN_COLORS.grayText, padding: "6px 0", fontFamily: ADMIN_COLORS.font }}>
+                                    Aucun acompte demandé par le client
+                                  </div>
+                                )}
+                                <PaiementResume
+                                  totalEncaisse={totalEncaisse}
+                                  soldeRestant={soldeRestant}
+                                />
+                              </>
+                            );
+                          })()}
                         </div>
 
                         {/* Partenaire & Commission */}

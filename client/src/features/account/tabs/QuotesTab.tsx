@@ -543,6 +543,9 @@ export default function QuotesTab({ user, profile, role }: Props) {
             {/* STEP 1 — Montant */}
             {acompteStep === 1 && (() => {
               const { total, totalVerse, solde, acomptes: ac } = getAcompteInfo(acompteQuote);
+              const nbEncaisses = ac.filter((a: any) => a.statut === "encaisse" || a.statut === "valide").length;
+              const forceSolde = nbEncaisses >= 3;
+              const montantForce = forceSolde ? solde : acompteMontant;
               return (
                 <div>
                   <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>
@@ -562,31 +565,49 @@ export default function QuotesTab({ user, profile, role }: Props) {
                       <span style={{ fontWeight: 700, color: "#EA580C" }}>{formatEur(solde)}</span>
                     </div>
                   </div>
-                  {ac.length >= 2 && (
-                    <p style={{ fontSize: "11px", color: "#EA580C", fontWeight: 500, marginBottom: "8px" }}>
-                      ⚠ Solde final obligatoire
-                    </p>
+
+                  {/* Message 3ème acompte */}
+                  {nbEncaisses >= 2 && nbEncaisses < 3 && (
+                    <div style={{
+                      background: "#FEF3C7", border: "0.5px solid #FCD34D", borderRadius: "6px",
+                      padding: "8px 12px", fontSize: "11px", color: "#92400E", marginBottom: "8px",
+                    }}>
+                      ⚠️ Dernier acompte autorisé. Le prochain paiement devra solder la totalité du montant restant.
+                    </div>
                   )}
+
+                  {/* Message solde obligatoire (4ème+) */}
+                  {forceSolde && (
+                    <div style={{
+                      background: "#FEF2F2", border: "0.5px solid #FECACA", borderRadius: "6px",
+                      padding: "8px 12px", fontSize: "11px", color: "#991B1B", marginBottom: "8px",
+                    }}>
+                      ⛔ Paiement du solde obligatoire. Vous ne pouvez plus faire d'acompte partiel. Montant à payer : {formatEur(solde)}
+                    </div>
+                  )}
+
                   <label style={{ fontSize: "11px", color: "#6B7280", display: "block", marginBottom: "4px" }}>
                     Montant à virer (€)
                   </label>
                   <input
                     type="number"
-                    value={acompteMontant}
-                    onChange={(e) => setAcompteMontant(Number(e.target.value))}
+                    value={forceSolde ? solde : acompteMontant}
+                    onChange={(e) => !forceSolde && setAcompteMontant(Number(e.target.value))}
                     min={1} max={solde}
+                    disabled={forceSolde}
                     style={{
                       width: "100%", padding: "10px", border: "1px solid #D1D5DB", borderRadius: "6px",
                       fontSize: "16px", fontWeight: 700, textAlign: "center", boxSizing: "border-box",
+                      opacity: forceSolde ? 0.7 : 1, background: forceSolde ? "#F9FAFB" : "#fff",
                     }}
                   />
                   <button
-                    onClick={() => setAcompteStep(2)}
-                    disabled={acompteMontant <= 0 || acompteMontant > solde}
+                    onClick={() => { if (forceSolde) setAcompteMontant(solde); setAcompteStep(2); }}
+                    disabled={montantForce <= 0 || montantForce > solde}
                     style={{
                       width: "100%", background: "#EA580C", color: "#fff", border: "none",
                       borderRadius: "6px", padding: "10px", fontSize: "13px", fontWeight: 600,
-                      cursor: "pointer", marginTop: "12px", opacity: (acompteMontant <= 0 || acompteMontant > solde) ? 0.5 : 1,
+                      cursor: "pointer", marginTop: "12px", opacity: (montantForce <= 0 || montantForce > solde) ? 0.5 : 1,
                     }}
                   >
                     Continuer →
