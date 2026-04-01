@@ -94,19 +94,21 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
-TAG : v5.5-fix-email-boutons
+TAG : v5.5-fix-cors-email
 TYPE : fix
-DESCRIPTION : Suppression warning email, robustesse sendEmail, boutons PDF uniformes
+DESCRIPTION : CORS Edge Function corrigé, appel fetch direct, domaine resend.dev
 
 MODIFICATIONS :
-  - notifications.ts : sendEmail robustifié (parsing JSON flexible, gestion erreur gracieuse)
-  - AdminQuotes.tsx : message erreur plus clair (plus de "Envoi non disponible")
-  - Vérification : tous les documents ont bien [PDF] + [→ Client]
-  - Zéro occurrence de "Générer" restante dans le code
+  - Edge Function réécrite : Deno.serve, corsHeaders sur TOUTES les réponses
+  - from: onboarding@resend.dev (fonctionne sans vérification domaine)
+  - notifications.ts : appel fetch DIRECT (plus de supabase.functions.invoke)
+  - Headers : apikey + Authorization Bearer avec ANON KEY
+  - Test curl : {"success":true} — email reçu sur michelchen77400@gmail.com
+  - IMPORTANT : vérifier domaine 97import.com sur resend.com/domains pour envoyer à tous
 
 FICHIERS :
-  client/src/lib/notifications.ts (sendEmail robustifié)
-  client/src/pages/admin/AdminQuotes.tsx (envoyerDocument amélioré)
+  supabase/functions/send-email/index.ts (RÉÉCRIT — Deno.serve + CORS)
+  client/src/lib/notifications.ts (fetch direct, plus d'import supabase)
 
 PUBLIÉ : 97import.com ✅
 

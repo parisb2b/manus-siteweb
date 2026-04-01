@@ -1,18 +1,17 @@
 /**
  * notifications.ts — Service d'envoi de notifications email
- * Utilise Supabase Edge Function "send-email" (Resend API)
- * Supporte body texte OU html riche
+ * Appel fetch DIRECT vers Supabase Edge Function "send-email" (Resend API)
+ * Pas de supabase.functions.invoke → évite les problèmes CORS/403
  */
 
-import { supabase } from "./supabase";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 export interface EmailPayload {
   to: string;
   subject: string;
   body?: string;
   html?: string;
-  attachmentUrl?: string;
-  attachmentName?: string;
 }
 
 /* ─── Template HTML réutilisable ─── */
@@ -47,37 +46,42 @@ function wrapHtmlEmail(contenu: string): string {
 }
 
 /**
- * Envoyer un email via Supabase Edge Function "send-email"
+ * Envoyer un email via appel fetch DIRECT vers Edge Function "send-email"
  * Retourne true si envoyé, false sinon
  */
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
-  if (!supabase) {
-    console.warn("[notifications] Supabase non configuré");
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn("[notifications] Variables Supabase manquantes");
     return false;
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke("send-email", {
-      body: {
-        to: payload.to,
-        subject: payload.subject,
-        html: payload.html || undefined,
-        body: payload.body || undefined,
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/send-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          to: payload.to,
+          subject: payload.subject,
+          html: payload.html,
+        }),
       },
-    });
+    );
 
-    if (error) {
-      // supabase-js wraps non-2xx as error but the function may have worked
-      // Check if it's a FunctionsHttpError with a response body
-      console.warn("[notifications] Edge Function réponse:", error.message, data);
-      // If data contains success, the email was sent despite the "error"
-      if (data?.success) return true;
+    const data = await response.json();
+    console.log("[notifications] Réponse:", response.status, data);
+
+    if (!response.ok) {
+      console.warn("[notifications] Erreur Edge Function:", response.status, data);
       return false;
     }
 
-    // data peut être un string JSON ou un objet
-    const result = typeof data === "string" ? JSON.parse(data) : data;
-    return result?.success === true;
+    return data?.success === true;
   } catch (err) {
     console.warn("[notifications] Erreur envoi:", err);
     return false;
