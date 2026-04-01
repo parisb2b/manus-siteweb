@@ -94,6 +94,33 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.6-client-space-redesign
+TYPE : fix
+DESCRIPTION : Espace client redesign + réf interne produit + cohérence partenaires + facture PDF
+
+MODIFICATIONS :
+  - ProductDetail + ProductCard : dual check numero_interne/reference_interne
+  - QuotesTab REFONDU : suppression Valider/Refuser, ajout suivi paiements,
+    documents grisés 🔒 selon admin, bouton Payer acompte orange
+  - Pop-up acompte 3 étapes : montant → type compte → RIB + confirmation
+  - AdminUsers : désactivation partner quand rôle change (actif=false)
+  - Invoice PDF : ref FA sans suffixe, prix public barré + VIP violet,
+    section acomptes cumulés, solde restant/entièrement soldée
+  - Edge Function send-email : from → notifications@97import.com
+
+FICHIERS :
+  client/src/pages/ProductDetail.tsx (dual ref check)
+  client/src/components/ProductCard.tsx (style ref)
+  client/src/features/account/tabs/QuotesTab.tsx (REFONDU)
+  client/src/pages/admin/AdminUsers.tsx (deactivate partner)
+  client/src/pages/admin/AdminQuotes.tsx (buildFactureData FA + prixPublic)
+  client/src/features/pdf/templates/invoice-pdf.ts (strikethrough + acomptes)
+  supabase/functions/send-email/index.ts (from domain)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.5-fix-cors-email
 TYPE : fix
 DESCRIPTION : CORS Edge Function corrigé, appel fetch direct, domaine resend.dev

@@ -45,10 +45,11 @@ export default function ProductCard({ id, name, price, priceElement, image, isSo
         </div>
         {reference_interne && (
           <span style={{
-            fontSize: '9px',
+            fontSize: '10px',
             color: '#D1D5DB',
             display: 'block',
             marginTop: '4px',
+            fontFamily: 'Inter, sans-serif',
           }}>
             Réf. {reference_interne}
           </span>

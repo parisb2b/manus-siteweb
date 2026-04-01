@@ -104,10 +104,11 @@ function buildFactureData(q: Quote): FactureData {
   const lignes = (q.produits || []).map((p: any) => ({
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
+    prixPublic: p.prix_public ?? p.prixPublic ?? (p.prix_achat ? p.prix_achat * 2 : 0),
     quantite: p.quantite ?? 1,
-    total: (p.prixAffiche ?? 0) * (p.quantite ?? 1),
+    total: (p.prixAffiche ?? p.prixUnitaire ?? 0) * (p.quantite ?? 1),
   }));
-  const factureNum = (q.numero_devis || `D${q.id.slice(0, 5)}`).replace("D", "F");
+  const factureNum = "FA" + (q.numero_devis || `D${q.id.slice(0, 5)}`).replace(/^D/, "");
   return {
     numeroFacture: factureNum, dateFacture: today,
     numeroDevis: q.numero_devis, dateDevis,
@@ -118,6 +119,7 @@ function buildFactureData(q: Quote): FactureData {
     },
     produits: lignes,
     totalHT: q.prix_negocie ?? q.prix_total_calcule ?? 0,
+    acomptes: (q as any).acomptes?.filter((a: any) => a.statut === "valide") || [],
   };
 }
 

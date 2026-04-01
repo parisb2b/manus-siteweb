@@ -96,17 +96,19 @@ export default function AdminUsers() {
 
     // Auto-insert into partners table when role is set to 'partner'
     const ed = edits[id];
-    if (ed?.role === 'partner') {
-      const user = users.find(u => u.id === id);
-      if (user) {
-        await supabase.from('partners').upsert({
-          user_id: user.id,
-          nom: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
-          code: (user.first_name || user.email).substring(0, 2).toUpperCase(),
-          email: user.email,
-          actif: true,
-        }, { onConflict: 'user_id' });
-      }
+    const user = users.find(u => u.id === id);
+    if (ed?.role === 'partner' && user) {
+      await supabase.from('partners').upsert({
+        user_id: user.id,
+        nom: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+        code: (user.first_name || user.email).substring(0, 2).toUpperCase(),
+        email: user.email,
+        actif: true,
+      }, { onConflict: 'user_id' });
+    }
+    // Deactivate partner when role changes away from 'partner'
+    if (ed?.role && ed.role !== 'partner' && user) {
+      await supabase.from('partners').update({ actif: false }).eq('user_id', id);
     }
 
     setSaving(null);
