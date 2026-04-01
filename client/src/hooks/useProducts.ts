@@ -121,6 +121,8 @@ export function useProducts(category?: string) {
               category: r.categorie,
               active: r.actif,
               reference: r.reference,
+              reference_interne: r.reference_interne || r.numero_interne || undefined,
+              numero_interne: r.numero_interne || r.reference_interne || undefined,
               ...(r.data || {}),
             }));
             cachedProducts = mapped;
