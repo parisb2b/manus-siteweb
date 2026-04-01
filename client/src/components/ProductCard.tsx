@@ -11,9 +11,10 @@ interface ProductCardProps {
   image: string;
   isSoldOut?: boolean;
   link: string;
+  reference_interne?: string;
 }
 
-export default function ProductCard({ id, name, price, priceElement, image, isSoldOut, link }: ProductCardProps) {
+export default function ProductCard({ id, name, price, priceElement, image, isSoldOut, link, reference_interne }: ProductCardProps) {
   return (
     <div className="group flex flex-col h-full bg-white rounded-2xl hover:shadow-xl transition-shadow duration-300 border border-transparent hover:border-gray-100 overflow-hidden">
       {/* Image Container */}
@@ -42,6 +43,16 @@ export default function ProductCard({ id, name, price, priceElement, image, isSo
         <div className="text-lg font-bold text-gray-900 mb-6">
           {priceElement ?? price}
         </div>
+        {reference_interne && (
+          <span style={{
+            fontSize: '9px',
+            color: '#D1D5DB',
+            display: 'block',
+            marginTop: '4px',
+          }}>
+            Réf. {reference_interne}
+          </span>
+        )}
         
         <div className="mt-auto">
           <Link href={link}>

@@ -51,6 +51,9 @@ export const ADMIN_COLORS = {
   redBorder: '#FECACA',
   redText: '#991B1B',
   redBtn: '#DC2626',
+
+  // Police
+  font: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
 }
 
 // ── TYPOGRAPHIE ───────────────────────────

@@ -8,30 +8,82 @@ export default function AdminContenu() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site_content")
-      .single()
-      .then(({ data }) => {
-        if (data?.value && typeof data.value === "object") {
-          setContent(data.value);
-        }
+    (async () => {
+      const { data, error } = await supabase
+        .from("site_content")
+        .select("*");
+
+      if (error) {
+        console.error('Erreur chargement contenu:', error);
+        setContent(null);
+        setLoadError('Impossible de charger : ' + error.message);
         setLoading(false);
-      });
+        return;
+      }
+
+      if (data && data.length > 0) {
+        // Try single-row format first (key="site_content")
+        const singleRow = data.find((r: any) => r.key === "site_content");
+        if (singleRow?.value && typeof singleRow.value === "object") {
+          setContent(singleRow.value);
+        } else {
+          // Multi-row format: each key is a section
+          const assembled: any = { siteSettings: {}, shippingContent: {} };
+          for (const row of data) {
+            if (row.key === "banniere") assembled.siteSettings.topBanner = row.value?.texte || "";
+            if (row.key === "contact") {
+              assembled.siteSettings.contactEmail = row.value?.email || "";
+              assembled.siteSettings.contactPhone = row.value?.telephone || "";
+              assembled.siteSettings.whatsappNumber = row.value?.whatsapp || "";
+              assembled.siteSettings.contactAddress = row.value?.adresse || "";
+            }
+            if (row.key === "footer") {
+              assembled.siteSettings.footerText = row.value?.mentions || "";
+              assembled.siteSettings.footerDescription = row.value?.description || "";
+              assembled.siteSettings.tiktokUrl = row.value?.tiktok || "";
+              assembled.siteSettings.youtubeUrl = row.value?.youtube || "";
+            }
+            if (row.key === "livraison" || row.key === "shipping") {
+              assembled.shippingContent = row.value || {};
+            }
+          }
+          setContent(assembled);
+        }
+      } else {
+        // No data at all — initialize with empty content so form shows
+        setContent({ siteSettings: {}, shippingContent: {} });
+      }
+
+      setLoading(false);
+    })();
   }, []);
 
   const handleSave = async () => {
     if (!supabase || !content) return;
     setSaving(true);
+    const now = new Date().toISOString();
+
+    // Save in single-row format (main)
     const { error } = await supabase
       .from("site_content")
-      .upsert({ key: "site_content", value: content, updated_at: new Date().toISOString() });
+      .upsert({ key: "site_content", value: content, updated_at: now });
+
+    // Also save in multi-row format for compatibility
+    const s = content.siteSettings || {};
+    const multiRows = [
+      { key: "banniere", value: { texte: s.topBanner || "" }, updated_at: now },
+      { key: "contact", value: { email: s.contactEmail || "", telephone: s.contactPhone || "", whatsapp: s.whatsappNumber || "", adresse: s.contactAddress || "" }, updated_at: now },
+      { key: "footer", value: { mentions: s.footerText || "", description: s.footerDescription || "", tiktok: s.tiktokUrl || "", youtube: s.youtubeUrl || "" }, updated_at: now },
+      { key: "livraison", value: content.shippingContent || {}, updated_at: now },
+    ];
+    await supabase.from("site_content").upsert(multiRows);
+
     setSaving(false);
-    setSaveMessage(error ? "Erreur lors de la sauvegarde" : "Contenu sauvegardé");
+    setSaveMessage(error ? "Erreur : " + error.message : "Contenu sauvegardé");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 
@@ -107,7 +159,7 @@ export default function AdminContenu() {
   if (!content) {
     return (
       <AdminCard style={{ padding: '48px', textAlign: 'center', color: ADMIN_COLORS.redText }}>
-        Impossible de charger le contenu du site.
+        {loadError || "Impossible de charger le contenu du site."}
       </AdminCard>
     );
   }

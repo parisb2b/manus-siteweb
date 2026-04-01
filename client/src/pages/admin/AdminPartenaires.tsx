@@ -12,6 +12,10 @@ import {
   SectionLabel, AdminInput,
 } from "@/components/admin/AdminUI";
 
+// PDF generators for inline buttons (NC, FM, DD)
+import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templates/commission-pdf";
+import { generateFeesPDF, type FeesData } from "@/features/pdf/templates/fees-pdf";
+
 interface Partner {
   id: string;
   nom: string;
@@ -41,6 +45,18 @@ function generateCode(nom: string): string {
   return nom.slice(0, 2).toUpperCase();
 }
 
+/** Télécharge un Blob en tant que fichier */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminPartenaires() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [quotesData, setQuotesData] = useState<any[]>([]);
@@ -52,6 +68,7 @@ export default function AdminPartenaires() {
   const [showAdd, setShowAdd] = useState(false);
   const [newPartner, setNewPartner] = useState({ nom: "", code: "", email: "", telephone: "" });
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [selectedDevis, setSelectedDevis] = useState<Set<string>>(new Set());
 
   const load = async () => {
     if (!supabase) return;
@@ -139,9 +156,18 @@ export default function AdminPartenaires() {
     await load();
   };
 
-  /** Export Excel commissions pour un partenaire */
+  /** Export Excel commissions pour un partenaire (filtre par sélection si active) */
   const exportCommissions = (p: Partner) => {
-    const rows = quotesData.filter((q: any) => q.partner_id === p.id);
+    let rows = quotesData.filter((q: any) => q.partner_id === p.id);
+
+    // Si des devis sont sélectionnés, ne garder que ceux-là
+    if (selectedDevis.size > 0) {
+      rows = rows.filter((q: any) => {
+        const key = q.numero_devis || (q.partner_id + "_" + q.created_at);
+        return selectedDevis.has(key);
+      });
+    }
+
     if (!rows.length) { flash("err", "Aucun devis pour ce partenaire"); return; }
 
     const data = rows.map((q: any) => ({
@@ -157,8 +183,9 @@ export default function AdminPartenaires() {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Commissions");
-    XLSX.writeFile(wb, `Commissions_${p.code || p.nom}_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    flash("ok", `Export Excel téléchargé pour ${p.nom}`);
+    const suffix = selectedDevis.size > 0 ? `_selection_${selectedDevis.size}` : "";
+    XLSX.writeFile(wb, `Commissions_${p.code || p.nom}_${new Date().toISOString().slice(0, 10)}${suffix}.xlsx`);
+    flash("ok", `Export Excel téléchargé pour ${p.nom}${selectedDevis.size > 0 ? ` (${selectedDevis.size} devis sélectionnés)` : ""}`);
   };
 
   /** Export Excel global toutes commissions */
@@ -424,7 +451,15 @@ export default function AdminPartenaires() {
                         <AdminButton variant="warning" size="sm" onClick={() => exportCommissions(p)}>
                           <Download style={{ width: 14, height: 14 }} />
                         </AdminButton>
-                        <AdminButton variant="ghost" size="sm" onClick={() => setExpandedId(isOpen ? null : p.id)}>
+                        <AdminButton variant="ghost" size="sm" onClick={() => {
+                          if (isOpen) {
+                            setExpandedId(null);
+                            setSelectedDevis(new Set()); // clear selection when closing
+                          } else {
+                            setExpandedId(p.id);
+                            setSelectedDevis(new Set()); // clear selection when opening a different partner
+                          }
+                        }}>
                           {isOpen ? <ChevronUp style={{ width: 14, height: 14 }} /> : <ChevronDown style={{ width: 14, height: 14 }} />}
                         </AdminButton>
                       </div>
@@ -435,7 +470,13 @@ export default function AdminPartenaires() {
                 {/* Détail étendu */}
                 {isOpen && (
                   <div style={{ borderTop: `0.5px solid ${ADMIN_COLORS.grayBorder}`, padding: '14px 18px', background: ADMIN_COLORS.grayBg }}>
-                    <PartnerDevis partnerId={p.id} quotes={quotesData.filter((q: any) => q.partner_id === p.id)} />
+                    <PartnerDevis
+                      partnerId={p.id}
+                      quotes={quotesData.filter((q: any) => q.partner_id === p.id)}
+                      partner={p}
+                      selectedDevis={selectedDevis}
+                      setSelectedDevis={setSelectedDevis}
+                    />
                   </div>
                 )}
               </AdminCard>
@@ -447,48 +488,223 @@ export default function AdminPartenaires() {
   );
 }
 
-function PartnerDevis({ partnerId, quotes }: { partnerId: string; quotes: any[] }) {
+/** Clé unique pour un devis (numero_devis ou fallback partner_id + created_at) */
+function devisKey(d: any): string {
+  return d.numero_devis || (d.partner_id + "_" + d.created_at);
+}
+
+function PartnerDevis({
+  partnerId,
+  quotes,
+  partner,
+  selectedDevis,
+  setSelectedDevis,
+}: {
+  partnerId: string;
+  quotes: any[];
+  partner: Partner;
+  selectedDevis: Set<string>;
+  setSelectedDevis: React.Dispatch<React.SetStateAction<Set<string>>>;
+}) {
   if (quotes.length === 0) return <p style={{ fontSize: '12px', color: ADMIN_COLORS.grayText, padding: '8px 0' }}>Aucun devis attribué à ce partenaire.</p>;
+
+  const allKeys = quotes.map(devisKey);
+  const allSelected = allKeys.length > 0 && allKeys.every((k) => selectedDevis.has(k));
+  const someSelected = allKeys.some((k) => selectedDevis.has(k));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      // Deselect all for this partner
+      setSelectedDevis((prev) => {
+        const next = new Set(prev);
+        allKeys.forEach((k) => next.delete(k));
+        return next;
+      });
+    } else {
+      // Select all for this partner
+      setSelectedDevis((prev) => {
+        const next = new Set(prev);
+        allKeys.forEach((k) => next.add(k));
+        return next;
+      });
+    }
+  };
+
+  const toggleOne = (key: string) => {
+    setSelectedDevis((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  /** Génère et télécharge la Note de Commission (NC) pour un devis */
+  const genNC = (d: any) => {
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const commNum = "C" + (d.numero_devis || partnerId.slice(0, 6)).replace(/^D/, "");
+    const prixNegocie = d.prix_negocie ?? d.prix_total_calcule ?? 0;
+    const prixPublic = d.prix_total_calcule ?? 0;
+    const prixAchat = prixPublic > 0 ? prixPublic / 2 : prixNegocie / 1.3;
+    const prixPartenaireVal = calcPrixPartenaire(prixAchat);
+    const commission = Math.max(0, Math.round(prixNegocie - prixPartenaireVal));
+    const nomsProduits = (d.produits || []).map((p: any) => p.nom || p.name || p.id).join(", ");
+    const commData: CommissionData = {
+      numeroCommission: commNum, date: today,
+      partenaire: {
+        nom: partner.nom,
+        email: partner.email ?? "parisb2b@gmail.com",
+        telephone: partner.telephone,
+      },
+      devis: {
+        numeroDevis: d.numero_devis || partnerId.slice(0, 8),
+        nomClient: d.nom, produits: nomsProduits,
+        prixNegocie, prixPartenaire: prixPartenaireVal, commission,
+      },
+    };
+    const blob = generateCommissionPDF(commData);
+    downloadBlob(blob, `Commission_${commNum}.pdf`);
+  };
+
+  /** Génère et télécharge les Frais Maritimes (FM) pour un devis */
+  const genFM = (d: any) => {
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const num = `FM${(d.numero_devis || partnerId.slice(0, 6)).replace(/^D/, "")}`;
+    const feesData: FeesData = {
+      numeroDocument: num, date: today, type: "maritime",
+      client: {
+        nom: d.nom, email: partner.email ?? "",
+        telephone: partner.telephone,
+      },
+      referenceDevis: d.numero_devis,
+      lignes: [{ designation: "Frais de transport maritime", montant: 0 }],
+      totalHT: 0,
+    };
+    const blob = generateFeesPDF(feesData);
+    downloadBlob(blob, `FM_${num}.pdf`);
+  };
+
+  /** Génère et télécharge les Frais de Dédouanement (DD) pour un devis */
+  const genDD = (d: any) => {
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const num = `DD${(d.numero_devis || partnerId.slice(0, 6)).replace(/^D/, "")}`;
+    const feesData: FeesData = {
+      numeroDocument: num, date: today, type: "dedouanement",
+      client: {
+        nom: d.nom, email: partner.email ?? "",
+        telephone: partner.telephone,
+      },
+      referenceDevis: d.numero_devis,
+      lignes: [{ designation: "Frais de dédouanement", montant: 0 }],
+      totalHT: 0,
+    };
+    const blob = generateFeesPDF(feesData);
+    downloadBlob(blob, `DD_${num}.pdf`);
+  };
+
+  /** Style commun pour les mini boutons PDF */
+  const miniBtn = (bg: string, color: string): React.CSSProperties => ({
+    background: bg,
+    color,
+    border: 'none',
+    borderRadius: '3px',
+    padding: '2px 6px',
+    fontSize: '9px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    lineHeight: '14px',
+    whiteSpace: 'nowrap',
+  });
 
   return (
     <div>
-      <SectionLabel>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Users style={{ width: 13, height: 13 }} /> Devis attribués ({quotes.length})
-        </span>
-      </SectionLabel>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <SectionLabel>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Users style={{ width: 13, height: 13 }} /> Devis attribués ({quotes.length})
+            {someSelected && (
+              <span style={{
+                fontSize: '10px', fontWeight: 500, color: ADMIN_COLORS.navyAccent,
+                background: ADMIN_COLORS.grayBg, padding: '1px 8px', borderRadius: '10px',
+                border: `0.5px solid ${ADMIN_COLORS.navyBorder}`,
+              }}>
+                {selectedDevis.size} sélectionné{selectedDevis.size > 1 ? "s" : ""}
+              </span>
+            )}
+          </span>
+        </SectionLabel>
+        <button
+          onClick={toggleAll}
+          style={{
+            background: allSelected ? ADMIN_COLORS.navyAccent : 'transparent',
+            color: allSelected ? '#fff' : ADMIN_COLORS.navyAccent,
+            border: `1px solid ${ADMIN_COLORS.navyAccent}`,
+            borderRadius: '4px',
+            padding: '3px 10px',
+            fontSize: '10px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          {allSelected ? "Tout désélectionner" : "Tout sélectionner"}
+        </button>
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {quotes.map((d: any) => (
-          <AdminCard key={d.numero_devis || d.partner_id + d.created_at} style={{ padding: '8px 12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
-              <div>
-                <span style={{ fontWeight: 600, color: ADMIN_COLORS.navy }}>{d.numero_devis || "—"}</span>
-                <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
-                <span style={{ color: ADMIN_COLORS.grayTextDark }}>{d.nom}</span>
-                <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
-                <span style={{ fontSize: '10px', color: ADMIN_COLORS.grayText }}>{new Date(d.created_at).toLocaleDateString("fr-FR")}</span>
+        {quotes.map((d: any) => {
+          const key = devisKey(d);
+          const isChecked = selectedDevis.has(key);
+
+          return (
+            <AdminCard key={key} style={{
+              padding: '8px 12px',
+              ...(isChecked ? { border: `0.5px solid ${ADMIN_COLORS.navyAccent}`, background: '#f0f4ff' } : {}),
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleOne(key)}
+                    style={{ width: 14, height: 14, cursor: 'pointer', accentColor: ADMIN_COLORS.navyAccent }}
+                  />
+                  <div>
+                    <span style={{ fontWeight: 600, color: ADMIN_COLORS.navy }}>{d.numero_devis || "—"}</span>
+                    <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
+                    <span style={{ color: ADMIN_COLORS.grayTextDark }}>{d.nom}</span>
+                    <span style={{ color: ADMIN_COLORS.grayText, margin: '0 8px' }}>·</span>
+                    <span style={{ fontSize: '10px', color: ADMIN_COLORS.grayText }}>{new Date(d.created_at).toLocaleDateString("fr-FR")}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {/* Mini PDF buttons: NC, FM, DD */}
+                  <button onClick={() => genNC(d)} style={miniBtn(ADMIN_COLORS.orangeBg ?? '#fff3e0', ADMIN_COLORS.orangeText ?? '#e65100')} title="Note de Commission">NC</button>
+                  <button onClick={() => genFM(d)} style={miniBtn('#e0f2fe', '#0277bd')} title="Frais Maritimes">FM</button>
+                  <button onClick={() => genDD(d)} style={miniBtn('#ede7f6', '#6a1b9a')} title="Frais de Dédouanement">DD</button>
+
+                  <span style={{ width: '1px', height: '14px', background: ADMIN_COLORS.grayBorder, margin: '0 2px' }} />
+
+                  <span style={{ fontWeight: 700, color: ADMIN_COLORS.orangeText }}>
+                    {d.commission_montant ? formatEur(d.commission_montant) : "—"}
+                  </span>
+                  {d.commission_payee ? (
+                    <span style={{
+                      fontSize: '9px', background: ADMIN_COLORS.greenBg, color: ADMIN_COLORS.greenText,
+                      fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
+                      border: `0.5px solid ${ADMIN_COLORS.greenBorder}`,
+                    }}>Payée</span>
+                  ) : (
+                    <span style={{
+                      fontSize: '9px', background: ADMIN_COLORS.orangeBg, color: ADMIN_COLORS.orangeText,
+                      fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
+                      border: `0.5px solid ${ADMIN_COLORS.orangeBorder}`,
+                    }}>En attente</span>
+                  )}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontWeight: 700, color: ADMIN_COLORS.orangeText }}>
-                  {d.commission_montant ? formatEur(d.commission_montant) : "—"}
-                </span>
-                {d.commission_payee ? (
-                  <span style={{
-                    fontSize: '9px', background: ADMIN_COLORS.greenBg, color: ADMIN_COLORS.greenText,
-                    fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
-                    border: `0.5px solid ${ADMIN_COLORS.greenBorder}`,
-                  }}>Payée</span>
-                ) : (
-                  <span style={{
-                    fontSize: '9px', background: ADMIN_COLORS.orangeBg, color: ADMIN_COLORS.orangeText,
-                    fontWeight: 500, padding: '2px 8px', borderRadius: '10px',
-                    border: `0.5px solid ${ADMIN_COLORS.orangeBorder}`,
-                  }}>En attente</span>
-                )}
-              </div>
-            </div>
-          </AdminCard>
-        ))}
+            </AdminCard>
+          );
+        })}
       </div>
     </div>
   );

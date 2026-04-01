@@ -446,6 +446,16 @@ export default function ProductDetail() {
             <div>
               <span className="text-[#4A90D9] font-bold tracking-widest uppercase text-sm mb-2 block">Mini-pelle Série Pro</span>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#4A90D9] mb-6">{product.name}</h1>
+              {product.reference_interne && (
+                <p style={{
+                  fontSize: '11px',
+                  color: '#9CA3AF',
+                  margin: '4px 0 8px',
+                  fontFamily: 'Inter, sans-serif',
+                }}>
+                  Réf. interne : {product.reference_interne}
+                </p>
+              )}
               <div className="mb-6">
                 <PrixOuDevis prixAchat={MINI_PELLES_PRIX[product.id] ?? 9538} />
               </div>

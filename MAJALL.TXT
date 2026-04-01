@@ -93,6 +93,49 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
 
 ────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
+TAG : v5.3-design-maquette-exact
+TYPE : fix
+DESCRIPTION : Corrections v5.3 — design exact maquette + fixes back-office
+
+MODIFICATIONS :
+  - Police Inter uniforme tout le back-office (admin-root CSS + Google Fonts)
+  - Lignes devis fermées : blanc/gris alternés (#FFF/#F9FAFB), plus de bleu foncé
+  - Barre étapes guidées ①②③④ dans chaque devis déplié
+  - Prix public barré + prix VIP violet dans section produits
+  - Boutons documents : PDF + Envoyer (suppression doublon Générer)
+  - Couleurs documents : FA=vert, FM/DD=bleu avec inputs éditables, BL=gris, NC=violet
+  - Facture FA cumulative (un seul document mis à jour)
+  - AdminUsers : fallback RPC get_all_profiles si RLS restrictive
+  - AdminUsers : auto-insert partners quand rôle changé en partner
+  - AdminPartenaires : checkboxes sélection devis + boutons NC/FM/DD par ligne
+  - AdminContenu : chargement multi-format (single row + multi rows)
+  - AdminPricing : correction label ×1.5 → ×2
+  - Réf interne affichée sur fiches produit + cartes catalogue
+  - Vérification emails : système via Supabase Edge Function send-email en place
+
+FICHIERS MODIFIÉS (v5.3) :
+  client/index.html (Inter font import)
+  client/src/index.css (admin-root styles)
+  client/src/pages/admin/AdminLayout.tsx (className admin-root)
+  client/src/components/admin/AdminUI.tsx (ADMIN_COLORS.font)
+  client/src/pages/admin/AdminQuotes.tsx (refonte complète UI)
+  client/src/pages/admin/AdminUsers.tsx (RPC fallback + auto partner)
+  client/src/pages/admin/AdminPartenaires.tsx (checkboxes + NC/FM/DD)
+  client/src/pages/admin/AdminContenu.tsx (multi-format loading)
+  client/src/pages/admin/AdminPricing.tsx (label ×2)
+  client/src/pages/ProductDetail.tsx (réf interne)
+  client/src/components/ProductCard.tsx (réf interne)
+
+FICHIER CRÉÉ (v5.3) :
+  scripts/v53-fixes.sql (SQL pour get_all_profiles + site_content)
+
+SQL À EXÉCUTER DANS SUPABASE SI NÉCESSAIRE :
+  scripts/v53-fixes.sql
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
 DATE : 2026-03-31
 TAG : v5.2-design-system-uniforme
 TYPE : refactor

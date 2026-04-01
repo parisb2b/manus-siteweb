@@ -162,7 +162,7 @@ export default function AdminLayout() {
   const ActiveComponent = currentNav.component;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans flex">
+    <div className="admin-root min-h-screen bg-[#F5F5F5] font-sans flex">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

@@ -61,6 +61,15 @@ export default function AdminUsers() {
       setLoadError("Aucun profil trouvé. Vérifiez que la table profiles est accessible et que les RLS policies autorisent la lecture admin.");
       setUsers([]);
     } else {
+      // If direct query returns 0 or 1 result, try RPC fallback
+      if (!data || data.length <= 1) {
+        const { data: rpcData } = await supabase.rpc('get_all_profiles');
+        if (rpcData && rpcData.length > (data?.length ?? 0)) {
+          setUsers(rpcData as UserRecord[]);
+          setLoading(false);
+          return;
+        }
+      }
       setUsers(data as UserRecord[]);
     }
     setLoading(false);
@@ -84,6 +93,22 @@ export default function AdminUsers() {
     if (!supabase || !edits[id]) return;
     setSaving(id);
     await supabase.from("profiles").update(edits[id]).eq("id", id);
+
+    // Auto-insert into partners table when role is set to 'partner'
+    const ed = edits[id];
+    if (ed?.role === 'partner') {
+      const user = users.find(u => u.id === id);
+      if (user) {
+        await supabase.from('partners').upsert({
+          user_id: user.id,
+          nom: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+          code: (user.first_name || user.email).substring(0, 2).toUpperCase(),
+          email: user.email,
+          actif: true,
+        }, { onConflict: 'user_id' });
+      }
+    }
+
     setSaving(null);
     setEdits((prev) => { const n = { ...prev }; delete n[id]; return n; });
     await load();

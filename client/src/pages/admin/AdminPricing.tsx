@@ -66,7 +66,7 @@ export default function AdminPricing() {
             <th className="text-left px-6 py-3 font-semibold text-gray-600">Type</th>
             <th className="text-left px-6 py-3 font-semibold text-gray-600">Taille</th>
             <th className="text-left px-6 py-3 font-semibold text-emerald-600">Prix achat</th>
-            <th className="text-left px-6 py-3 font-semibold text-[#4A90D9]">Public ×1.5</th>
+            <th className="text-left px-6 py-3 font-semibold text-[#4A90D9]">Public ×2</th>
             <th className="text-left px-6 py-3 font-semibold text-orange-500">Partenaire ×1.2</th>
           </tr>
         </thead>

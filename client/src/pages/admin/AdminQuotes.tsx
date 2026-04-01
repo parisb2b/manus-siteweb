@@ -141,6 +141,9 @@ export default function AdminQuotes() {
   const [saving, setSaving] = useState<string | null>(null);
   const [editData, setEditData] = useState<Record<string, Partial<Quote>>>({});
   const [vipMsg, setVipMsg] = useState<Record<string, string>>({});
+  const [fmData, setFmData] = useState<Record<string, {libelle: string, montant: number}>>({});
+  const [ddData, setDdData] = useState<Record<string, {libelle: string, montant: number}>>({});
+  const [ncData, setNcData] = useState<Record<string, {prixRemise: number, prixPartenaire: number, commission: number}>>({});
 
   const load = async () => {
     if (!supabase) return;
@@ -253,6 +256,12 @@ export default function AdminQuotes() {
     const prefix = typeFrais === "maritime" ? "FM" : "DD";
     const num = `${prefix}${(q.numero_devis || q.id.slice(0, 6)).replace(/^D/, "")}`;
     const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const dataKey = q.id;
+    const inputData = typeFrais === "maritime" ? fmData[dataKey] : ddData[dataKey];
+    const libelle = inputData?.libelle || (typeFrais === "maritime"
+      ? "Frais de participation maritime"
+      : "Frais de dédouanement, octrois de mer et autres taxes");
+    const montant = inputData?.montant ?? 0;
     const feesData: FeesData = {
       numeroDocument: num, date: today, type: typeFrais,
       client: {
@@ -260,8 +269,8 @@ export default function AdminQuotes() {
         pays: q.pays_client, email: q.email, telephone: q.telephone,
       },
       referenceDevis: q.numero_devis,
-      lignes: [{ designation: typeFrais === "maritime" ? "Frais de transport maritime" : "Frais de dédouanement", montant: 0 }],
-      totalHT: 0,
+      lignes: [{ designation: libelle, montant }],
+      totalHT: montant,
     };
     const blob = generateFeesPDF(feesData);
     downloadBlob(blob, `${prefix}_${num}.pdf`);
@@ -349,20 +358,27 @@ export default function AdminQuotes() {
   };
   const getEdit = (id: string) => editData[id] ?? {};
 
+  // ── Helper: inline doc button style ──
+  const docBtnStyle = (bg: string): React.CSSProperties => ({
+    borderRadius: '4px', fontSize: '9px', padding: '3px 8px', fontWeight: 500,
+    border: 'none', cursor: 'pointer', color: '#fff', background: bg,
+    fontFamily: ADMIN_COLORS.font,
+  });
+
   // ── RENDU ──────────────────────────────────
 
   return (
-    <div style={{ background: ADMIN_COLORS.pageBg, minHeight: '100vh', padding: '0' }}>
+    <div style={{ background: ADMIN_COLORS.pageBg, minHeight: '100vh', padding: '0', fontFamily: ADMIN_COLORS.font }}>
       {/* Header page */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: '16px',
       }}>
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0 }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: ADMIN_COLORS.navy, margin: 0, fontFamily: ADMIN_COLORS.font }}>
             Devis & Facturation
           </h2>
-          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: '2px 0 0' }}>
+          <p style={{ fontSize: '11px', color: ADMIN_COLORS.grayText, margin: '2px 0 0', fontFamily: ADMIN_COLORS.font }}>
             {quotes.length} devis — gestion complète
           </p>
         </div>
@@ -393,6 +409,7 @@ export default function AdminQuotes() {
               background: filterStatut === s ? ADMIN_COLORS.navy : ADMIN_COLORS.grayBg,
               color: filterStatut === s ? '#fff' : ADMIN_COLORS.grayText,
               transition: 'all 0.15s',
+              fontFamily: ADMIN_COLORS.font,
             }}
           >
             {s === "tous" ? "Tous" : STATUT_LABELS[s]}
@@ -406,12 +423,12 @@ export default function AdminQuotes() {
           <Loader2 style={{ width: 28, height: 28, animation: 'spin 1s linear infinite', color: ADMIN_COLORS.navyAccent }} />
         </div>
       ) : quotes.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: ADMIN_COLORS.grayText, fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
           Aucun devis trouvé
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {quotes.map((q) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {quotes.map((q, idx) => {
             const ed = getEdit(q.id);
             const isOpen = expandedId === q.id;
             const statut = (ed.statut ?? q.statut) as Statut;
@@ -422,424 +439,794 @@ export default function AdminQuotes() {
             const total = q.prix_negocie ?? q.prix_total_calcule ?? 0;
             const devisNum = q.numero_devis || q.id.slice(0, 8).toUpperCase();
             const factureNum = devisNum.replace("D", "F");
+            const fmKey = q.id;
+            const ddKey = q.id;
+            const ncKey = q.id;
+            const currentFm = fmData[fmKey] || { libelle: "Frais de participation maritime", montant: 0 };
+            const currentDd = ddData[ddKey] || { libelle: "Frais de dédouanement, octrois de mer et autres taxes", montant: 0 };
+            const currentNc = ncData[ncKey] || { prixRemise: q.prix_negocie ?? 0, prixPartenaire, commission };
 
             return (
-              <AdminCard key={q.id}>
-                {/* ── HEADER NAVY ─────────────────── */}
-                <div
-                  onClick={() => setExpandedId(isOpen ? null : q.id)}
-                  style={{
-                    background: ADMIN_COLORS.navy,
-                    padding: '10px 14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <BadgeStatut statut={statut} />
-                    {q.role_client === "vip" && (
-                      <span style={{
-                        background: ADMIN_COLORS.purpleBtn, color: '#fff',
-                        fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600,
-                      }}>
-                        VIP
-                      </span>
-                    )}
-                    <div>
-                      <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}>
+              <div key={q.id}>
+                {/* ── CLOSED ROW (when not open) ─────────────────── */}
+                {!isOpen && (
+                  <div
+                    onClick={() => setExpandedId(q.id)}
+                    style={{
+                      background: idx % 2 === 0 ? '#FFFFFF' : '#F9FAFB',
+                      borderBottom: '0.5px solid #E5E7EB',
+                      padding: '10px 14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontFamily: ADMIN_COLORS.font,
+                    }}
+                  >
+                    {/* Left: badge + client + devis num + VIP */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <BadgeStatut statut={statut} />
+                      <span style={{ color: ADMIN_COLORS.navy, fontSize: '12px', fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
                         {q.nom}
                       </span>
-                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginLeft: '8px' }}>
+                      <span style={{ color: ADMIN_COLORS.grayText, fontSize: '10px', fontFamily: ADMIN_COLORS.font }}>
                         #{devisNum}
                       </span>
+                      {q.role_client === "vip" && (
+                        <span style={{
+                          background: ADMIN_COLORS.purpleBtn, color: '#fff',
+                          fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600,
+                          fontFamily: ADMIN_COLORS.font,
+                        }}>
+                          VIP
+                        </span>
+                      )}
+                    </div>
+                    {/* Right: price + facturé badge + chevron */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ color: ADMIN_COLORS.navy, fontSize: '13px', fontWeight: 700, fontFamily: ADMIN_COLORS.font }}>
+                        {formatEur(total)}
+                      </span>
+                      {q.facture_generee && (
+                        <span style={{
+                          background: ADMIN_COLORS.greenBtn, color: '#fff',
+                          fontSize: '9px', padding: '2px 8px', borderRadius: '10px',
+                          fontFamily: ADMIN_COLORS.font,
+                        }}>
+                          Facturé
+                        </span>
+                      )}
+                      <span style={{ color: ADMIN_COLORS.grayText, fontSize: '16px', fontFamily: ADMIN_COLORS.font }}>›</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {q.facture_generee && (
-                      <span style={{
-                        background: ADMIN_COLORS.greenBtn, color: '#fff',
-                        fontSize: '9px', padding: '2px 8px', borderRadius: '10px',
-                      }}>
-                        Facturé
-                      </span>
-                    )}
-                    {q.commission_payee && (
-                      <span style={{
-                        background: ADMIN_COLORS.orangeBtn, color: '#fff',
-                        fontSize: '9px', padding: '2px 8px', borderRadius: '10px',
-                      }}>
-                        Comm. payée ✓
-                      </span>
-                    )}
-                    <span style={{ color: '#fff', fontSize: '13px', fontWeight: 700 }}>
-                      {formatEur(total)}
-                    </span>
-                    {isOpen
-                      ? <ChevronUp style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.5)' }} />
-                      : <ChevronDown style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.5)' }} />
-                    }
-                  </div>
-                </div>
-
-                {/* ── Sous-header : email + date ── */}
-                {isOpen && (
-                  <div style={{
-                    background: '#111827', padding: '6px 14px',
-                    display: 'flex', justifyContent: 'space-between',
-                    fontSize: '10px', color: 'rgba(255,255,255,0.5)',
-                  }}>
-                    <span>{q.email} — {q.telephone || "—"}</span>
-                    <span>{new Date(q.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                  </div>
                 )}
 
-                {/* VIP flash msg */}
-                {vipMsg[q.id] && (
-                  <div style={{
-                    margin: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px',
-                    background: ADMIN_COLORS.purpleBg, color: ADMIN_COLORS.purpleText,
-                    fontSize: '11px', fontWeight: 500, borderRadius: '6px', padding: '8px 12px',
-                    border: `0.5px solid ${ADMIN_COLORS.purpleBorder}`,
-                  }}>
-                    <CheckCircle2 style={{ width: 14, height: 14, flexShrink: 0 }} /> {vipMsg[q.id]}
-                  </div>
-                )}
-
-                {/* ── CONTENU DÉPLIÉ ─────────────── */}
+                {/* ── OPENED QUOTE ─────────────────── */}
                 {isOpen && (
-                  <div style={{ padding: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-
-                    {/* ── COLONNE GAUCHE ──────────── */}
-                    <div style={{ flex: 1, minWidth: '320px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-
-                      {/* Infos client */}
-                      <div style={{
-                        background: ADMIN_COLORS.infoBg, border: `0.5px solid ${ADMIN_COLORS.infoBorder}`,
-                        borderRadius: '8px', padding: '10px 12px',
-                      }}>
-                        <SectionLabel>Informations client</SectionLabel>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '11px', color: ADMIN_COLORS.grayTextDark }}>
-                          <div><span style={{ color: ADMIN_COLORS.grayText }}>Adresse : </span>{q.adresse_client || "—"}</div>
-                          <div><span style={{ color: ADMIN_COLORS.grayText }}>Ville : </span>{q.ville_client || "—"}</div>
-                          <div><span style={{ color: ADMIN_COLORS.grayText }}>Pays : </span>{q.pays_client || "—"}</div>
-                          <div><span style={{ color: ADMIN_COLORS.grayText }}>Rôle : </span>{q.role_client || "—"}</div>
-                        </div>
-                        {q.message && (
-                          <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, marginTop: '6px', fontStyle: 'italic' }}>
-                            « {q.message} »
-                          </p>
+                  <AdminCard>
+                    {/* ── HEADER NAVY (only when open) ─────────────────── */}
+                    <div
+                      onClick={() => setExpandedId(null)}
+                      style={{
+                        background: '#1E3A5F',
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontFamily: ADMIN_COLORS.font,
+                      }}
+                    >
+                      {/* Left: numero_devis + badge + VIP */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
+                          #{devisNum}
+                        </span>
+                        <BadgeStatut statut={statut} />
+                        {q.role_client === "vip" && (
+                          <span style={{
+                            background: ADMIN_COLORS.purpleBtn, color: '#fff',
+                            fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600,
+                            fontFamily: ADMIN_COLORS.font,
+                          }}>
+                            VIP
+                          </span>
                         )}
                       </div>
+                      {/* Right: client name + email/date */}
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ color: '#fff', fontSize: '12px', fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
+                          {q.nom}
+                        </div>
+                        <div style={{ color: '#93C5FD', fontSize: '10px', fontFamily: ADMIN_COLORS.font }}>
+                          {q.email} — {new Date(q.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
+                        </div>
+                      </div>
+                    </div>
 
-                      {/* Produits */}
-                      <div style={{
-                        background: '#fff', border: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
-                        borderRadius: '8px', padding: '10px 12px',
+                    {/* ── STEP BAR ─────────────────── */}
+                    <div style={{
+                      background: '#F8FAFC',
+                      padding: '7px 16px',
+                      borderBottom: '0.5px solid #E5E7EB',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontFamily: ADMIN_COLORS.font,
+                    }}>
+                      <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, fontWeight: 600, textTransform: 'uppercase', marginRight: '4px', fontFamily: ADMIN_COLORS.font }}>
+                        ÉTAPES ADMIN :
+                      </span>
+                      {/* Step 1: Reçu - always green */}
+                      <span style={{ fontSize: '9px', color: '#16A34A', fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
+                        ① Reçu ✅
+                      </span>
+                      <span style={{ color: '#D1D5DB', fontSize: '9px' }}>→</span>
+                      {/* Step 2: VIP */}
+                      <span style={{
+                        fontSize: '9px', fontWeight: 600, fontFamily: ADMIN_COLORS.font,
+                        color: q.role_client === "vip" ? '#16A34A' : '#7C3AED',
                       }}>
-                        <SectionLabel>Produits</SectionLabel>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                          {(q.produits || []).map((p: any, i: number) => (
-                            <div key={i} style={{
-                              display: 'flex', justifyContent: 'space-between',
-                              fontSize: '11px', color: ADMIN_COLORS.grayTextDark,
-                              padding: '3px 0', borderBottom: i < (q.produits || []).length - 1 ? `0.5px solid ${ADMIN_COLORS.grayBorder}` : 'none',
-                            }}>
-                              <span>{p.nom || p.name || p.id}{(p.quantite ?? 1) > 1 ? ` ×${p.quantite}` : ""}</span>
-                              {p.prixAffiche != null && (
-                                <span style={{ fontWeight: 600, color: ADMIN_COLORS.navyAccent }}>
-                                  {formatEur(p.prixAffiche)}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{
-                          display: 'flex', justifyContent: 'space-between',
-                          marginTop: '8px', paddingTop: '6px',
-                          borderTop: `1px solid ${ADMIN_COLORS.navyBorder}`,
-                          fontSize: '12px', fontWeight: 700, color: ADMIN_COLORS.navy,
-                        }}>
-                          <span>Total</span>
-                          <span>{formatEur(total)}</span>
-                        </div>
-                      </div>
+                        {q.role_client === "vip" ? '② VIP ✅' : '② Passer en VIP'}
+                      </span>
+                      <span style={{ color: '#D1D5DB', fontSize: '9px' }}>→</span>
+                      {/* Step 3: Payment */}
+                      <span style={{
+                        fontSize: '9px', fontWeight: 600, fontFamily: ADMIN_COLORS.font,
+                        color: q.facture_generee ? '#16A34A' : ADMIN_COLORS.grayText,
+                      }}>
+                        {q.facture_generee ? '③ Paiement ✅' : '③ Paiement'}
+                      </span>
+                      <span style={{ color: '#D1D5DB', fontSize: '9px' }}>→</span>
+                      {/* Step 4: Documents - always gray */}
+                      <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
+                        ④ Envoyer documents
+                      </span>
+                    </div>
 
-                      {/* Paiements (acompte / solde) */}
-                      <div>
-                        <SectionLabel>Suivi paiements</SectionLabel>
-                        <PaiementRow
-                          numero={1}
-                          montant={Math.round(total * 0.3)}
-                          type="acompte 30%"
-                          statut="en_attente"
-                          onEncaisser={() => genererFacture(q, "acompte")}
-                          onPdf={() => {
-                            const factData = buildFactureData(q);
-                            factData.totalHT = Math.round(total * 0.3);
-                            factData.numeroFacture = factureNum + "-AC";
-                            downloadBlob(generateFacturePDF(factData), `Acompte_${factureNum}.pdf`);
-                          }}
-                        />
-                        <PaiementRow
-                          numero={2}
-                          montant={Math.round(total * 0.7)}
-                          type="solde 70%"
-                          statut="en_attente"
-                          onEncaisser={() => genererFacture(q, "solde")}
-                          onPdf={() => {
-                            const factData = buildFactureData(q);
-                            factData.totalHT = Math.round(total * 0.7);
-                            factData.numeroFacture = factureNum + "-SO";
-                            downloadBlob(generateFacturePDF(factData), `Solde_${factureNum}.pdf`);
-                          }}
-                        />
-                        <PaiementResume
-                          totalEncaisse={0}
-                          soldeRestant={total}
-                        />
-                      </div>
-
-                      {/* Partenaire & Commission */}
+                    {/* VIP flash msg */}
+                    {vipMsg[q.id] && (
                       <div style={{
-                        background: ADMIN_COLORS.purpleBg,
+                        margin: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px',
+                        background: ADMIN_COLORS.purpleBg, color: ADMIN_COLORS.purpleText,
+                        fontSize: '11px', fontWeight: 500, borderRadius: '6px', padding: '8px 12px',
                         border: `0.5px solid ${ADMIN_COLORS.purpleBorder}`,
-                        borderRadius: '8px', padding: '10px 12px',
+                        fontFamily: ADMIN_COLORS.font,
                       }}>
-                        <SectionLabel>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Handshake style={{ width: 12, height: 12 }} /> Partenaire & Commission
-                          </span>
-                        </SectionLabel>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                          <AdminSelect
-                            label="Partenaire"
-                            value={selectedPartnerId}
-                            onChange={(v) => patch(q.id, "partner_id", v)}
-                            options={partners.map((p) => ({ value: p.id, label: p.nom }))}
+                        <CheckCircle2 style={{ width: 14, height: 14, flexShrink: 0 }} /> {vipMsg[q.id]}
+                      </div>
+                    )}
+
+                    {/* ── CONTENU DÉPLIÉ — 2-column grid ─────────────── */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 340px',
+                      fontFamily: ADMIN_COLORS.font,
+                    }}>
+
+                      {/* ── COLONNE GAUCHE ──────────── */}
+                      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+                        {/* Infos client */}
+                        <div style={{
+                          background: ADMIN_COLORS.infoBg, border: `0.5px solid ${ADMIN_COLORS.infoBorder}`,
+                          borderRadius: '8px', padding: '10px 12px',
+                        }}>
+                          <SectionLabel>Informations client</SectionLabel>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '11px', color: ADMIN_COLORS.grayTextDark, fontFamily: ADMIN_COLORS.font }}>
+                            <div><span style={{ color: ADMIN_COLORS.grayText }}>Adresse : </span>{q.adresse_client || "—"}</div>
+                            <div><span style={{ color: ADMIN_COLORS.grayText }}>Ville : </span>{q.ville_client || "—"}</div>
+                            <div><span style={{ color: ADMIN_COLORS.grayText }}>Pays : </span>{q.pays_client || "—"}</div>
+                            <div><span style={{ color: ADMIN_COLORS.grayText }}>Rôle : </span>{q.role_client || "—"}</div>
+                          </div>
+                          {q.message && (
+                            <p style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, marginTop: '6px', fontStyle: 'italic', fontFamily: ADMIN_COLORS.font }}>
+                              « {q.message} »
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Produits with strikethrough prices */}
+                        <div style={{
+                          background: '#fff', border: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
+                          borderRadius: '8px', padding: '10px 12px',
+                        }}>
+                          <SectionLabel>Produits</SectionLabel>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                            {(q.produits || []).map((p: any, i: number) => {
+                              const prixPublic = p.prixAffiche ?? (p.prixUnitaire ? p.prixUnitaire * 2 : 0);
+                              const hasPrixNegocie = q.prix_negocie != null && q.prix_negocie > 0;
+                              const partenaireCode = selectedPartner && selectedPartnerId !== ADMIN_PARTNER_ID
+                                ? selectedPartner.nom?.replace(/\s/g, '').slice(0, 6).toUpperCase()
+                                : null;
+                              return (
+                                <div key={i}>
+                                  {hasPrixNegocie ? (
+                                    <>
+                                      {/* Line 1: strikethrough public price */}
+                                      <div style={{
+                                        display: 'flex', justifyContent: 'space-between',
+                                        fontSize: '11px', color: ADMIN_COLORS.grayText,
+                                        padding: '3px 6px', background: '#F9FAFB',
+                                        borderBottom: '0.5px solid #F3F4F6',
+                                        fontFamily: ADMIN_COLORS.font,
+                                      }}>
+                                        <span>{p.nom || p.name || p.id}{(p.quantite ?? 1) > 1 ? ` ×${p.quantite}` : ""}</span>
+                                        <span style={{ textDecoration: 'line-through', color: ADMIN_COLORS.grayText }}>
+                                          {formatEur(prixPublic)}
+                                        </span>
+                                      </div>
+                                      {/* Line 2: purple VIP price */}
+                                      <div style={{
+                                        display: 'flex', justifyContent: 'space-between',
+                                        fontSize: '11px', color: '#6B21A8',
+                                        padding: '3px 6px', background: '#FAF5FF',
+                                        borderBottom: i < (q.produits || []).length - 1 ? `0.5px solid ${ADMIN_COLORS.grayBorder}` : 'none',
+                                        fontFamily: ADMIN_COLORS.font,
+                                      }}>
+                                        <span style={{ fontWeight: 600 }}>
+                                          {p.nom || p.name || p.id} ★ VIP-{partenaireCode || 'REMISÉ'}
+                                        </span>
+                                        <span style={{ fontWeight: 700, color: '#6B21A8' }}>
+                                          {formatEur(p.prixAffiche ?? p.prixUnitaire ?? 0)}
+                                        </span>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    /* Single normal line (no strikethrough) */
+                                    <div style={{
+                                      display: 'flex', justifyContent: 'space-between',
+                                      fontSize: '11px', color: ADMIN_COLORS.grayTextDark,
+                                      padding: '3px 6px',
+                                      borderBottom: i < (q.produits || []).length - 1 ? `0.5px solid ${ADMIN_COLORS.grayBorder}` : 'none',
+                                      fontFamily: ADMIN_COLORS.font,
+                                    }}>
+                                      <span>{p.nom || p.name || p.id}{(p.quantite ?? 1) > 1 ? ` ×${p.quantite}` : ""}</span>
+                                      {p.prixAffiche != null && (
+                                        <span style={{ fontWeight: 600, color: ADMIN_COLORS.navyAccent }}>
+                                          {formatEur(p.prixAffiche)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div style={{
+                            display: 'flex', justifyContent: 'space-between',
+                            marginTop: '8px', paddingTop: '6px',
+                            borderTop: `1px solid ${ADMIN_COLORS.navyBorder}`,
+                            fontSize: '12px', fontWeight: 700, color: ADMIN_COLORS.navy,
+                            fontFamily: ADMIN_COLORS.font,
+                          }}>
+                            <span>Total</span>
+                            <span>{formatEur(total)}</span>
+                          </div>
+                        </div>
+
+                        {/* Paiements (acompte / solde) */}
+                        <div>
+                          <SectionLabel>Suivi paiements</SectionLabel>
+                          <PaiementRow
+                            numero={1}
+                            montant={Math.round(total * 0.3)}
+                            type="acompte 30%"
+                            statut="en_attente"
+                            onEncaisser={() => genererFacture(q, "acompte")}
+                            onPdf={() => {
+                              const factData = buildFactureData(q);
+                              factData.totalHT = Math.round(total * 0.3);
+                              factData.numeroFacture = factureNum + "-AC";
+                              downloadBlob(generateFacturePDF(factData), `Acompte_${factureNum}.pdf`);
+                            }}
                           />
-                          <div>
-                            <label style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, display: 'block', marginBottom: '3px' }}>
-                              Commission calculée
+                          <PaiementRow
+                            numero={2}
+                            montant={Math.round(total * 0.7)}
+                            type="solde 70%"
+                            statut="en_attente"
+                            onEncaisser={() => genererFacture(q, "solde")}
+                            onPdf={() => {
+                              const factData = buildFactureData(q);
+                              factData.totalHT = Math.round(total * 0.7);
+                              factData.numeroFacture = factureNum + "-SO";
+                              downloadBlob(generateFacturePDF(factData), `Solde_${factureNum}.pdf`);
+                            }}
+                          />
+                          <PaiementResume
+                            totalEncaisse={0}
+                            soldeRestant={total}
+                          />
+                        </div>
+
+                        {/* Partenaire & Commission */}
+                        <div style={{
+                          background: ADMIN_COLORS.purpleBg,
+                          border: `0.5px solid ${ADMIN_COLORS.purpleBorder}`,
+                          borderRadius: '8px', padding: '10px 12px',
+                        }}>
+                          <SectionLabel>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Handshake style={{ width: 12, height: 12 }} /> Partenaire & Commission
+                            </span>
+                          </SectionLabel>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                            <AdminSelect
+                              label="Partenaire"
+                              value={selectedPartnerId}
+                              onChange={(v) => patch(q.id, "partner_id", v)}
+                              options={partners.map((p) => ({ value: p.id, label: p.nom }))}
+                            />
+                            <div>
+                              <label style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, display: 'block', marginBottom: '3px', fontFamily: ADMIN_COLORS.font }}>
+                                Commission calculée
+                              </label>
+                              <div style={{
+                                background: '#fff', border: `0.5px solid ${ADMIN_COLORS.purpleBorder}`,
+                                borderRadius: '4px', padding: '5px 8px', fontSize: '11px',
+                                fontFamily: ADMIN_COLORS.font,
+                              }}>
+                                <span style={{ fontWeight: 700, color: ADMIN_COLORS.purpleText }}>
+                                  {formatEur(commission)}
+                                </span>
+                                <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px' }}>
+                                  (partenaire {formatEur(prixPartenaire)})
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            {q.commission_payee ? (
+                              <span style={{
+                                display: 'flex', alignItems: 'center', gap: '4px',
+                                background: ADMIN_COLORS.greenBg, color: ADMIN_COLORS.greenText,
+                                fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '4px',
+                                fontFamily: ADMIN_COLORS.font,
+                              }}>
+                                <CheckCircle2 style={{ width: 12, height: 12 }} /> Payée ✓
+                              </span>
+                            ) : (
+                              <AdminButton variant="success" size="sm" onClick={() => marquerCommissionPayee(q)}
+                                disabled={saving === "pay_" + q.id}>
+                                Marquer payée
+                              </AdminButton>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions admin */}
+                        <div style={{
+                          background: ADMIN_COLORS.grayBg, borderRadius: '8px', padding: '10px 12px',
+                          border: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
+                        }}>
+                          <SectionLabel>Actions admin</SectionLabel>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                            <AdminSelect
+                              label="Statut"
+                              value={ed.statut ?? q.statut}
+                              onChange={(v) => patch(q.id, "statut", v)}
+                              options={Object.entries(STATUT_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+                            />
+                            <AdminInput
+                              label="Prix négocié (€)"
+                              type="number"
+                              value={ed.prix_negocie ?? q.prix_negocie ?? ""}
+                              onChange={(v) => patch(q.id, "prix_negocie", v ? Number(v) : null)}
+                              placeholder="Ex : 12000"
+                            />
+                          </div>
+                          <div style={{ marginBottom: '8px' }}>
+                            <label style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, display: 'block', marginBottom: '3px', fontFamily: ADMIN_COLORS.font }}>
+                              Notes admin
                             </label>
-                            <div style={{
-                              background: '#fff', border: `0.5px solid ${ADMIN_COLORS.purpleBorder}`,
-                              borderRadius: '4px', padding: '5px 8px', fontSize: '11px',
-                            }}>
-                              <span style={{ fontWeight: 700, color: ADMIN_COLORS.purpleText }}>
-                                {formatEur(commission)}
+                            <textarea
+                              rows={2}
+                              value={ed.notes_admin ?? q.notes_admin ?? ""}
+                              onChange={(e) => patch(q.id, "notes_admin", e.target.value)}
+                              placeholder="Notes internes…"
+                              style={{
+                                width: '100%', fontSize: '11px', padding: '5px 8px',
+                                border: `0.5px solid ${ADMIN_COLORS.navyBorder}`,
+                                borderRadius: '4px', outline: 'none', background: '#fff',
+                                color: ADMIN_COLORS.navy, boxSizing: 'border-box', resize: 'none',
+                                fontFamily: ADMIN_COLORS.font,
+                              }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <AdminButton variant="primary" size="md" onClick={() => save(q.id)}
+                              disabled={saving === q.id}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {saving === q.id
+                                  ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />
+                                  : <Save style={{ width: 12, height: 12 }} />
+                                }
+                                Sauvegarder
                               </span>
-                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px' }}>
-                                (partenaire {formatEur(prixPartenaire)})
+                            </AdminButton>
+                            <AdminButton variant="purple" size="md" onClick={() => passerEnVip(q)}
+                              disabled={saving === q.id}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Crown style={{ width: 12, height: 12 }} /> Passer en VIP
                               </span>
+                            </AdminButton>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ── COLONNE DROITE (340px) — Documents ──── */}
+                      <div style={{
+                        borderLeft: '0.5px solid #E5E7EB',
+                        padding: '12px',
+                        display: 'flex', flexDirection: 'column', gap: '6px',
+                      }}>
+                        <SectionLabel>Documents</SectionLabel>
+
+                        {/* ── Devis PDF ── */}
+                        <div style={{
+                          background: ADMIN_COLORS.infoBg, border: `0.5px solid ${ADMIN_COLORS.infoBorder}`,
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: ADMIN_COLORS.infoText, fontFamily: ADMIN_COLORS.font }}>
+                                Devis
+                              </span>
+                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
+                                #{devisNum}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${devisNum}.pdf`)}
+                                style={docBtnStyle(ADMIN_COLORS.infoBtn)}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Devis", devisNum)}
+                                style={docBtnStyle('#2563EB')}
+                              >
+                                → Client
+                              </button>
                             </div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          {q.commission_payee ? (
-                            <span style={{
-                              display: 'flex', alignItems: 'center', gap: '4px',
-                              background: ADMIN_COLORS.greenBg, color: ADMIN_COLORS.greenText,
-                              fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '4px',
-                            }}>
-                              <CheckCircle2 style={{ width: 12, height: 12 }} /> Payée ✓
-                            </span>
-                          ) : (
-                            <AdminButton variant="success" size="sm" onClick={() => marquerCommissionPayee(q)}
-                              disabled={saving === "pay_" + q.id}>
-                              Marquer payée
-                            </AdminButton>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Actions admin */}
-                      <div style={{
-                        background: ADMIN_COLORS.grayBg, borderRadius: '8px', padding: '10px 12px',
-                        border: `0.5px solid ${ADMIN_COLORS.grayBorder}`,
-                      }}>
-                        <SectionLabel>Actions admin</SectionLabel>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                          <AdminSelect
-                            label="Statut"
-                            value={ed.statut ?? q.statut}
-                            onChange={(v) => patch(q.id, "statut", v)}
-                            options={Object.entries(STATUT_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-                          />
-                          <AdminInput
-                            label="Prix négocié (€)"
-                            type="number"
-                            value={ed.prix_negocie ?? q.prix_negocie ?? ""}
-                            onChange={(v) => patch(q.id, "prix_negocie", v ? Number(v) : null)}
-                            placeholder="Ex : 12000"
-                          />
+                        {/* ── Facture FA ── green */}
+                        <div style={{
+                          background: '#F0FDF4', border: '0.5px solid #86EFAC',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534', fontFamily: ADMIN_COLORS.font }}>
+                                Facture FA
+                              </span>
+                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
+                                {formatEur(total)}
+                              </span>
+                              {q.facture_generee && (
+                                <span style={{
+                                  background: '#16A34A', color: '#fff',
+                                  fontSize: '8px', padding: '1px 6px', borderRadius: '8px', marginLeft: '6px',
+                                  fontFamily: ADMIN_COLORS.font,
+                                }}>
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => {
+                                  const fd = buildFactureData(q);
+                                  downloadBlob(generateFacturePDF(fd), `Facture_${factureNum}.pdf`);
+                                }}
+                                style={docBtnStyle('#166534')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Facture", factureNum)}
+                                style={docBtnStyle('#16A34A')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '9px', color: '#166534', marginTop: '3px', opacity: 0.7, fontFamily: ADMIN_COLORS.font }}>
+                            Mise à jour à chaque acompte
+                          </div>
                         </div>
-                        <div style={{ marginBottom: '8px' }}>
-                          <label style={{ fontSize: '10px', color: ADMIN_COLORS.grayText, display: 'block', marginBottom: '3px' }}>
-                            Notes admin
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={ed.notes_admin ?? q.notes_admin ?? ""}
-                            onChange={(e) => patch(q.id, "notes_admin", e.target.value)}
-                            placeholder="Notes internes…"
-                            style={{
-                              width: '100%', fontSize: '11px', padding: '5px 8px',
-                              border: `0.5px solid ${ADMIN_COLORS.navyBorder}`,
-                              borderRadius: '4px', outline: 'none', background: '#fff',
-                              color: ADMIN_COLORS.navy, boxSizing: 'border-box', resize: 'none',
-                            }}
-                          />
+
+                        {/* ── Facture acompte 30% ── green */}
+                        <div style={{
+                          background: '#F0FDF4', border: '0.5px solid #86EFAC',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534', fontFamily: ADMIN_COLORS.font }}>
+                                Facture acompte 30%
+                              </span>
+                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
+                                {formatEur(Math.round(total * 0.3))}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => {
+                                  const fd = buildFactureData(q);
+                                  fd.totalHT = Math.round(total * 0.3);
+                                  fd.numeroFacture = factureNum + "-AC";
+                                  downloadBlob(generateFacturePDF(fd), `Acompte_${factureNum}.pdf`);
+                                }}
+                                style={docBtnStyle('#166534')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Facture acompte", factureNum + "-AC")}
+                                style={docBtnStyle('#16A34A')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <AdminButton variant="primary" size="md" onClick={() => save(q.id)}
-                            disabled={saving === q.id}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              {saving === q.id
-                                ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />
-                                : <Save style={{ width: 12, height: 12 }} />
-                              }
-                              Sauvegarder
+
+                        {/* ── Facture solde ── green */}
+                        <div style={{
+                          background: '#F0FDF4', border: '0.5px solid #86EFAC',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534', fontFamily: ADMIN_COLORS.font }}>
+                                Facture solde
+                              </span>
+                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
+                                {formatEur(Math.round(total * 0.7))}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => {
+                                  const fd = buildFactureData(q);
+                                  fd.totalHT = Math.round(total * 0.7);
+                                  fd.numeroFacture = factureNum + "-SO";
+                                  downloadBlob(generateFacturePDF(fd), `Solde_${factureNum}.pdf`);
+                                }}
+                                style={docBtnStyle('#166534')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Facture solde", factureNum + "-SO")}
+                                style={docBtnStyle('#16A34A')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ── Frais Maritimes FM ── blue */}
+                        <div style={{
+                          background: '#EFF6FF', border: '0.5px solid #BFDBFE',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#1E3A5F', fontFamily: ADMIN_COLORS.font }}>
+                              Frais Maritimes FM
                             </span>
-                          </AdminButton>
-                          <AdminButton variant="purple" size="md" onClick={() => passerEnVip(q)}
-                            disabled={saving === q.id}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Crown style={{ width: 12, height: 12 }} /> Passer en VIP
-                            </span>
-                          </AdminButton>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => genererFrais(q, "maritime")}
+                                style={docBtnStyle('#1E3A5F')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Frais maritimes", `FM${devisNum.replace(/^D/, "")}`)}
+                                style={docBtnStyle('#2563EB')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <input
+                              type="text"
+                              value={currentFm.libelle}
+                              onChange={(e) => setFmData(prev => ({ ...prev, [fmKey]: { ...currentFm, libelle: e.target.value } }))}
+                              placeholder="Libellé"
+                              style={{
+                                flex: 1, fontSize: '9px', padding: '3px 6px',
+                                border: '0.5px solid #BFDBFE', borderRadius: '3px',
+                                background: '#fff', color: '#1E3A5F', fontFamily: ADMIN_COLORS.font,
+                              }}
+                            />
+                            <input
+                              type="number"
+                              value={currentFm.montant || ''}
+                              onChange={(e) => setFmData(prev => ({ ...prev, [fmKey]: { ...currentFm, montant: Number(e.target.value) || 0 } }))}
+                              placeholder="Montant €"
+                              style={{
+                                width: '70px', fontSize: '9px', padding: '3px 6px',
+                                border: '0.5px solid #BFDBFE', borderRadius: '3px',
+                                background: '#fff', color: '#1E3A5F', fontFamily: ADMIN_COLORS.font,
+                              }}
+                            />
+                          </div>
                         </div>
+
+                        {/* ── Dédouanement DD ── blue */}
+                        <div style={{
+                          background: '#EFF6FF', border: '0.5px solid #BFDBFE',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#1E3A5F', fontFamily: ADMIN_COLORS.font }}>
+                              Dédouanement DD
+                            </span>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => genererFrais(q, "dedouanement")}
+                                style={docBtnStyle('#1E3A5F')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Dédouanement", `DD${devisNum.replace(/^D/, "")}`)}
+                                style={docBtnStyle('#2563EB')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <input
+                              type="text"
+                              value={currentDd.libelle}
+                              onChange={(e) => setDdData(prev => ({ ...prev, [ddKey]: { ...currentDd, libelle: e.target.value } }))}
+                              placeholder="Libellé"
+                              style={{
+                                flex: 1, fontSize: '9px', padding: '3px 6px',
+                                border: '0.5px solid #BFDBFE', borderRadius: '3px',
+                                background: '#fff', color: '#1E3A5F', fontFamily: ADMIN_COLORS.font,
+                              }}
+                            />
+                            <input
+                              type="number"
+                              value={currentDd.montant || ''}
+                              onChange={(e) => setDdData(prev => ({ ...prev, [ddKey]: { ...currentDd, montant: Number(e.target.value) || 0 } }))}
+                              placeholder="Montant €"
+                              style={{
+                                width: '70px', fontSize: '9px', padding: '3px 6px',
+                                border: '0.5px solid #BFDBFE', borderRadius: '3px',
+                                background: '#fff', color: '#1E3A5F', fontFamily: ADMIN_COLORS.font,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* ── Bon de Livraison BL ── gray */}
+                        <div style={{
+                          background: '#F8FAFC', border: '0.5px solid #CBD5E1',
+                          borderRadius: '6px', padding: '8px 10px',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#374151', fontFamily: ADMIN_COLORS.font }}>
+                                Bon de Livraison BL
+                              </span>
+                              <span style={{ fontSize: '9px', color: ADMIN_COLORS.grayText, marginLeft: '6px', fontFamily: ADMIN_COLORS.font }}>
+                                BL{devisNum.replace(/^D/, "")}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => genererBL(q)}
+                                style={docBtnStyle('#374151')}
+                              >
+                                PDF
+                              </button>
+                              <button
+                                onClick={() => envoyerDocument(q, "Bon de livraison", `BL${devisNum.replace(/^D/, "")}`)}
+                                style={docBtnStyle('#4B5563')}
+                              >
+                                → Client
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ── Note Commission NC ── purple (only if partenaire != ADMIN) */}
+                        {isNotAdmin && (
+                          <div style={{
+                            background: '#EDE9FE', border: '0.5px solid #D8B4FE',
+                            borderRadius: '6px', padding: '8px 10px',
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                              <div>
+                                <span style={{ fontSize: '11px', fontWeight: 600, color: '#6B21A8', fontFamily: ADMIN_COLORS.font }}>
+                                  Note Commission NC
+                                </span>
+                                <span style={{ fontSize: '9px', color: '#6B21A8', marginLeft: '6px', opacity: 0.7, fontFamily: ADMIN_COLORS.font }}>
+                                  {selectedPartner?.nom} — {formatEur(commission)}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button
+                                  onClick={() => genererCommission(q)}
+                                  style={docBtnStyle('#7C3AED')}
+                                >
+                                  PDF
+                                </button>
+                                <button
+                                  onClick={() => envoyerDocument(q, "Note de commission", `C${devisNum.replace(/^D/, "")}`)}
+                                  style={docBtnStyle('#6B21A8')}
+                                >
+                                  → TD seulement
+                                </button>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '8px', color: '#6B21A8', display: 'block', marginBottom: '2px', fontFamily: ADMIN_COLORS.font }}>Prix remisé</label>
+                                <input
+                                  type="number"
+                                  value={currentNc.prixRemise || ''}
+                                  onChange={(e) => setNcData(prev => ({ ...prev, [ncKey]: { ...currentNc, prixRemise: Number(e.target.value) || 0 } }))}
+                                  style={{
+                                    width: '100%', fontSize: '9px', padding: '3px 6px',
+                                    border: '0.5px solid #D8B4FE', borderRadius: '3px',
+                                    background: '#fff', color: '#6B21A8', boxSizing: 'border-box',
+                                    fontFamily: ADMIN_COLORS.font,
+                                  }}
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '8px', color: '#6B21A8', display: 'block', marginBottom: '2px', fontFamily: ADMIN_COLORS.font }}>Prix partenaire</label>
+                                <input
+                                  type="number"
+                                  value={currentNc.prixPartenaire || ''}
+                                  onChange={(e) => setNcData(prev => ({ ...prev, [ncKey]: { ...currentNc, prixPartenaire: Number(e.target.value) || 0 } }))}
+                                  style={{
+                                    width: '100%', fontSize: '9px', padding: '3px 6px',
+                                    border: '0.5px solid #D8B4FE', borderRadius: '3px',
+                                    background: '#fff', color: '#6B21A8', boxSizing: 'border-box',
+                                    fontFamily: ADMIN_COLORS.font,
+                                  }}
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '8px', color: '#6B21A8', display: 'block', marginBottom: '2px', fontFamily: ADMIN_COLORS.font }}>Commission</label>
+                                <input
+                                  type="number"
+                                  value={currentNc.commission || ''}
+                                  onChange={(e) => setNcData(prev => ({ ...prev, [ncKey]: { ...currentNc, commission: Number(e.target.value) || 0 } }))}
+                                  style={{
+                                    width: '100%', fontSize: '9px', padding: '3px 6px',
+                                    border: '0.5px solid #D8B4FE', borderRadius: '3px',
+                                    background: '#fff', color: '#6B21A8', boxSizing: 'border-box',
+                                    fontFamily: ADMIN_COLORS.font,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div style={{ fontSize: '9px', color: '#6B21A8', fontWeight: 600, fontFamily: ADMIN_COLORS.font }}>
+                              ⚠️ Non envoyé au client
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-
-                    {/* ── COLONNE DROITE (380px) ──── */}
-                    <div style={{ width: '380px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <SectionLabel>Documents</SectionLabel>
-
-                      {/* Devis PDF */}
-                      <DocumentRow
-                        label="Devis"
-                        sousTitre={`#${devisNum}`}
-                        couleurFond={ADMIN_COLORS.infoBg}
-                        couleurBordure={ADMIN_COLORS.infoBorder}
-                        couleurTexte={ADMIN_COLORS.infoText}
-                        couleurBouton={ADMIN_COLORS.infoBtn}
-                        onGenerer={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${devisNum}.pdf`)}
-                        onEnvoyer={() => envoyerDocument(q, "Devis", devisNum)}
-                        onPdf={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${devisNum}.pdf`)}
-                      />
-
-                      {/* Facture totale */}
-                      <DocumentRow
-                        label="Facture totale"
-                        sousTitre={`${formatEur(total)}`}
-                        couleurFond={ADMIN_COLORS.greenBg}
-                        couleurBordure={ADMIN_COLORS.greenBorder}
-                        couleurTexte={ADMIN_COLORS.greenText}
-                        couleurBouton={ADMIN_COLORS.greenBtn}
-                        envoye={q.facture_generee}
-                        onGenerer={() => genererFacture(q, "standard")}
-                        onEnvoyer={() => envoyerDocument(q, "Facture", factureNum)}
-                        onPdf={() => {
-                          const fd = buildFactureData(q);
-                          downloadBlob(generateFacturePDF(fd), `Facture_${factureNum}.pdf`);
-                        }}
-                      />
-
-                      {/* Facture acompte */}
-                      <DocumentRow
-                        label="Facture acompte 30%"
-                        sousTitre={`${formatEur(Math.round(total * 0.3))}`}
-                        couleurFond={ADMIN_COLORS.orangeBg}
-                        couleurBordure={ADMIN_COLORS.orangeBorder}
-                        couleurTexte={ADMIN_COLORS.orangeText}
-                        couleurBouton={ADMIN_COLORS.orangeBtn}
-                        onGenerer={() => genererFacture(q, "acompte")}
-                        onEnvoyer={() => envoyerDocument(q, "Facture acompte", factureNum + "-AC")}
-                        onPdf={() => {
-                          const fd = buildFactureData(q);
-                          fd.totalHT = Math.round(total * 0.3);
-                          fd.numeroFacture = factureNum + "-AC";
-                          downloadBlob(generateFacturePDF(fd), `Acompte_${factureNum}.pdf`);
-                        }}
-                      />
-
-                      {/* Facture solde */}
-                      <DocumentRow
-                        label="Facture solde"
-                        sousTitre={`${formatEur(Math.round(total * 0.7))}`}
-                        couleurFond={ADMIN_COLORS.greenBg}
-                        couleurBordure={ADMIN_COLORS.greenBorder}
-                        couleurTexte={ADMIN_COLORS.greenText}
-                        couleurBouton={ADMIN_COLORS.greenBtn}
-                        onGenerer={() => genererFacture(q, "solde")}
-                        onEnvoyer={() => envoyerDocument(q, "Facture solde", factureNum + "-SO")}
-                        onPdf={() => {
-                          const fd = buildFactureData(q);
-                          fd.totalHT = Math.round(total * 0.7);
-                          fd.numeroFacture = factureNum + "-SO";
-                          downloadBlob(generateFacturePDF(fd), `Solde_${factureNum}.pdf`);
-                        }}
-                      />
-
-                      {/* Frais maritimes */}
-                      <DocumentRow
-                        label="Frais maritimes"
-                        sousTitre={`FM${devisNum.replace(/^D/, "")}`}
-                        couleurFond={ADMIN_COLORS.infoBg}
-                        couleurBordure={ADMIN_COLORS.infoBorder}
-                        couleurTexte={ADMIN_COLORS.infoText}
-                        couleurBouton={ADMIN_COLORS.infoBtn}
-                        onGenerer={() => genererFrais(q, "maritime")}
-                        onEnvoyer={() => envoyerDocument(q, "Frais maritimes", `FM${devisNum.replace(/^D/, "")}`)}
-                        onPdf={() => genererFrais(q, "maritime")}
-                      />
-
-                      {/* Dédouanement */}
-                      <DocumentRow
-                        label="Dédouanement"
-                        sousTitre={`DD${devisNum.replace(/^D/, "")}`}
-                        couleurFond={ADMIN_COLORS.purpleBg}
-                        couleurBordure={ADMIN_COLORS.purpleBorder}
-                        couleurTexte={ADMIN_COLORS.purpleText}
-                        couleurBouton={ADMIN_COLORS.purpleBtn}
-                        onGenerer={() => genererFrais(q, "dedouanement")}
-                        onEnvoyer={() => envoyerDocument(q, "Dédouanement", `DD${devisNum.replace(/^D/, "")}`)}
-                        onPdf={() => genererFrais(q, "dedouanement")}
-                      />
-
-                      {/* Bon de livraison */}
-                      <DocumentRow
-                        label="Bon de livraison"
-                        sousTitre={`BL${devisNum.replace(/^D/, "")}`}
-                        couleurFond={ADMIN_COLORS.greenBg}
-                        couleurBordure={ADMIN_COLORS.greenBorder}
-                        couleurTexte={ADMIN_COLORS.greenText}
-                        couleurBouton={ADMIN_COLORS.greenBtn}
-                        onGenerer={() => genererBL(q)}
-                        onEnvoyer={() => envoyerDocument(q, "Bon de livraison", `BL${devisNum.replace(/^D/, "")}`)}
-                        onPdf={() => genererBL(q)}
-                      />
-
-                      {/* Note de commission (seulement si partenaire != ADMIN) */}
-                      {isNotAdmin && (
-                        <DocumentRow
-                          label="Note de commission"
-                          sousTitre={`${selectedPartner?.nom} — ${formatEur(commission)}`}
-                          couleurFond={ADMIN_COLORS.orangeBg}
-                          couleurBordure={ADMIN_COLORS.orangeBorder}
-                          couleurTexte={ADMIN_COLORS.orangeText}
-                          couleurBouton={ADMIN_COLORS.orangeBtn}
-                          onGenerer={() => genererCommission(q)}
-                          onEnvoyer={() => envoyerDocument(q, "Note de commission", `C${devisNum.replace(/^D/, "")}`)}
-                          onPdf={() => genererCommission(q)}
-                        />
-                      )}
-                    </div>
-                  </div>
+                  </AdminCard>
                 )}
-              </AdminCard>
+              </div>
             );
           })}
         </div>
