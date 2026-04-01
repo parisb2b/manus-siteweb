@@ -174,20 +174,42 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
     },
     margin: { left: 15, right: 15 },
     tableWidth: 180,
+    didDrawCell: (hookData: any) => {
+      // Strikethrough on STRIKE-colored lines (prix public barré)
+      if (hookData.section === "body") {
+        const cellStyles = hookData.cell.styles;
+        if (cellStyles && cellStyles.textColor &&
+            Array.isArray(cellStyles.textColor) &&
+            cellStyles.textColor[0] === STRIKE[0] && cellStyles.textColor[1] === STRIKE[1]) {
+          const cell = hookData.cell;
+          if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
+            const textY = cell.y + cell.height / 2;
+            doc.setDrawColor(...(STRIKE as [number, number, number]));
+            doc.setLineWidth(0.4);
+            doc.line(cell.x + 2, textY, cell.x + cell.width - 2, textY);
+          }
+        }
+      }
+    },
   });
 
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  // ── Total HT ──
   const W = doc.internal.pageSize.getWidth();
   const L = 15;
+  const xLabel = L + 104;
+  const xValue = L + 176;
+  const boxX = L + 100;
+  const boxW = 80;
+
+  // ── Total HT ──
   doc.setFillColor(239, 246, 255);
-  doc.roundedRect(L + 100, y, 80, 12, 1.5, 1.5, "F");
+  doc.roundedRect(boxX, y, boxW, 12, 1.5, 1.5, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...GREEN_ACC);
-  doc.text("Total HT", L + 104, y + 8);
-  doc.text(formatPrix(totalHT), L + 176, y + 8, { align: "right" });
+  doc.text("Total HT", xLabel, y + 8);
+  doc.text(formatPrix(totalHT), xValue, y + 8, { align: "right" });
   y += 16;
 
   // ── Section Acomptes cumulés ──
@@ -195,45 +217,53 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
   if (acomptes.length > 0) {
     const totalAcomptes = acomptes.reduce((s, a) => s + a.montant, 0);
 
+    // Séparateur
+    doc.setDrawColor(191, 219, 254);
+    doc.setLineWidth(0.3);
+    doc.line(boxX, y, boxX + boxW, y);
+    y += 6;
+
+    // Lignes individuelles acomptes (vert)
     for (const a of acomptes) {
-      const dateStr = new Date(a.date).toLocaleDateString("fr-FR");
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setTextColor(4, 120, 87);
-      doc.text(`— Acompte ${a.numero} versé le ${dateStr} (Réf. ${data.numeroFacture})`, L + 4, y + 4);
-      doc.text(`− ${formatPrix(a.montant)}`, L + 176, y + 4, { align: "right" });
-      y += 7;
+      doc.text(`Acompte ${a.numero}`, xLabel, y + 4);
+      doc.text(`\u2212 ${formatPrix(a.montant)}`, xValue, y + 4, { align: "right" });
+      y += 8;
     }
 
-    // Total acomptes
-    doc.setFillColor(236, 253, 245);
-    doc.roundedRect(L + 100, y, 80, 10, 1.5, 1.5, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(4, 120, 87);
-    doc.text("Total acomptes versés", L + 104, y + 7);
-    doc.text(`− ${formatPrix(totalAcomptes)}`, L + 176, y + 7, { align: "right" });
-    y += 14;
+    y += 2;
 
-    // Solde restant
+    // Total acomptes versés (fond vert)
+    doc.setFillColor(236, 253, 245);
+    doc.roundedRect(boxX, y, boxW, 11, 1.5, 1.5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(4, 120, 87);
+    doc.text("Total acomptes vers\u00E9s", xLabel, y + 7.5);
+    doc.text(`\u2212 ${formatPrix(totalAcomptes)}`, xValue, y + 7.5, { align: "right" });
+    y += 15;
+
+    // Solde restant ou Entièrement soldée
     const solde = totalHT - totalAcomptes;
     if (solde <= 0) {
       doc.setFillColor(236, 253, 245);
-      doc.roundedRect(L, y, W - L * 2, 12, 1.5, 1.5, "F");
+      doc.roundedRect(L, y, W - L * 2, 13, 1.5, 1.5, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setTextColor(4, 120, 87);
-      doc.text("ENTIÈREMENT SOLDÉE ✓", W / 2, y + 8, { align: "center" });
+      doc.text("ENTI\u00C8REMENT SOLD\u00C9E \u2713", W / 2, y + 9, { align: "center" });
     } else {
       doc.setFillColor(255, 247, 237);
-      doc.roundedRect(L + 100, y, 80, 12, 1.5, 1.5, "F");
+      doc.roundedRect(boxX, y, boxW, 13, 1.5, 1.5, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setTextColor(234, 88, 12);
-      doc.text("SOLDE RESTANT", L + 104, y + 8);
-      doc.text(formatPrix(solde), L + 176, y + 8, { align: "right" });
+      doc.text("SOLDE RESTANT", xLabel, y + 9);
+      doc.text(formatPrix(solde), xValue, y + 9, { align: "right" });
     }
-    y += 16;
+    y += 17;
   }
 
   // Mention "Date de paiement"

@@ -5,6 +5,7 @@ import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF
 import { formatEur } from "@/utils/calculPrix";
 import { supabase } from "@/lib/supabase";
 import { uploadPdfBlob } from "@/lib/storage";
+import { sendEmail } from "@/lib/notifications";
 import type { User } from "@supabase/supabase-js";
 
 interface Props {
@@ -212,6 +213,32 @@ export default function QuotesTab({ user, profile, role }: Props) {
     };
     const updated = [...acomptes, newAcompte];
     await supabase.from("quotes").update({ acomptes: updated }).eq("id", acompteQuote.id);
+
+    // Notification email admin
+    try {
+      const numDevis = acompteQuote.numero_devis || acompteQuote.id.slice(0, 8);
+      const clientNom = profile?.full_name || profile?.prenom || user.email;
+      await sendEmail({
+        to: "parisb2b@gmail.com",
+        subject: `Acompte ${newAcompte.numero} — Devis ${numDevis} — ${clientNom}`,
+        html: `
+          <h2>Nouvel acompte déclaré</h2>
+          <table style="border-collapse:collapse;font-family:sans-serif;">
+            <tr><td style="padding:4px 12px;font-weight:bold;">Devis</td><td style="padding:4px 12px;">${numDevis}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Client</td><td style="padding:4px 12px;">${clientNom}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Email</td><td style="padding:4px 12px;">${user.email}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Acompte N°</td><td style="padding:4px 12px;">${newAcompte.numero}</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Montant</td><td style="padding:4px 12px;">${acompteMontant.toLocaleString("fr-FR")} €</td></tr>
+            <tr><td style="padding:4px 12px;font-weight:bold;">Type compte</td><td style="padding:4px 12px;">${compteType === "pro" ? "Professionnel" : "Personnel"}</td></tr>
+          </table>
+          <p style="margin-top:16px;color:#6B7280;font-size:13px;">Le client déclare avoir effectué le virement. Veuillez vérifier la réception sur le compte bancaire.</p>
+        `,
+      });
+    } catch {
+      // Silencieux — ne pas bloquer le flux client
+      console.warn("[QuotesTab] Échec envoi notification admin acompte");
+    }
+
     setAcompteSaving(false);
     setAcompteQuote(null);
     setActionMsg("Votre demande a bien été enregistrée. Nous vous confirmerons dès réception du virement.");

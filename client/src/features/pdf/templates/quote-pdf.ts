@@ -167,14 +167,14 @@ export function generateQuotePDF(data: QuoteData): Blob {
       margin: { left: 15, right: 15 },
       tableWidth: 180,
       didDrawCell: (hookData: any) => {
-        // Strikethrough on grey lines (prix public)
+        // Strikethrough on grey lines (prix public barré)
         if (hookData.section === "body") {
           const cellStyles = hookData.cell.styles;
           if (cellStyles && cellStyles.textColor &&
               Array.isArray(cellStyles.textColor) &&
               cellStyles.textColor[0] === 180 && cellStyles.textColor[1] === 180) {
             const cell = hookData.cell;
-            if (cell.text && cell.text[0] && hookData.column.index >= 1) {
+            if (cell.text && cell.text.length > 0 && cell.text[0] !== "") {
               const textY = cell.y + cell.height / 2;
               doc.setDrawColor(180, 180, 180);
               doc.setLineWidth(0.4);

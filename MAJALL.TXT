@@ -94,6 +94,27 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.9-pdf-corrections-notif
+TYPE : fix
+DESCRIPTION : PDF facture totals rewrite + PDF devis strikethrough + notification email admin acompte
+
+MODIFICATIONS :
+  - Invoice PDF : section totaux réécrite — Total HT → séparateur bleu → lignes Acompte N (vert)
+    → Total acomptes versés (fond vert) → SOLDE RESTANT (fond jaune, texte orange) ou SOLDÉE (fond vert)
+  - Invoice PDF : ajout didDrawCell strikethrough sur lignes prix public barré (STRIKE color)
+  - Quote PDF : didDrawCell étendu à toutes les colonnes (column.index >= 0 au lieu de >= 1)
+  - QuotesTab submitAcompte() : envoi email notification à parisb2b@gmail.com avec détails
+    (devis, client, montant, type compte) — silencieux en cas d'échec
+
+FICHIERS :
+  client/src/features/pdf/templates/invoice-pdf.ts (totaux réécrits + didDrawCell)
+  client/src/features/pdf/templates/quote-pdf.ts (didDrawCell toutes colonnes)
+  client/src/features/account/tabs/QuotesTab.tsx (sendEmail admin notification)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.8-acomptes-pdf-roles
 TYPE : fix
 DESCRIPTION : Encaisser acompte fix + PDF facture/devis structure + roles partenaires + message 3eme acompte
