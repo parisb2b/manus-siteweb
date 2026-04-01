@@ -58,17 +58,28 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
 
   try {
     const { data, error } = await supabase.functions.invoke("send-email", {
-      body: payload,
+      body: {
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html || undefined,
+        body: payload.body || undefined,
+      },
     });
 
     if (error) {
-      console.warn("[notifications] Erreur Edge Function:", error.message);
+      // supabase-js wraps non-2xx as error but the function may have worked
+      // Check if it's a FunctionsHttpError with a response body
+      console.warn("[notifications] Edge Function réponse:", error.message, data);
+      // If data contains success, the email was sent despite the "error"
+      if (data?.success) return true;
       return false;
     }
 
-    return data?.success === true;
+    // data peut être un string JSON ou un objet
+    const result = typeof data === "string" ? JSON.parse(data) : data;
+    return result?.success === true;
   } catch (err) {
-    console.warn("[notifications] Edge Function non disponible:", err);
+    console.warn("[notifications] Erreur envoi:", err);
     return false;
   }
 }

@@ -309,15 +309,20 @@ export default function AdminQuotes() {
 
   const envoyerDocument = async (q: Quote, typeDoc: string, numDoc: string) => {
     setSaving("email_" + q.id);
-    const ok = await sendDocumentNotification({
-      email: q.email, nomClient: q.nom,
-      typeDocument: typeDoc, numeroDocument: numDoc,
-    });
+    let ok = false;
+    try {
+      ok = await sendDocumentNotification({
+        email: q.email, nomClient: q.nom,
+        typeDocument: typeDoc, numeroDocument: numDoc,
+      });
+    } catch (err) {
+      console.warn("[envoyerDocument] erreur:", err);
+    }
     setSaving(null);
     if (ok) {
       setVipMsg((prev) => ({ ...prev, [q.id]: `✉ ${typeDoc} ${numDoc} envoyé à ${q.email}` }));
     } else {
-      setVipMsg((prev) => ({ ...prev, [q.id]: `⚠ Envoi non disponible (configurer Edge Function "send-email")` }));
+      setVipMsg((prev) => ({ ...prev, [q.id]: `⚠ Erreur envoi email — vérifier console pour détails` }));
     }
     setTimeout(() => setVipMsg((prev) => { const n = { ...prev }; delete n[q.id]; return n; }), 5000);
   };

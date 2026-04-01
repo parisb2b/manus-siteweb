@@ -94,6 +94,24 @@ HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
+TAG : v5.5-fix-email-boutons
+TYPE : fix
+DESCRIPTION : Suppression warning email, robustesse sendEmail, boutons PDF uniformes
+
+MODIFICATIONS :
+  - notifications.ts : sendEmail robustifié (parsing JSON flexible, gestion erreur gracieuse)
+  - AdminQuotes.tsx : message erreur plus clair (plus de "Envoi non disponible")
+  - Vérification : tous les documents ont bien [PDF] + [→ Client]
+  - Zéro occurrence de "Générer" restante dans le code
+
+FICHIERS :
+  client/src/lib/notifications.ts (sendEmail robustifié)
+  client/src/pages/admin/AdminQuotes.tsx (envoyerDocument amélioré)
+
+PUBLIÉ : 97import.com ✅
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-01
 TAG : v5.4-email-notifications
 TYPE : feat
 DESCRIPTION : Edge Function send-email + notifications automatiques GDF
