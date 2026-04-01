@@ -1,0 +1,8 @@
+project_id = "gdqdbgonndmnauyetvht"
+
+[api]
+enabled = true
+port = 54321
+
+[functions.send-email]
+verify_jwt = false

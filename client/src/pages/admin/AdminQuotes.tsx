@@ -9,7 +9,7 @@ import { generateCommissionPDF, type CommissionData } from "@/features/pdf/templ
 import { generateFeesPDF, type FeesData } from "@/features/pdf/templates/fees-pdf";
 import { generateDeliveryNotePDF, type DeliveryNoteData } from "@/features/pdf/templates/delivery-note-pdf";
 import { generateSuiviAchatsExcel, type SuiviAchatRow } from "@/features/excel/suivi-achats";
-import { sendDocumentNotification } from "@/lib/notifications";
+import { sendDocumentNotification, sendAcompteNotification } from "@/lib/notifications";
 // Calcul commission depuis source unique features/pricing
 import { prixPartenaire as calcPrixPartenaire } from "@/features/pricing/model/pricing";
 // Design system admin
@@ -220,6 +220,13 @@ export default function AdminQuotes() {
     });
     await supabase.from("quotes").update({ facture_generee: true }).eq("id", q.id);
     downloadBlob(blob, `Facture_${factureNum}.pdf`);
+    // Notification email automatique
+    if (q.email && typeFacture === "acompte") {
+      sendAcompteNotification({
+        email: q.email, nomClient: q.nom || "Client",
+        montant, numeroDevis: q.numero_devis || q.id.slice(0, 8),
+      }).catch(() => {});
+    }
     setSaving(null);
     await load();
   };
