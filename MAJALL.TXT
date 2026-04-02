@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Derni\u00E8re mise \u00E0 jour : 2026-04-01
+Dernière mise à jour : 2026-04-02
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,23 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-02
+TAG : v5.11-fix-admin-auth-enrichproduits
+TYPE : fix
+DESCRIPTION : Réparation connexion admin + isolation auth + enrichProduits activé sur PDFs
+
+MODIFICATIONS :
+  - AdminLayout : suppression useAuth(), auth directe via supabaseAdmin.auth.getSession/onAuthStateChange
+  - AdminLayout : signOut nettoie l'état local (setUser/setProfile null) avant supabase.auth.signOut
+  - Sessions 100% isolées : client storageKey ≠ admin storageKey, AuthContext ne pollue plus admin
+  - enrichProduits() désormais appelé avant chaque génération PDF (buildDevisData + buildFactureData async)
+  - reference_interne et numero_interne récupérés via jointure products table
+
+FICHIERS :
+  client/src/pages/admin/AdminLayout.tsx (auth directe supabaseAdmin, signOut propre)
+  client/src/pages/admin/AdminQuotes.tsx (buildDevisData/buildFactureData async + await enrichProduits)
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-01
