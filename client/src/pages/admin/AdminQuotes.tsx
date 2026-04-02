@@ -106,11 +106,12 @@ async function enrichProduits(produits: any[]): Promise<any[]> {
   });
 }
 
-function buildDevisData(q: Quote): DevisData {
+async function buildDevisData(q: Quote): Promise<DevisData> {
+  const enriched = await enrichProduits(q.produits || []);
   const today = new Date(q.created_at).toLocaleDateString("fr-FR", {
     day: "2-digit", month: "long", year: "numeric",
   });
-  const lignes = (q.produits || []).map((p: any) => ({
+  const lignes = enriched.map((p: any) => ({
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
     prixPublic: p.prix_public ?? p.prixPublic ?? (p.prix_achat ? p.prix_achat * 2 : 0),
@@ -136,10 +137,11 @@ function buildDevisData(q: Quote): DevisData {
   };
 }
 
-function buildFactureData(q: Quote): FactureData {
+async function buildFactureData(q: Quote): Promise<FactureData> {
+  const enriched = await enrichProduits(q.produits || []);
   const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
   const dateDevis = new Date(q.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
-  const lignes = (q.produits || []).map((p: any) => ({
+  const lignes = enriched.map((p: any) => ({
     nom: p.nom || p.name || p.id,
     prixUnitaire: p.prixAffiche ?? p.prixUnitaire ?? 0,
     prixPublic: p.prix_public ?? p.prixPublic ?? (p.prix_achat ? p.prix_achat * 2 : 0),
@@ -254,7 +256,7 @@ export default function AdminQuotes() {
       const totalAcomptes = (existingInv || []).reduce((s: number, inv: any) => s + (inv.montant_ht ?? 0), 0);
       montant = Math.max(0, totalHT - totalAcomptes);
     }
-    const factureData = buildFactureData(q);
+    const factureData = await buildFactureData(q);
     factureData.numeroFacture = factureNum;
     factureData.totalHT = montant;
     const blob = generateFacturePDF(factureData);
@@ -795,7 +797,7 @@ export default function AdminQuotes() {
                                               solde_restant: newSolde,
                                             }).eq("id", q.id);
                                             // Générer facture cumulative
-                                            const factData = buildFactureData({ ...q, acomptes: updated } as any);
+                                            const factData = await buildFactureData({ ...q, acomptes: updated } as any);
                                             factData.acomptes = updated.filter((x: any) => x.statut === "encaisse" || x.statut === "valide").map((x: any, i: number) => ({
                                               numero: x.numero ?? i + 1,
                                               montant: Number(x.montant || 0),
@@ -832,8 +834,8 @@ export default function AdminQuotes() {
                                           }
                                         : undefined
                                     }
-                                    onPdf={() => {
-                                      const factData = buildFactureData({ ...q, acomptes } as any);
+                                    onPdf={async () => {
+                                      const factData = await buildFactureData({ ...q, acomptes } as any);
                                       factData.acomptes = acomptes.filter((x: any) => x.statut === "encaisse" || x.statut === "valide").map((x: any, i: number) => ({
                                         numero: x.numero ?? i + 1,
                                         montant: Number(x.montant || 0),
@@ -1004,7 +1006,7 @@ export default function AdminQuotes() {
                             </div>
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button
-                                onClick={() => downloadBlob(generateDevisPDF(buildDevisData(q)), `Devis_${devisNum}.pdf`)}
+                                onClick={async () => downloadBlob(generateDevisPDF(await buildDevisData(q)), `Devis_${devisNum}.pdf`)}
                                 style={docBtnStyle(ADMIN_COLORS.infoBtn)}
                               >
                                 PDF
@@ -1044,8 +1046,8 @@ export default function AdminQuotes() {
                             </div>
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button
-                                onClick={() => {
-                                  const fd = buildFactureData(q);
+                                onClick={async () => {
+                                  const fd = await buildFactureData(q);
                                   downloadBlob(generateFacturePDF(fd), `Facture_${factureNum}.pdf`);
                                 }}
                                 style={docBtnStyle('#166534')}
