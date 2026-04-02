@@ -28,8 +28,8 @@ import AdminPartenaires from "./AdminPartenaires";
 import AdminSuiviAchats from "./AdminSuiviAchats";
 import AdminParametres from "./AdminParametres";
 import AdminContenu from "./AdminContenu";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 interface NavItem {
   label: string;
@@ -76,11 +76,43 @@ function groupBySection(items: NavItem[]): NavSection[] {
 
 export default function AdminLayout() {
   const [location, setLocation] = useLocation();
-  const { user, profile, loading: authLoading } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<{ role?: string; email?: string } | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [publishState, setPublishState] = useState<"idle" | "confirm" | "publishing" | "success" | "error">("idle");
   const [publishError, setPublishError] = useState("");
+
+  // Admin auth — reads from supabaseAdmin (storageKey 97import-admin-auth)
+  useEffect(() => {
+    if (!supabase) { setAuthLoading(false); return; }
+
+    const loadingTimeout = setTimeout(() => setAuthLoading(false), 3000);
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(loadingTimeout);
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      if (session?.user) {
+        const { data } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
+        setProfile(data);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      if (session?.user) {
+        const { data } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
+        setProfile(data);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => { clearTimeout(loadingTimeout); subscription.unsubscribe(); };
+  }, []);
 
   // Auth guard — redirect to /admin login if not authenticated
   useEffect(() => {
