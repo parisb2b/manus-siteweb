@@ -160,6 +160,8 @@ export default function AdminLayout() {
   });
 
   const handleLogout = async () => {
+    setUser(null);
+    setProfile(null);
     if (supabase) await supabase.auth.signOut();
     setLocation("/admin");
   };
