@@ -6,16 +6,16 @@ import AdminTable, { type Column } from "@/components/admin/AdminTable";
 import AdminBadge from "@/components/admin/AdminBadge";
 import { formatEur } from "@/utils/calculPrix";
 
+// Colonnes réelles de la table partners
 interface Partner {
   id: string;
   nom: string;
   email: string;
   telephone?: string;
-  code_partenaire: string;
-  commission_rate?: number;
-  statut?: string;
+  user_id?: string;
+  actif: boolean;
   created_at: string;
-  // enrichi
+  // enrichi côté client depuis quotes
   total_devis?: number;
   total_commissions?: number;
 }
@@ -55,7 +55,7 @@ export default function AdminPartenaires() {
     setError(null);
 
     const result = await adminQuery<Partner>("partners", {
-      select: "id, nom, email, telephone, code_partenaire, commission_rate, statut, created_at",
+      select: "id, nom, email, telephone, user_id, actif, created_at",
       order: { column: "created_at", ascending: false },
     });
 
@@ -65,20 +65,26 @@ export default function AdminPartenaires() {
       return;
     }
 
-    // Enrichir avec les données de devis
+    // Enrichir avec les données de devis (commissions depuis quotes)
     const enriched = await Promise.all(
       result.data.map(async (p) => {
-        const qResult = await adminQuery<{ total: number }>("quotes", {
-          select: "total",
-          eq: { partenaire_code: p.code_partenaire },
+        const qResult = await adminQuery<{
+          prix_total_calcule: number;
+          commission_montant: number;
+          commission_payee: boolean;
+        }>("quotes", {
+          select: "id, prix_total_calcule, commission_montant, commission_payee",
+          eq: { partenaire_id: p.id },
         });
         const totalDevis = qResult.count;
-        const totalCA = qResult.data.reduce((sum, q) => sum + (q.total || 0), 0);
-        const commissionRate = p.commission_rate || 0;
+        const totalCommissions = qResult.data.reduce(
+          (sum, q) => sum + (q.commission_montant || 0),
+          0
+        );
         return {
           ...p,
           total_devis: totalDevis,
-          total_commissions: totalCA * (commissionRate / 100),
+          total_commissions: totalCommissions,
         };
       })
     );
@@ -91,17 +97,16 @@ export default function AdminPartenaires() {
     loadPartners();
   }, [loadPartners]);
 
-  const toggleStatut = async (id: string, currentStatut: string) => {
-    const newStatut = currentStatut === "actif" ? "inactif" : "actif";
-    const { error } = await adminUpdate("partners", id, { statut: newStatut });
+  const toggleActif = async (id: string, currentActif: boolean) => {
+    const { error } = await adminUpdate("partners", id, { actif: !currentActif });
     if (!error) {
       setPartners((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, statut: newStatut } : p))
+        prev.map((p) => (p.id === id ? { ...p, actif: !currentActif } : p))
       );
     }
   };
 
-  const actifs = partners.filter((p) => p.statut !== "inactif").length;
+  const actifs = partners.filter((p) => p.actif).length;
   const totalDevis = partners.reduce((s, p) => s + (p.total_devis || 0), 0);
   const totalComm = partners.reduce((s, p) => s + (p.total_commissions || 0), 0);
 
@@ -117,9 +122,9 @@ export default function AdminPartenaires() {
       ),
     },
     {
-      key: "code_partenaire",
-      label: "Code",
-      render: (p) => <span className="font-mono text-sm text-[#1E3A5F]">{p.code_partenaire}</span>,
+      key: "telephone",
+      label: "Téléphone",
+      render: (p) => <span className="text-gray-600">{p.telephone || "—"}</span>,
     },
     {
       key: "total_devis",
@@ -128,23 +133,17 @@ export default function AdminPartenaires() {
       render: (p) => <span className="font-semibold">{p.total_devis || 0}</span>,
     },
     {
-      key: "commission_rate",
-      label: "Commission %",
-      className: "text-center",
-      render: (p) => <span>{p.commission_rate || 0}%</span>,
-    },
-    {
       key: "total_commissions",
-      label: "Total comm.",
+      label: "Commissions",
       className: "text-right",
       render: (p) => (
         <span className="font-semibold">{formatEur(p.total_commissions || 0)}</span>
       ),
     },
     {
-      key: "statut",
+      key: "actif",
       label: "Statut",
-      render: (p) => <AdminBadge status={p.statut || "actif"} />,
+      render: (p) => <AdminBadge status={p.actif ? "actif" : "inactif"} />,
     },
     {
       key: "actions",
@@ -152,11 +151,11 @@ export default function AdminPartenaires() {
       render: (p) => (
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => toggleStatut(p.id, p.statut || "actif")}
-            title={p.statut === "actif" ? "Désactiver" : "Activer"}
+            onClick={() => toggleActif(p.id, p.actif)}
+            title={p.actif ? "Désactiver" : "Activer"}
             className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           >
-            {p.statut === "actif" || !p.statut ? (
+            {p.actif ? (
               <ToggleRight className="w-4 h-4 text-emerald-500" />
             ) : (
               <ToggleLeft className="w-4 h-4 text-gray-400" />

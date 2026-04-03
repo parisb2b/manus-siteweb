@@ -1,27 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { Users, Search, ArrowUpCircle } from "lucide-react";
+import { Search, ArrowUpCircle } from "lucide-react";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminTable, { type Column } from "@/components/admin/AdminTable";
 import AdminBadge from "@/components/admin/AdminBadge";
 
-interface UserProfile {
+// Colonnes réelles de la table profiles
+interface Profile {
   id: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
-  nom?: string;
-  prenom?: string;
+  phone?: string;
   role: string;
-  ile?: string;
-  telephone?: string;
   created_at: string;
+  ville_facturation?: string;
+  pays_facturation?: string;
+  // enrichi côté client
   quotes_count?: number;
   last_quote_date?: string;
 }
 
 export default function AdminUsers() {
   const [, setLocation] = useLocation();
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -31,8 +34,8 @@ export default function AdminUsers() {
     setLoading(true);
     setError(null);
 
-    const result = await adminQuery<UserProfile>("profiles", {
-      select: "id, email, nom, prenom, role, ile, telephone, created_at",
+    const result = await adminQuery<Profile>("profiles", {
+      select: "id, first_name, last_name, email, phone, role, created_at, ville_facturation, pays_facturation",
       order: { column: "created_at", ascending: false },
     });
 
@@ -42,7 +45,7 @@ export default function AdminUsers() {
       return;
     }
 
-    // Enrichir avec les infos devis (count + dernière date)
+    // Enrichir avec le count devis par email
     const enriched = await Promise.all(
       result.data.map(async (u) => {
         const qResult = await adminQuery("quotes", {
@@ -76,32 +79,37 @@ export default function AdminUsers() {
     }
   };
 
+  const getDisplayName = (u: Profile) => {
+    const name = [u.first_name, u.last_name].filter(Boolean).join(" ").trim();
+    return name || u.email;
+  };
+
   const filtered = search
     ? users.filter(
         (u) =>
           u.email?.toLowerCase().includes(search.toLowerCase()) ||
-          u.nom?.toLowerCase().includes(search.toLowerCase()) ||
-          u.prenom?.toLowerCase().includes(search.toLowerCase())
+          u.first_name?.toLowerCase().includes(search.toLowerCase()) ||
+          u.last_name?.toLowerCase().includes(search.toLowerCase())
       )
     : users;
 
-  const columns: Column<UserProfile>[] = [
+  const columns: Column<Profile>[] = [
     {
       key: "nom",
       label: "Nom",
       render: (u) => (
         <div>
-          <div className="font-medium text-gray-800">
-            {[u.prenom, u.nom].filter(Boolean).join(" ") || "—"}
-          </div>
-          <div className="text-xs text-gray-400">{u.email}</div>
+          <div className="font-medium text-gray-800">{getDisplayName(u)}</div>
+          {(u.first_name || u.last_name) && (
+            <div className="text-xs text-gray-400">{u.email}</div>
+          )}
         </div>
       ),
     },
     {
-      key: "ile",
-      label: "Île",
-      render: (u) => <span className="text-gray-600">{u.ile || "—"}</span>,
+      key: "ville",
+      label: "Ville",
+      render: (u) => <span className="text-gray-600">{u.ville_facturation || "—"}</span>,
     },
     {
       key: "role",
@@ -170,7 +178,7 @@ export default function AdminUsers() {
         />
       </div>
 
-      <AdminTable<UserProfile>
+      <AdminTable<Profile>
         columns={columns}
         data={filtered}
         loading={loading}

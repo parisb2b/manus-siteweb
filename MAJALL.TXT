@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v6.0)
+Dernière mise à jour : 2026-04-03 (v6.1)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,22 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v6.1-fix-colonnes-toutes-pages
+TYPE : fix
+DESCRIPTION : Correction colonnes réelles pour TOUTES les pages admin
+
+CORRIGÉS :
+  AdminUsers — first_name/last_name/phone/ville_facturation/pays_facturation (plus de nom/prenom/ile)
+  AdminPartenaires — actif (boolean) au lieu de code_partenaire/commission_rate/statut
+    → commissions enrichies depuis quotes.commission_montant
+  AdminProducts — images (JSON), reference, actif (boolean) au lieu de stock/image_url/prix_public
+    → prix_public calculé JS (prix_achat × 2), toggle actif/inactif ajouté
+
+AJOUTÉ :
+  scripts/fix-rls-v2.sql — script RLS complet avec ENABLE RLS + policies toutes tables
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03

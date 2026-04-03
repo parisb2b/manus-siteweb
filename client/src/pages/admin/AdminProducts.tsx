@@ -1,20 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Package, Search, Check, X, Pencil } from "lucide-react";
-import { adminQuery, adminUpdate, adminDelete } from "@/lib/adminQuery";
+import { Search, Check, X, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
+import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminTable, { type Column } from "@/components/admin/AdminTable";
 import { formatEur } from "@/utils/calculPrix";
+import AdminBadge from "@/components/admin/AdminBadge";
 
+// Colonnes réelles de la table products
 interface Product {
   id: string;
-  nom: string;
   categorie?: string;
-  prix_achat?: number;
-  prix_public?: number;
+  nom: string;
+  reference?: string;
   numero_interne?: string;
-  stock?: number;
-  image_url?: string;
+  description?: string;
+  prix_achat?: number;
+  actif: boolean;
+  images?: any; // JSON array
   created_at: string;
+  updated_at?: string;
 }
 
 // ── Editable Cell ──────────────────────────────────────────
@@ -85,6 +89,19 @@ function EditableRefCell({
   );
 }
 
+// Helper pour extraire la première image du JSON images
+function getFirstImage(images: any): string | null {
+  try {
+    const arr = typeof images === "string" ? JSON.parse(images) : images;
+    if (Array.isArray(arr) && arr.length > 0) {
+      return typeof arr[0] === "string" ? arr[0] : arr[0]?.url || arr[0]?.src || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +115,7 @@ export default function AdminProducts() {
     setError(null);
 
     const result = await adminQuery<Product>("products", {
-      select: "id, nom, categorie, prix_achat, prix_public, numero_interne, stock, image_url, created_at",
+      select: "id, categorie, nom, reference, numero_interne, description, prix_achat, actif, images, created_at, updated_at",
       order: { column: "nom", ascending: true },
     });
 
@@ -124,11 +141,12 @@ export default function AdminProducts() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer ce produit ?")) return;
-    const { error } = await adminDelete("products", id);
+  const toggleActif = async (id: string, currentActif: boolean) => {
+    const { error } = await adminUpdate("products", id, { actif: !currentActif });
     if (!error) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, actif: !currentActif } : p))
+      );
     }
   };
 
@@ -137,6 +155,7 @@ export default function AdminProducts() {
         (p) =>
           p.nom?.toLowerCase().includes(search.toLowerCase()) ||
           p.numero_interne?.toLowerCase().includes(search.toLowerCase()) ||
+          p.reference?.toLowerCase().includes(search.toLowerCase()) ||
           p.categorie?.toLowerCase().includes(search.toLowerCase())
       )
     : products;
@@ -155,14 +174,22 @@ export default function AdminProducts() {
     {
       key: "nom",
       label: "Nom",
-      render: (p) => (
-        <div className="flex items-center gap-3">
-          {p.image_url && (
-            <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
-          )}
-          <span className="font-medium text-gray-800">{p.nom}</span>
-        </div>
-      ),
+      render: (p) => {
+        const img = getFirstImage(p.images);
+        return (
+          <div className="flex items-center gap-3">
+            {img && (
+              <img src={img} alt="" className="w-10 h-10 rounded-lg object-cover" />
+            )}
+            <div>
+              <span className="font-medium text-gray-800">{p.nom}</span>
+              {p.reference && (
+                <div className="text-xs text-gray-400">Réf: {p.reference}</div>
+              )}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: "categorie",
@@ -181,23 +208,18 @@ export default function AdminProducts() {
     },
     {
       key: "prix_public",
-      label: "Prix public (x2)",
+      label: "Prix public (×2)",
       className: "text-right",
       render: (p) => (
         <span className="font-semibold">
-          {p.prix_achat ? formatEur(p.prix_achat * 2) : p.prix_public ? formatEur(p.prix_public) : "—"}
+          {p.prix_achat ? formatEur(p.prix_achat * 2) : "—"}
         </span>
       ),
     },
     {
-      key: "stock",
-      label: "Stock",
-      className: "text-center",
-      render: (p) => (
-        <span className={`font-semibold ${(p.stock || 0) <= 0 ? "text-red-500" : "text-gray-700"}`}>
-          {p.stock ?? "—"}
-        </span>
-      ),
+      key: "actif",
+      label: "Statut",
+      render: (p) => <AdminBadge status={p.actif ? "actif" : "inactif"} />,
     },
     {
       key: "actions",
@@ -205,11 +227,15 @@ export default function AdminProducts() {
       render: (p) => (
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => handleDelete(p.id)}
-            title="Supprimer"
-            className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+            onClick={() => toggleActif(p.id, p.actif)}
+            title={p.actif ? "Désactiver" : "Activer"}
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           >
-            <X className="w-4 h-4" />
+            {p.actif ? (
+              <ToggleRight className="w-4 h-4 text-emerald-500" />
+            ) : (
+              <ToggleLeft className="w-4 h-4 text-gray-400" />
+            )}
           </button>
         </div>
       ),
