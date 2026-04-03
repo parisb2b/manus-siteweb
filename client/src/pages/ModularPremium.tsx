@@ -49,8 +49,8 @@ const OPTIONS = [
 ];
 
 const GALLERY = [
-  { type: "video" as const, src: "/images/products/modular_premium/video_1.mov", alt: "Visite Virtuelle Premium 1" },
-  { type: "video" as const, src: "/images/products/modular_premium/video_2.mov", alt: "Visite Virtuelle Premium 2" },
+  { type: "video" as const, src: "/images/products/modular_premium/video_1.mp4", alt: "Visite Virtuelle Premium 1" },
+  { type: "video" as const, src: "/images/products/modular_premium/video_2.mp4", alt: "Visite Virtuelle Premium 2" },
   { type: "image" as const, src: "/images/products/modular_premium/exterior_1.jpg", alt: "Vue Extérieure 1" },
   { type: "image" as const, src: "/images/products/modular_premium/exterior_2.jpg", alt: "Vue Extérieure 2" },
   { type: "image" as const, src: "/images/products/modular_premium/exterior_3.jpg", alt: "Vue Extérieure 3" },

@@ -68,8 +68,8 @@ const DESTINATIONS = [
 // Media array for Carousel: Videos first, then Exterior images
 const IMAGES = [
   // Videos
-  { type: 'video', src: '/images/products/modular_standard/video_2.mov', alt: 'Visite vidéo 2' },
-  { type: 'video', src: '/images/products/modular_standard/video_3.mov', alt: 'Visite vidéo 3' },
+  { type: 'video', src: '/images/products/modular_standard/video_2.mp4', alt: 'Visite vidéo 2' },
+  { type: 'video', src: '/images/products/modular_standard/video_3.mp4', alt: 'Visite vidéo 3' },
   // Exterior Images
   { type: 'image', src: '/images/products/modular_standard/exterior_1.jpeg', alt: 'Maison Modulaire Extérieur 1' },
   { type: 'image', src: '/images/products/modular_standard/exterior_2.jpeg', alt: 'Maison Modulaire Extérieur 2' },

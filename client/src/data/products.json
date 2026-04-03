@@ -843,12 +843,12 @@
     "gallery": [
       {
         "type": "video",
-        "src": "/images/products/modular_standard/video_2.mov",
+        "src": "/images/products/modular_standard/video_2.mp4",
         "alt": "Visite vidéo 2"
       },
       {
         "type": "video",
-        "src": "/images/products/modular_standard/video_3.mov",
+        "src": "/images/products/modular_standard/video_3.mp4",
         "alt": "Visite vidéo 3"
       },
       {
@@ -1033,12 +1033,12 @@
     "gallery": [
       {
         "type": "video",
-        "src": "/images/products/modular_premium/video_1.mov",
+        "src": "/images/products/modular_premium/video_1.mp4",
         "alt": "Visite Virtuelle Premium 1"
       },
       {
         "type": "video",
-        "src": "/images/products/modular_premium/video_2.mov",
+        "src": "/images/products/modular_premium/video_2.mp4",
         "alt": "Visite Virtuelle Premium 2"
       },
       {
