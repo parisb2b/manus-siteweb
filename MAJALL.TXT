@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-02
+Dernière mise à jour : 2026-04-03
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,29 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v5.12-robustesse-backoffice-nc
+TYPE : fix + feat
+DESCRIPTION : Chargement infini back-office corrigé + bouton NC (Non Conforme)
+
+MODIFICATIONS :
+  - AdminQuotes/AdminPartenaires/AdminSuiviAchats/AdminProducts : try/catch sur toutes les requêtes Supabase
+  - Toutes les fonctions load() garantissent setLoading(false) même en cas d'erreur (finally)
+  - Messages d'erreur explicites + bouton Réessayer si requête Supabase échoue
+  - AdminDashboard : catch ajouté sur Promise.all
+  - Nouveau statut 'non_conforme' : type Statut, STATUT_LABELS, filtre barre statut
+  - Badge NC rouge foncé #991B1B dans BadgeStatut (AdminUI.tsx)
+  - Bouton NC rapide sur chaque ligne devis (1 clic → update statut)
+
+FICHIERS :
+  client/src/pages/admin/AdminQuotes.tsx (try/catch load, loadError, NC statut+bouton+filtre)
+  client/src/pages/admin/AdminPartenaires.tsx (try/catch load, loadError)
+  client/src/pages/admin/AdminSuiviAchats.tsx (try/catch load, loadError)
+  client/src/pages/admin/AdminProducts.tsx (try/catch loadSupabaseProds, supabaseError)
+  client/src/pages/admin/AdminDashboard.tsx (catch sur Promise.all)
+  client/src/components/admin/AdminUI.tsx (badge non_conforme)
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-02
