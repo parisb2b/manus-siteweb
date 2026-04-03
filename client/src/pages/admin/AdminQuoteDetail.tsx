@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { useLocation, useParams } from "wouter";
+import { useLocation } from "wouter";
 import {
   ArrowLeft, FileText, Download, CheckCircle2, XCircle,
-  Mail, Plus, Loader2, AlertCircle
+  Mail, Plus, Loader2, AlertCircle, ArrowUpCircle, Save
 } from "lucide-react";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminBadge from "@/components/admin/AdminBadge";
 import { formatEur } from "@/utils/calculPrix";
 import {
-  getProduitPrincipal, getProduitsList, getAcompteList,
+  getProduitsList, getAcompteList,
   getAcompteMontant, getAcompteStatut
 } from "@/lib/quoteHelpers";
 
@@ -39,26 +39,56 @@ interface QuoteDetail {
   pdf_url?: string;
   invoice_number?: string;
   commission_montant?: number;
+  commission_payee?: boolean;
+  commission_pdf_url?: string;
+  signature_client?: string;
+  signe_le?: string;
+  facture_generee?: boolean;
   created_at: string;
   updated_at?: string;
 }
 
+interface PartnerOption {
+  id: string;
+  nom: string;
+}
+
 export default function AdminQuoteDetail() {
-  const params = useParams<{ id: string }>();
-  const [, setLocation] = useLocation();
+  // ⚠️ useParams ne fonctionne pas ici car le composant est rendu
+  // directement par AdminLayout, pas via <Route path="/admin/devis/:id">
+  // → On extrait l'id depuis l'URL
+  const [location, setLocation] = useLocation();
+  const id = location.match(/\/admin\/devis\/([a-f0-9-]+)/i)?.[1] || null;
+
   const [quote, setQuote] = useState<QuoteDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [newAcompteMontant, setNewAcompteMontant] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Client profile (role badge + VIP upgrade)
+  const [clientRole, setClientRole] = useState<string | null>(null);
+
+  // Partners dropdown
+  const [partners, setPartners] = useState<PartnerOption[]>([]);
+
+  // Notes admin éditable
+  const [notesAdmin, setNotesAdmin] = useState("");
+  const [notesChanged, setNotesChanged] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const loadQuote = async () => {
-    if (!params.id) return;
+    if (!id) return;
     setLoading(true);
     setError(null);
     const result = await adminQuery<QuoteDetail>("quotes", {
       select: "*",
-      eq: { id: params.id },
+      eq: { id },
       limit: 1,
     });
     if (result.error) {
@@ -66,20 +96,96 @@ export default function AdminQuoteDetail() {
     } else if (result.data.length === 0) {
       setError("Devis introuvable");
     } else {
-      setQuote(result.data[0]);
+      const q = result.data[0];
+      setQuote(q);
+      setNotesAdmin(q.notes_admin || "");
+      setNotesChanged(false);
+
+      // Charger le rôle client depuis profiles
+      if (q.email) {
+        const profileResult = await adminQuery<{ role: string }>("profiles", {
+          select: "role",
+          eq: { email: q.email },
+          limit: 1,
+        });
+        if (profileResult.data.length > 0) {
+          setClientRole(profileResult.data[0].role);
+        }
+      }
     }
     setLoading(false);
   };
 
+  const loadPartners = async () => {
+    const result = await adminQuery<PartnerOption>("partners", {
+      select: "id, nom",
+      eq: { actif: true },
+      order: { column: "nom", ascending: true },
+    });
+    setPartners(result.data);
+  };
+
   useEffect(() => {
     loadQuote();
-  }, [params.id]);
+    loadPartners();
+  }, [id]);
 
   const handleUpdateStatut = async (statut: string) => {
     if (!quote) return;
     setSaving(true);
     await adminUpdate("quotes", quote.id, { statut });
     setQuote((prev) => (prev ? { ...prev, statut } : prev));
+    setSaving(false);
+    showToast(`Statut → ${statut}`);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!quote) return;
+    setSaving(true);
+    const { error } = await adminUpdate("quotes", quote.id, { notes_admin: notesAdmin });
+    if (!error) {
+      setQuote((prev) => (prev ? { ...prev, notes_admin: notesAdmin } : prev));
+      setNotesChanged(false);
+      showToast("Notes sauvegardées");
+    }
+    setSaving(false);
+  };
+
+  const handleChangePartner = async (partnerId: string) => {
+    if (!quote) return;
+    setSaving(true);
+    const updates: Record<string, any> = {
+      partenaire_id: partnerId || null,
+      partner_id: partnerId || null,
+    };
+    // Trouver le nom du partenaire pour partenaire_code
+    const partner = partners.find((p) => p.id === partnerId);
+    updates.partenaire_code = partner?.nom || null;
+
+    await adminUpdate("quotes", quote.id, updates);
+    setQuote((prev) =>
+      prev
+        ? { ...prev, partenaire_id: partnerId || undefined, partner_id: partnerId || undefined, partenaire_code: partner?.nom || undefined }
+        : prev
+    );
+    setSaving(false);
+    showToast(partnerId ? `Partenaire : ${partner?.nom}` : "Partenaire retiré");
+  };
+
+  const handleUpgradeVIP = async () => {
+    if (!quote?.email) return;
+    setSaving(true);
+    // Trouver le profile par email et mettre à jour
+    const profileResult = await adminQuery<{ id: string }>("profiles", {
+      select: "id",
+      eq: { email: quote.email },
+      limit: 1,
+    });
+    if (profileResult.data.length > 0) {
+      await adminUpdate("profiles", profileResult.data[0].id, { role: "vip" });
+      setClientRole("vip");
+      showToast("Client passé en VIP");
+    }
     setSaving(false);
   };
 
@@ -104,6 +210,7 @@ export default function AdminQuoteDetail() {
       prev ? { ...prev, acomptes: list, total_encaisse: totalEncaisse, solde_restant: soldeRestant } : prev
     );
     setSaving(false);
+    showToast("Acompte encaissé");
   };
 
   const handleAddAcompte = async () => {
@@ -132,6 +239,7 @@ export default function AdminQuoteDetail() {
     );
     setNewAcompteMontant("");
     setSaving(false);
+    showToast(`Acompte ${formatEur(montant)} ajouté`);
   };
 
   if (loading) {
@@ -161,12 +269,19 @@ export default function AdminQuoteDetail() {
   const totalEncaisse = quote.total_encaisse || getAcompteMontant(quote.acomptes);
   const soldeRestant = quote.solde_restant ?? (totalTTC - totalEncaisse);
   const acompteList = getAcompteList(quote.acomptes);
-  const produits = getProduitsList(quote.produits);
   const acompteStatut = getAcompteStatut(quote.acomptes);
-  const partenaireRef = quote.partenaire_code || quote.partenaire_id || quote.partner_id;
+  const produits = getProduitsList(quote.produits);
+  const partenaireRef = quote.partenaire_id || quote.partner_id || "";
 
   return (
     <div className="space-y-6">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-lg flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" /> {toast}
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="flex items-center justify-between">
         <button
@@ -185,7 +300,7 @@ export default function AdminQuoteDetail() {
       {/* 3 colonnes info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Client */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-2">
+        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
           <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Client</h3>
           <p className="font-semibold text-gray-800">{quote.nom || "—"}</p>
           <p className="text-sm text-gray-500">{quote.email}</p>
@@ -193,21 +308,57 @@ export default function AdminQuoteDetail() {
           <p className="text-sm text-gray-500">
             {[quote.adresse_client, quote.ville_client, quote.pays_client].filter(Boolean).join(", ") || "—"}
           </p>
-          {quote.role_client && <AdminBadge status={quote.role_client} />}
+          {/* Rôle client depuis profiles */}
+          <div className="flex items-center gap-2 pt-1">
+            {clientRole && <AdminBadge status={clientRole} />}
+            {clientRole === "user" && (
+              <button
+                onClick={handleUpgradeVIP}
+                disabled={saving}
+                className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 font-medium disabled:opacity-50"
+                title="Passer en VIP"
+              >
+                <ArrowUpCircle className="w-3.5 h-3.5" /> VIP
+              </button>
+            )}
+          </div>
+          {quote.signature_client && (
+            <p className="text-xs text-emerald-600">
+              Signé le {quote.signe_le ? new Date(quote.signe_le).toLocaleDateString("fr-FR") : "—"}
+            </p>
+          )}
         </div>
 
         {/* Devis */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-2">
+        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
           <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Devis</h3>
           <p className="font-mono font-semibold text-[#1E3A5F]">{quote.numero_devis || "—"}</p>
           <p className="text-sm text-gray-500">
             Créé le {new Date(quote.created_at).toLocaleDateString("fr-FR")}
           </p>
-          {partenaireRef && (
-            <p className="text-sm text-gray-500">Partenaire : <strong>{partenaireRef}</strong></p>
-          )}
           {quote.invoice_number && (
             <p className="text-sm text-gray-500">Facture : {quote.invoice_number}</p>
+          )}
+          {/* Partenaire dropdown */}
+          <div className="pt-1">
+            <label className="text-xs text-gray-400 block mb-1">Partenaire</label>
+            <select
+              value={partenaireRef}
+              onChange={(e) => handleChangePartner(e.target.value)}
+              disabled={saving}
+              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#4A90D9] outline-none disabled:opacity-50"
+            >
+              <option value="">— Aucun —</option>
+              {partners.map((p) => (
+                <option key={p.id} value={p.id}>{p.nom}</option>
+              ))}
+            </select>
+          </div>
+          {quote.commission_montant != null && quote.commission_montant > 0 && (
+            <p className="text-xs text-gray-500">
+              Commission : {formatEur(quote.commission_montant)}
+              {quote.commission_payee ? " (payée)" : " (due)"}
+            </p>
           )}
         </div>
 
@@ -280,9 +431,35 @@ export default function AdminQuoteDetail() {
       {quote.message && (
         <div className="bg-white rounded-2xl shadow-sm p-5">
           <h3 className="font-semibold text-gray-800 mb-2">Message du client</h3>
-          <p className="text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">{quote.message}</p>
+          <p className="text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3 whitespace-pre-wrap">{quote.message}</p>
         </div>
       )}
+
+      {/* Notes admin — éditable */}
+      <div className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-800">Notes internes</h3>
+          {notesChanged && (
+            <button
+              onClick={handleSaveNotes}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 bg-[#4A90D9] hover:bg-[#357ABD] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+            >
+              <Save className="w-3.5 h-3.5" /> Sauvegarder
+            </button>
+          )}
+        </div>
+        <textarea
+          value={notesAdmin}
+          onChange={(e) => {
+            setNotesAdmin(e.target.value);
+            setNotesChanged(e.target.value !== (quote.notes_admin || ""));
+          }}
+          placeholder="Notes internes (visibles uniquement par l'admin)..."
+          rows={3}
+          className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 placeholder-amber-400 focus:ring-2 focus:ring-amber-300 outline-none resize-y"
+        />
+      </div>
 
       {/* Suivi paiements */}
       <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
@@ -343,39 +520,32 @@ export default function AdminQuoteDetail() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <DocCard
           title="Devis PDF"
-          description={quote.pdf_url ? "Télécharger" : "Générer"}
+          description={quote.pdf_url ? "Télécharger" : "Non généré"}
           icon={FileText}
-          active
+          active={!!quote.pdf_url}
           href={quote.pdf_url || undefined}
         />
         <DocCard
           title="Facture acompte"
-          description={acompteStatut === "encaisse" || acompteStatut === "valide" ? "Générer + Envoyer" : "Après encaissement"}
+          description={acompteStatut === "encaisse" || acompteStatut === "valide" ? "Disponible" : "Après encaissement"}
           icon={Download}
           active={acompteStatut === "encaisse" || acompteStatut === "valide"}
           href={quote.facture_url || undefined}
         />
         <DocCard
           title="Facture solde"
-          description={soldeRestant <= 0 && totalEncaisse > 0 ? "Générer" : `Reste : ${formatEur(soldeRestant)}`}
+          description={soldeRestant <= 0 && totalEncaisse > 0 ? "Soldé" : `Reste : ${formatEur(soldeRestant)}`}
           icon={Download}
           active={soldeRestant <= 0 && totalEncaisse > 0}
         />
         <DocCard
           title="Note commission"
-          description={partenaireRef ? `Partenaire : ${partenaireRef}` : "Pas de partenaire"}
+          description={partenaireRef ? "Partenaire lié" : "Pas de partenaire"}
           icon={FileText}
           active={!!partenaireRef}
+          href={quote.commission_pdf_url || undefined}
         />
       </div>
-
-      {/* Notes admin */}
-      {quote.notes_admin && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <h3 className="font-semibold text-amber-800 text-sm mb-1">Notes internes</h3>
-          <p className="text-sm text-amber-700">{quote.notes_admin}</p>
-        </div>
-      )}
 
       {/* Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -393,7 +563,7 @@ export default function AdminQuoteDetail() {
             value={quote.statut}
             onChange={(e) => handleUpdateStatut(e.target.value)}
             disabled={saving}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#4A90D9] outline-none"
+            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#4A90D9] outline-none disabled:opacity-50"
           >
             <option value="nouveau">Nouveau</option>
             <option value="en_cours">En cours</option>
@@ -405,7 +575,7 @@ export default function AdminQuoteDetail() {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={`mailto:${quote.email}?subject=Devis ${quote.numero_devis}`}
+            href={`mailto:${quote.email}?subject=Devis ${quote.numero_devis || ""}`}
             className="inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
           >
             <Mail className="w-4 h-4" /> Email client
