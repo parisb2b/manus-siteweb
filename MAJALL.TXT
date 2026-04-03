@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v5.13)
+Dernière mise à jour : 2026-04-03 (v5.14)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,29 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v5.14-corrections-analyse-externe
+TYPE : fix + feat
+DESCRIPTION : Corrections suite analyse externe v5.13 — 6 étapes vérifiées
+
+MODIFICATIONS :
+  ÉTAPE 1 — dist/ hors git : déjà OK (dist/ dans .gitignore, non tracké)
+  ÉTAPE 2 — DeliveryEstimator : déjà OK (gère null → "Estimation sur devis")
+  ÉTAPE 3 — PrixOuDevis rôles : déjà OK (tous les rôles couverts explicitement)
+  ÉTAPE 4 — Badge "Bientôt" /agricole : ajouté dans Header.tsx (desktop + mobile)
+            et Footer.tsx (lien Machines Agricoles)
+  ÉTAPE 5 — Options undefined panier : fallback "Option non disponible" dans
+            ModularStandard.tsx et ModularPremium.tsx (opt?.name ?? "Option non disponible")
+  ÉTAPE 6 — Images .webp : aucun fichier .webp présent dans public/images/,
+            donc aucun remplacement effectué (règle : ne jamais remplacer si .webp absent)
+
+FICHIERS :
+  client/src/components/Header.tsx (badge Bientôt desktop + mobile)
+  client/src/components/Footer.tsx (badge Bientôt Machines Agricoles)
+  client/src/pages/ModularStandard.tsx (fallback option non disponible)
+  client/src/pages/ModularPremium.tsx (fallback option non disponible)
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03
