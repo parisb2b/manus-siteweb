@@ -64,16 +64,27 @@ export default function AdminSuiviAchats() {
   const [filterPartner, setFilterPartner] = useState<string>("all");
   const [filterSearch, setFilterSearch] = useState<string>("");
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = async () => {
     if (!supabase) return;
     setLoading(true);
-    const [qRes, pRes] = await Promise.all([
-      supabase.from("quotes").select("*").order("created_at", { ascending: false }),
-      supabase.from("partners").select("id, nom, code").eq("actif", true).order("nom"),
-    ]);
-    setQuotes((qRes.data as Quote[]) ?? []);
-    setPartners((pRes.data as Partner[]) ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const [qRes, pRes] = await Promise.all([
+        supabase.from("quotes").select("*").order("created_at", { ascending: false }),
+        supabase.from("partners").select("id, nom, code").eq("actif", true).order("nom"),
+      ]);
+      if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
+      if (pRes.error) throw new Error(`partners: ${pRes.error.message}`);
+      setQuotes((qRes.data as Quote[]) ?? []);
+      setPartners((pRes.data as Partner[]) ?? []);
+    } catch (err: any) {
+      console.error("[AdminSuiviAchats] load error:", err);
+      setLoadError(err?.message ?? "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -281,6 +292,11 @@ export default function AdminSuiviAchats() {
       {/* Tableau */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[#4A90D9]" /></div>
+      ) : loadError ? (
+        <div className="text-center py-12 text-red-600 text-sm">
+          ⚠ Erreur : {loadError}
+          <br /><button onClick={load} className="mt-2 text-blue-600 underline text-sm">Réessayer</button>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-400">Aucun devis trouvé</div>
       ) : (

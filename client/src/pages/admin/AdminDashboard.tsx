@@ -80,7 +80,7 @@ export default function AdminDashboard() {
       }),
       supabase.from("quotes").select("id,nom,email,statut,created_at,prix_total_calcule").order("created_at", { ascending: false }).limit(5).then(({ data }) => setLastQuotes((data as QuoteRow[]) ?? [])),
       supabase.from("profiles").select("id,first_name,last_name,email,role,created_at").order("created_at", { ascending: false }).limit(5).then(({ data }) => setLastUsers((data as UserRow[]) ?? [])),
-    ]).finally(() => setSupabaseLoading(false));
+    ]).catch((err) => console.error("[AdminDashboard] load error:", err)).finally(() => setSupabaseLoading(false));
   }, []);
 
   const totalQuotes = Object.values(quotesByStatut).reduce((a, b) => a + b, 0);

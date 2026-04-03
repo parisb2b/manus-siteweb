@@ -70,22 +70,29 @@ export default function AdminPartenaires() {
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [selectedDevis, setSelectedDevis] = useState<Set<string>>(new Set());
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = async () => {
     if (!supabase) return;
     setLoading(true);
-    const { data: pList } = await supabase
-      .from("partners")
-      .select("*")
-      .eq("actif", true)
-      .order("created_at", { ascending: false });
-    setPartners((pList as Partner[]) ?? []);
-
-    const { data: qData } = await supabase
-      .from("quotes")
-      .select("partner_id, commission_montant, commission_payee, numero_devis, nom, prix_negocie, prix_total_calcule, statut, created_at, produits")
-      .not("partner_id", "is", null);
-    setQuotesData(qData ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const [pRes, qRes] = await Promise.all([
+        supabase.from("partners").select("*").eq("actif", true).order("created_at", { ascending: false }),
+        supabase.from("quotes")
+          .select("partner_id, commission_montant, commission_payee, numero_devis, nom, prix_negocie, prix_total_calcule, statut, created_at, produits")
+          .not("partner_id", "is", null),
+      ]);
+      if (pRes.error) throw new Error(`partners: ${pRes.error.message}`);
+      if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
+      setPartners((pRes.data as Partner[]) ?? []);
+      setQuotesData(qRes.data ?? []);
+    } catch (err: any) {
+      console.error("[AdminPartenaires] load error:", err);
+      setLoadError(err?.message ?? "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -338,6 +345,11 @@ export default function AdminPartenaires() {
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
           <Loader2 style={{ width: 28, height: 28, color: ADMIN_COLORS.navyAccent, animation: 'spin 1s linear infinite' }} />
+        </div>
+      ) : loadError ? (
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#DC2626', fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
+          ⚠ Erreur : {loadError}
+          <br /><button onClick={load} style={{ marginTop: '8px', color: ADMIN_COLORS.navyAccent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Réessayer</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

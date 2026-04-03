@@ -172,12 +172,22 @@ export default function AdminProducts() {
 
   useEffect(() => { fetchProducts(); checkBackupStatus(); }, [checkBackupStatus]);
 
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
+
   const loadSupabaseProds = useCallback(async () => {
     if (!supabase) return;
     setSupabaseLoading(true);
-    const { data } = await supabase.from("products").select("*").order("nom");
-    setSupabaseProds((data as SupabaseProduit[]) ?? []);
-    setSupabaseLoading(false);
+    setSupabaseError(null);
+    try {
+      const { data, error } = await supabase.from("products").select("*").order("nom");
+      if (error) throw new Error(error.message);
+      setSupabaseProds((data as SupabaseProduit[]) ?? []);
+    } catch (err: any) {
+      console.error("[AdminProducts] load error:", err);
+      setSupabaseError(err?.message ?? "Erreur de chargement");
+    } finally {
+      setSupabaseLoading(false);
+    }
   }, []);
 
   useEffect(() => { if (supabaseOpen) loadSupabaseProds(); }, [supabaseOpen, loadSupabaseProds]);
@@ -730,6 +740,11 @@ export default function AdminProducts() {
             <div style={{ borderTop: `0.5px solid ${ADMIN_COLORS.grayBorder}` }}>
               {supabaseLoading ? (
                 <div style={{ padding: '32px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Chargement...</div>
+              ) : supabaseError ? (
+                <div style={{ padding: '32px', textAlign: 'center', color: '#DC2626', fontSize: '12px' }}>
+                  ⚠ Erreur : {supabaseError}
+                  <br /><button onClick={loadSupabaseProds} style={{ marginTop: '8px', color: ADMIN_COLORS.navyAccent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Réessayer</button>
+                </div>
               ) : supabaseProds.length === 0 ? (
                 <div style={{ padding: '32px', textAlign: 'center', color: ADMIN_COLORS.grayText, fontSize: '12px' }}>Aucun produit dans Supabase.</div>
               ) : (

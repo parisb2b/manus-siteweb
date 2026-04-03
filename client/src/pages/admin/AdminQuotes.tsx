@@ -192,18 +192,29 @@ export default function AdminQuotes() {
   const [ddData, setDdData] = useState<Record<string, {libelle: string, montant: number}>>({});
   const [ncData, setNcData] = useState<Record<string, {prixRemise: number, prixPartenaire: number, commission: number}>>({});
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = async () => {
     if (!supabase) return;
     setLoading(true);
-    const q = supabase.from("quotes").select("*").order("created_at", { ascending: false });
-    if (filterStatut !== "tous") q.eq("statut", filterStatut);
-    const [{ data }, { data: pList }] = await Promise.all([
-      q,
-      supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom"),
-    ]);
-    setQuotes((data as Quote[]) ?? []);
-    setPartners((pList as Partner[]) ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const q = supabase.from("quotes").select("*").order("created_at", { ascending: false });
+      if (filterStatut !== "tous") q.eq("statut", filterStatut);
+      const [qRes, pRes] = await Promise.all([
+        q,
+        supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom"),
+      ]);
+      if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
+      if (pRes.error) throw new Error(`partners: ${pRes.error.message}`);
+      setQuotes((qRes.data as Quote[]) ?? []);
+      setPartners((pRes.data as Partner[]) ?? []);
+    } catch (err: any) {
+      console.error("[AdminQuotes] load error:", err);
+      setLoadError(err?.message ?? "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, [filterStatut]);
@@ -477,6 +488,11 @@ export default function AdminQuotes() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '48px 0' }}>
           <Loader2 style={{ width: 28, height: 28, animation: 'spin 1s linear infinite', color: ADMIN_COLORS.navyAccent }} />
+        </div>
+      ) : loadError ? (
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#DC2626', fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
+          ⚠ Erreur : {loadError}
+          <br /><button onClick={load} style={{ marginTop: '8px', color: ADMIN_COLORS.navyAccent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Réessayer</button>
         </div>
       ) : quotes.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', color: ADMIN_COLORS.grayText, fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
