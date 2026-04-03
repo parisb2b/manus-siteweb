@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v5.14)
+Dernière mise à jour : 2026-04-03 (v6.0)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,41 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v6.0-refonte-backoffice
+TYPE : refactor + feat
+DESCRIPTION : Refonte complète du back-office admin from scratch
+
+SUPPRIMÉS (8 composants obsolètes — doublons et spinners infinis) :
+  AdminAnalytics, AdminHeaderFooter, AdminInvoices, AdminLeads
+  AdminPages, AdminPricing, AdminShipping, AdminUI (ancien)
+
+CRÉÉS :
+  lib/adminQuery.ts — utilitaire générique avec gestion erreurs
+  components/admin/AdminTable.tsx — tableau avec skeleton + pagination
+  components/admin/AdminBadge.tsx — 20+ statuts colorés
+  components/admin/AdminPageLayout.tsx — layout standardisé
+
+RECRÉÉS FROM SCRATCH (architecture adminQuery + AdminTable) :
+  AdminDashboard — 4 KPIs indépendants (chacun son try/catch) + derniers devis
+  AdminQuotes — filtres statut temps réel + recherche + export CSV + actions
+  AdminQuoteDetail — client/devis/montants + suivi paiements + 4 docs + actions
+  AdminUsers — enrichissement devis par client + upgrade VIP
+  AdminPartenaires — KPIs + commissions + toggle actif/inactif
+  AdminProducts — réf. interne éditable inline (double-clic → input → Enter)
+  AdminContenu — éditeur JSON CMS robuste
+
+AdminLayout modifié : route /admin/devis/:id → AdminQuoteDetail
+
+CONSERVÉS INCHANGÉS : AdminLogin, AdminParametres, AdminSuiviAchats, AdminMedia
+
+RÉSULTAT :
+  - 2034 lignes ajoutées, 6796 supprimées
+  - Bundle: 1720KB (-94KB vs ancien)
+  - 0 erreurs build (2352 modules)
+  - Architecture : adminQuery → AdminTable → pages (3 couches propres)
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03
