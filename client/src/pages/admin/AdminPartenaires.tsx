@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Handshake, DollarSign, FileText, Users, ToggleLeft, ToggleRight } from "lucide-react";
+import { Handshake, DollarSign, FileText, Users, ToggleLeft, ToggleRight, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminTable, { type Column } from "@/components/admin/AdminTable";
@@ -106,6 +107,27 @@ export default function AdminPartenaires() {
     }
   };
 
+  const handleExportExcel = () => {
+    const rows = partners.map((p) => ({
+      "Nom": p.nom,
+      "Email": p.email || "—",
+      "Téléphone": p.telephone || "—",
+      "Statut": p.actif ? "Actif" : "Inactif",
+      "Nb devis": p.total_devis || 0,
+      "Commission totale (€)": p.total_commissions || 0,
+      "Date création": new Date(p.created_at).toLocaleDateString("fr-FR"),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 10 },
+      { wch: 10 }, { wch: 20 }, { wch: 14 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Partenaires");
+    XLSX.writeFile(wb, `partenaires-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   const actifs = partners.filter((p) => p.actif).length;
   const totalDevis = partners.reduce((s, p) => s + (p.total_devis || 0), 0);
   const totalComm = partners.reduce((s, p) => s + (p.total_commissions || 0), 0);
@@ -167,7 +189,19 @@ export default function AdminPartenaires() {
   ];
 
   return (
-    <AdminPageLayout title="Partenaires" onRefresh={loadPartners}>
+    <AdminPageLayout
+      title="Partenaires"
+      onRefresh={loadPartners}
+      actions={
+        <button
+          onClick={handleExportExcel}
+          disabled={partners.length === 0}
+          className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <Download className="w-3.5 h-3.5" /> Export Excel
+        </button>
+      }
+    >
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon={Handshake} label="Partenaires actifs" value={actifs} color="bg-blue-500" />
