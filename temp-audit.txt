@@ -1,0 +1,35 @@
+=== AUDIT ADMIN COMPONENTS — 2026-04-03 ===
+
+FICHIERS DANS src/pages/admin/ :
+  AdminAnalytics.tsx     (8.5KB)  — À SUPPRIMER (pas dans nav)
+  AdminContenu.tsx       (15KB)   — À RECRÉER
+  AdminDashboard.tsx     (17KB)   — À RECRÉER
+  AdminHeaderFooter.tsx  (27KB)   — À SUPPRIMER (doublon AdminContenu)
+  AdminInvoices.tsx      (7.3KB)  — À SUPPRIMER (fusionné dans AdminQuotes)
+  AdminLayout.tsx        (15.5KB) — GARDER + MODIFIER (imports)
+  AdminLeads.tsx         (8KB)    — À SUPPRIMER (fusionné dans AdminUsers)
+  AdminLogin.tsx         (7KB)    — GARDER (déjà corrigé)
+  AdminMedia.tsx         (30KB)   — GARDER (fonctionnel)
+  AdminPages.tsx         (18.5KB) — À SUPPRIMER (doublon AdminContenu)
+  AdminParametres.tsx    (17KB)   — GARDER (fonctionnel)
+  AdminPartenaires.tsx   (33KB)   — À RECRÉER
+  AdminPricing.tsx       (7.3KB)  — À SUPPRIMER (pas dans nav)
+  AdminProducts.tsx      (64KB)   — À RECRÉER
+  AdminQuotes.tsx        (78KB)   — À RECRÉER
+  AdminShipping.tsx      (17KB)   — À SUPPRIMER (pas dans nav)
+  AdminSuiviAchats.tsx   (16KB)   — GARDER (fonctionnel)
+  AdminUsers.tsx         (15KB)   — À RECRÉER
+
+FICHIERS DANS src/components/admin/ :
+  AdminUI.tsx            (14.6KB) — À SUPPRIMER (remplacé par nouveaux composants)
+
+DOUBLONS IDENTIFIÉS :
+  AdminHeaderFooter.tsx  ≈ AdminContenu.tsx (gestion contenu site)
+  AdminPages.tsx         ≈ AdminContenu.tsx (gestion pages CMS)
+  AdminInvoices.tsx      → fusionné dans AdminQuotes (facturation)
+  AdminLeads.tsx         → fusionné dans AdminUsers (contacts)
+  AdminPricing.tsx       → intégré dans AdminProducts (prix)
+  AdminShipping.tsx      → intégré dans AdminParametres (livraison)
+  AdminAnalytics.tsx     → intégré dans AdminDashboard (stats)
+
+PLAN : Supprimer 8 fichiers, recréer 5, garder 5

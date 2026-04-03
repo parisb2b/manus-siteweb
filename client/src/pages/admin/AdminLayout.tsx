@@ -24,6 +24,7 @@ import AdminProducts from "./AdminProducts";
 import AdminUsers from "./AdminUsers";
 import AdminMedia from "./AdminMedia";
 import AdminQuotes from "./AdminQuotes";
+import AdminQuoteDetail from "./AdminQuoteDetail";
 import AdminPartenaires from "./AdminPartenaires";
 import AdminSuiviAchats from "./AdminSuiviAchats";
 import AdminParametres from "./AdminParametres";
@@ -205,8 +206,13 @@ export default function AdminLayout() {
     }
   };
 
-  const currentNav = visibleNav.find((item) => location === item.path) || visibleNav[0];
-  const ActiveComponent = currentNav.component;
+  // Résolution de la page active — supporte /admin/devis/:id
+  const isQuoteDetail = /^\/admin\/devis\/[a-f0-9-]+$/i.test(location);
+  const currentNav = visibleNav.find((item) => location === item.path)
+    || (isQuoteDetail ? visibleNav.find((item) => item.path === "/admin/devis") : null)
+    || visibleNav[0];
+  const ActiveComponent = isQuoteDetail ? AdminQuoteDetail : currentNav.component;
+  const pageTitle = isQuoteDetail ? "Détail du devis" : currentNav.label;
 
   return (
     <div className="admin-root min-h-screen bg-[#F5F5F5] font-sans flex">
@@ -304,7 +310,7 @@ export default function AdminLayout() {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-800">{currentNav.label}</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{pageTitle}</h2>
           </div>
 
           <div className="flex items-center gap-2">
