@@ -199,34 +199,60 @@ export default function AdminQuotes() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      console.error("[AdminQuotes] supabaseAdmin est null — variables VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquantes");
+      setLoadError("Client Supabase non initialisé — vérifier les variables d'environnement VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setLoadError(null);
     const timer = setTimeout(() => {
       setLoading(false);
       setLoadError("Délai dépassé (8 s) — vérifier la connexion Supabase ou les politiques RLS sur la table quotes");
     }, 8000);
+
     try {
-      // 1. Charger quotes séparément pour isoler les erreurs
+      // ─── DEBUG DIAGNOSTIC ───────────────────────────────────
+      console.log("=== DEBUG AdminQuotes ===");
+      console.log("supabaseAdmin exists:", !!supabase);
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("session exists:", !!session);
+      console.log("user email:", session?.user?.email ?? "NO SESSION");
+      console.log("user id:", session?.user?.id ?? "NO SESSION");
+
+      // Test query minimaliste
+      const testQuery = await supabase.from("quotes").select("id, statut").limit(3);
+      console.log("testQuery status:", testQuery.status);
+      console.log("testQuery error:", testQuery.error);
+      console.log("testQuery data:", testQuery.data);
+      console.log("testQuery count:", testQuery.data?.length ?? 0);
+      // ─── FIN DEBUG ──────────────────────────────────────────
+
+      // 1. Charger quotes
       const q = supabase.from("quotes").select("*").order("created_at", { ascending: false });
       if (filterStatut !== "tous") q.eq("statut", filterStatut);
       const qRes = await q;
-      if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
+      if (qRes.error) throw new Error(`quotes: ${qRes.error.message} (code: ${qRes.status})`);
       console.log("[AdminQuotes] quotes chargés:", qRes.data?.length ?? 0);
 
-      // 2. Charger partners séparément
+      // 2. Charger partners (non bloquant)
       const pRes = await supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom");
       if (pRes.error) {
         console.error("[AdminQuotes] partners error (non bloquant):", pRes.error.message);
-        // Partners non bloquant — on continue avec un tableau vide
       }
 
       setQuotes((qRes.data as Quote[]) ?? []);
       setPartners((pRes.data as Partner[]) ?? []);
 
-      // 3. Warning si 0 devis malgré succès (possible RLS)
+      // 3. Diagnostic RLS : 0 devis malgré succès
       if (qRes.data?.length === 0 && !qRes.error) {
-        console.warn("[AdminQuotes] 0 devis retournés — si des devis existent en base, vérifier RLS sur la table quotes");
+        const msg = session?.user
+          ? `0 devis retournés pour ${session.user.email} — RLS probablement activé sans policy admin. Exécuter scripts/fix-rls-quotes.sql dans Supabase SQL Editor.`
+          : "0 devis retournés — AUCUNE SESSION AUTH. L'admin n'est pas authentifié via supabaseAdmin.";
+        console.warn("[AdminQuotes]", msg);
+        setLoadError(msg);
       }
     } catch (err: any) {
       console.error("[AdminQuotes] load error:", err);
@@ -527,8 +553,20 @@ export default function AdminQuotes() {
           </div>
         </div>
       ) : quotes.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: ADMIN_COLORS.grayText, fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
-          Aucun devis trouvé
+        <div style={{ textAlign: 'center', padding: '48px 0', fontFamily: ADMIN_COLORS.font }}>
+          <div style={{ color: ADMIN_COLORS.grayText, fontSize: '13px', marginBottom: '8px' }}>
+            Aucun devis trouvé
+          </div>
+          <div style={{ color: '#92400E', fontSize: '11px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '6px', padding: '10px 16px', display: 'inline-block', maxWidth: '500px', textAlign: 'left' }}>
+            Si des devis existent dans Supabase mais ne s'affichent pas ici, c'est probablement un problème de <strong>RLS (Row Level Security)</strong>.
+            <br />Exécutez le script <code>scripts/fix-rls-quotes.sql</code> dans Supabase SQL Editor.
+            <br />Ou désactivez RLS temporairement : <code>ALTER TABLE quotes DISABLE ROW LEVEL SECURITY;</code>
+          </div>
+          <div style={{ marginTop: '12px' }}>
+            <button onClick={load} style={{ color: '#fff', background: ADMIN_COLORS.navyAccent, border: 'none', borderRadius: '4px', padding: '6px 16px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+              Réessayer
+            </button>
+          </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
