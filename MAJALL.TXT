@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v6.1)
+Dernière mise à jour : 2026-04-03 (v6.2)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,40 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v6.2-backoffice-complet
+TYPE : feat
+DESCRIPTION : Back-office complet v6.2
+
+NOUVELLES FONCTIONNALITES :
+  AdminQuoteDetail : page detail devis avec paiements et documents
+  AdminQuotes : clic sur ligne -> detail devis
+  AdminUsers : gestion roles complete (user/vip/partner/collaborateur)
+  AdminPartenaires : KPIs + commissions + toggle actif
+  AdminProducts : numero_interne editable double-clic
+  AdminSuiviAchats : generation Excel 2 onglets
+  AdminAnalytics : KPIs CA/devis/clients + top produits + graphe mensuel
+  Parcours client : pop-up partenaire + pop-up acompte (DevisForm)
+  Espace client : accordion devis avec suivi acompte
+
+CORRECTIONS :
+  Route /admin/devis/:id corrigee (page blanche supprimee — extraction id via regex)
+  Anti-doublons applique sur tous les composants
+  Paths menu admin alignes : /admin/clients, /admin/produits, /admin/medias
+  DevisForm : partners.code supprime (colonne inexistante)
+  Notes admin editables avec sauvegarde dans AdminQuoteDetail
+  Dropdown partenaire + upgrade VIP dans detail devis
+
+TESTS A EFFECTUER :
+  Connexion back-office : parisb2b@gmail.com
+  Clic sur un devis -> page detail s'ouvre
+  Clients -> changement de role
+  Partenaires -> toggle actif/inactif
+  Produits -> double-clic sur ref. interne
+  Analytics -> KPIs et graphes
+  Site public -> panier -> generer devis -> pop-ups
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03

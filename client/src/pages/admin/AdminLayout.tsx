@@ -18,6 +18,7 @@ import {
   Handshake,
   ShoppingCart,
   Globe,
+  BarChart3,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -29,6 +30,7 @@ import AdminPartenaires from "./AdminPartenaires";
 import AdminSuiviAchats from "./AdminSuiviAchats";
 import AdminParametres from "./AdminParametres";
 import AdminContenu from "./AdminContenu";
+import AdminAnalytics from "./AdminAnalytics";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -50,12 +52,14 @@ const navItems: NavItem[] = [
   // ── Commerce ──
   { label: "Tableau de bord", icon: LayoutDashboard, path: "/admin/dashboard", component: AdminDashboard, section: "Commerce" },
   { label: "Devis & Facturation", icon: FileText, path: "/admin/devis", component: AdminQuotes, section: "Commerce" },
-  { label: "Clients", icon: Users, path: "/admin/users", component: AdminUsers, section: "Commerce" },
+  { label: "Clients", icon: Users, path: "/admin/clients", component: AdminUsers, section: "Commerce" },
   { label: "Partenaires", icon: Handshake, path: "/admin/partenaires", component: AdminPartenaires, section: "Commerce" },
   // ── Catalogue ──
-  { label: "Produits", icon: Package, path: "/admin/products", component: AdminProducts, section: "Catalogue" },
+  { label: "Produits", icon: Package, path: "/admin/produits", component: AdminProducts, section: "Catalogue" },
   { label: "Suivi Achats", icon: ShoppingCart, path: "/admin/suivi-achats", component: AdminSuiviAchats, section: "Catalogue" },
-  { label: "Médias", icon: ImageIcon, path: "/admin/media", component: AdminMedia, section: "Catalogue" },
+  { label: "Médias", icon: ImageIcon, path: "/admin/medias", component: AdminMedia, section: "Catalogue" },
+  // ── Analyse ──
+  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, section: "Analyse" },
   // ── Configuration ──
   { label: "Paramètres", icon: Settings, path: "/admin/parametres", component: AdminParametres, adminOnly: true, section: "Configuration" },
   { label: "Contenu Site", icon: Globe, path: "/admin/contenu", component: AdminContenu, adminOnly: true, section: "Configuration" },

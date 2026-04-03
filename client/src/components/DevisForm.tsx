@@ -10,7 +10,6 @@ import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 interface PartnerOption {
   id: string;
   nom: string;
-  code: string;
 }
 
 export interface DevisProduit {
@@ -79,7 +78,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [numeroDevis, setNumeroDevis] = useState("");
   const [partners, setPartners] = useState<PartnerOption[]>([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
-  const [selectedPartnerCode, setSelectedPartnerCode] = useState<string>("");
+  const [selectedPartnerNom, setSelectedPartnerNom] = useState<string>("");
 
   // Post-devis flow state
   const [showPartenaireModal, setShowPartenaireModal] = useState(false);
@@ -89,8 +88,8 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [compteType, setCompteType] = useState<"perso" | "pro">("perso");
   const [acompteSaving, setAcompteSaving] = useState(false);
   const [newQuoteId, setNewQuoteId] = useState<string | null>(null);
-  const [allPartners, setAllPartners] = useState<{ id: string; nom: string; code: string }[]>([]);
-  const [selectedNewPartner, setSelectedNewPartner] = useState<{ id: string; nom: string; code: string } | null>(null);
+  const [allPartners, setAllPartners] = useState<{ id: string; nom: string }[]>([]);
+  const [selectedNewPartner, setSelectedNewPartner] = useState<{ id: string; nom: string } | null>(null);
   const [adminParams, setAdminParams] = useState<Record<string, any>>({});
 
   // Charger les partenaires actifs pour la sélection (rôle partner ou admin/collaborateur)
@@ -99,7 +98,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     if (role !== "partner" && role !== "admin" && role !== "collaborateur") return;
     supabase
       .from("partners")
-      .select("id, nom, code")
+      .select("id, nom")
       .eq("actif", true)
       .order("nom")
       .then(({ data }) => {
@@ -108,7 +107,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
         // Auto-sélectionner si l'utilisateur est partner et lié à un seul partenaire
         if (role === "partner" && list.length === 1) {
           setSelectedPartnerId(list[0].id);
-          setSelectedPartnerCode(list[0].code);
+          setSelectedPartnerNom(list[0].nom);
         }
       });
   }, [role]);
@@ -116,7 +115,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   // Charger tous les partenaires (pour le pop-up post-devis) et les admin_params
   useEffect(() => {
     if (!supabase) return;
-    supabase.from("partners").select("id,nom,code").eq("actif", true).order("nom")
+    supabase.from("partners").select("id,nom").eq("actif", true).order("nom")
       .then(({ data }) => setAllPartners((data as any[]) || []));
     supabase.from("admin_params").select("*")
       .then(({ data }) => {
@@ -148,9 +147,10 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
 
     try {
       let numero = await getNextDevisNum();
-      // Appender le code partenaire au numéro de devis si sélectionné
-      if (selectedPartnerCode) {
-        numero = `${numero}-${selectedPartnerCode}`;
+      // Appender le nom partenaire au numéro de devis si sélectionné
+      if (selectedPartnerNom) {
+        const shortCode = selectedPartnerNom.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6).toUpperCase();
+        numero = `${numero}-${shortCode}`;
       }
       setNumeroDevis(numero);
 
@@ -368,7 +368,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
                       fontWeight: 600, cursor: 'pointer',
                     }}
                   >
-                    {p.code}
+                    {p.nom}
                   </button>
                 ))}
                 {allPartners.length === 0 && (
@@ -398,7 +398,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
                       cursor: 'pointer',
                     }}
                   >
-                    Confirmer {selectedNewPartner.code} →
+                    Confirmer {selectedNewPartner.nom} →
                   </button>
                 )}
               </div>
@@ -761,20 +761,20 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
               <button
                 key={p.id}
                 type="button"
-                onClick={() => { setSelectedPartnerId(p.id); setSelectedPartnerCode(p.code); }}
+                onClick={() => { setSelectedPartnerId(p.id); setSelectedPartnerNom(p.nom); }}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedPartnerId === p.id
                     ? "bg-orange-500 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                <span className="font-mono mr-1">{p.code}</span> {p.nom}
+                {p.nom}
               </button>
             ))}
           </div>
-          {selectedPartnerCode && (
+          {selectedPartnerNom && (
             <p className="text-xs text-gray-400 mt-1">
-              Le devis sera numéroté avec le suffixe -{selectedPartnerCode}
+              Partenaire : {selectedPartnerNom}
             </p>
           )}
         </div>
