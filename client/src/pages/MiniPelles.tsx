@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -11,13 +12,26 @@ export default function Home() {
   const { products, loading } = useProducts("Mini-pelles");
   const { page } = usePageContent("minipelles");
 
-  const proProducts = products.map((p) => ({
-    id: p.id,
-    name: p.name,
-    priceElement: <PrixOuDevis prixAchat={p.price || (MINI_PELLES_PRIX[p.id] ?? 9538)} />,
-    image: p.image,
-    link: p.link,
-  }));
+  // Lire le paramètre de recherche ?q= dans l'URL
+  const searchQuery = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get("q") || "").toLowerCase().trim();
+  }, []);
+
+  const proProducts = products
+    .filter((p) => {
+      if (!searchQuery) return true;
+      const name = (p.name || "").toLowerCase();
+      const ref = (p.id || "").toLowerCase();
+      return name.includes(searchQuery) || ref.includes(searchQuery);
+    })
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      priceElement: <PrixOuDevis prixAchat={p.price || (MINI_PELLES_PRIX[p.id] ?? 9538)} />,
+      image: p.image,
+      link: p.link,
+    }));
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -33,8 +47,16 @@ export default function Home() {
               <div className="w-24 h-1 bg-[#4A90D9] mx-auto mt-6"></div>
             </div>
 
+            {searchQuery && (
+              <p className="text-sm text-gray-500 mb-6 text-center">
+                Résultats pour « {searchQuery} » — {proProducts.length} produit{proProducts.length !== 1 ? "s" : ""} trouvé{proProducts.length !== 1 ? "s" : ""}
+              </p>
+            )}
+
             {loading ? (
               <div className="text-center text-gray-400 py-12">Chargement...</div>
+            ) : proProducts.length === 0 ? (
+              <div className="text-center text-gray-400 py-12">Aucun produit trouvé{searchQuery ? ` pour « ${searchQuery} »` : ""}.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {proProducts.map((product) => (

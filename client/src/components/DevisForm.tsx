@@ -67,7 +67,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     email: profile?.email ?? user?.email ?? "",
     telephone: profile?.phone ?? (user?.user_metadata?.phone as string) ?? "",
     adresse: profile?.adresse_facturation ?? "",
-    ville: profile?.adresse_facturation
+    ville: (profile?.cp_facturation || profile?.ville_facturation)
       ? `${profile.cp_facturation ?? ""} ${profile.ville_facturation ?? ""}`.trim()
       : "",
     pays: profile?.pays_facturation ?? "France",
@@ -146,7 +146,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
     setLoading(true);
     setError("");
 
-    try {
+    try { // Global try/catch — crash → localStorage
       let numero = await getNextDevisNum();
       // Appender le nom partenaire au numéro de devis si sélectionné
       if (selectedPartnerNom) {
@@ -245,10 +245,9 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       // Télécharger le PDF
       downloadBlob(blob, `Devis_${numero}.pdf`);
 
-      // Clear cart
+      // Clear cart (clé correcte = rippa_cart)
       try {
-        localStorage.removeItem('cart');
-        sessionStorage.removeItem('cart');
+        localStorage.removeItem('rippa_cart');
         window.dispatchEvent(new Event('storage'));
       } catch {}
 
@@ -275,6 +274,20 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       onSuccess?.();
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue. Réessayez.");
+      // Crash log — localStorage immédiat + Supabase async
+      try {
+        const crashEntry = {
+          type: "api_error" as const,
+          message: err?.message || "Échec création devis (crash)",
+          context: "devis_form_submit_global_catch",
+          user_email: form.email,
+          stack_trace: err?.stack,
+          timestamp: new Date().toISOString(),
+        };
+        const logs = JSON.parse(localStorage.getItem("97import_error_logs") || "[]");
+        logs.push(crashEntry);
+        localStorage.setItem("97import_error_logs", JSON.stringify(logs.slice(-50)));
+      } catch { /* localStorage indisponible */ }
       logError({
         type: "api_error",
         message: err?.message || "Échec création devis",

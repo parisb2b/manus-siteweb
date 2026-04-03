@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/lib/supabase";
 
 export type CartItem = {
   id: string;
@@ -78,7 +79,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
+    localStorage.removeItem("rippa_cart");
   };
+
+  // Clear cart on auth state change (new login = clean cart)
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        setItems([]);
+        localStorage.removeItem("rippa_cart");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 

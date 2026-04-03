@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v6.3)
+Dernière mise à jour : 2026-04-03 (v6.4)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,22 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v6.4-bugfix-cart-search-logs
+TYPE : fix
+DESCRIPTION : Crash devis + panier isolé + recherche filtrée + ville par défaut
+
+CORRIGES :
+  DevisForm — cart clear utilise "rippa_cart" (avant: "cart" = mauvaise clé)
+  DevisForm — global try/catch + crash log localStorage immédiat
+  DevisForm — ville pré-remplie seulement si cp/ville existent réellement
+  CartContext — clearCart() supprime aussi localStorage
+  CartContext — clear automatique sur SIGNED_IN / SIGNED_OUT (auth)
+  PortalHome — recherche passe ?q= dans l'URL au lieu de redirection simple
+  MiniPelles — filtre produits par nom/ref selon ?q= + message "aucun résultat"
+  AdminLogs — bouton "Logs locaux" pour exporter localStorage en JSON
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03

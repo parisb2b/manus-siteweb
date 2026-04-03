@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { AlertTriangle, CheckCircle2, Download, RefreshCw, Check } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, RefreshCw, Check, HardDrive } from "lucide-react";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminTable, { type Column } from "@/components/admin/AdminTable";
 import type { LogType } from "@/lib/logger";
+import { getLocalLogs } from "@/lib/logger";
 
 interface ErrorLog {
   id: string;
@@ -95,6 +96,22 @@ export default function AdminLogs() {
     }
     setLogs((prev) => prev.map((l) => ({ ...l, resolved: true })));
     showToast(`${unresolved.length} erreurs marquées résolues`);
+  };
+
+  const handleRecupererLogsLocaux = () => {
+    const localLogs = getLocalLogs();
+    if (localLogs.length === 0) {
+      showToast("Aucun log local trouvé");
+      return;
+    }
+    const blob = new Blob([JSON.stringify(localLogs, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `logs-crash-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`${localLogs.length} logs locaux exportés`);
   };
 
   const handleExportCSV = () => {
@@ -234,6 +251,12 @@ export default function AdminLogs() {
             className="inline-flex items-center gap-1.5 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" /> Export CSV
+          </button>
+          <button
+            onClick={handleRecupererLogsLocaux}
+            className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <HardDrive className="w-3.5 h-3.5" /> Logs locaux
           </button>
         </div>
       }

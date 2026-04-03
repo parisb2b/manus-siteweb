@@ -72,18 +72,20 @@ export default function PortalHome() {
 
     const query = searchQuery.toLowerCase();
 
-    // Intelligent redirection logic
+    const q = encodeURIComponent(searchQuery.trim());
+
+    // Intelligent redirection logic — passe ?q= pour filtrer sur la page cible
     if (query.includes("pelle") || query.includes("rippa") || query.includes("r22") || query.includes("r32")) {
-      setLocation("/minipelles");
+      setLocation(`/minipelles?q=${q}`);
     } else if (query.includes("maison") || query.includes("cabin") || query.includes("camping")) {
-      setLocation("/maisons");
+      setLocation(`/maisons?q=${q}`);
     } else if (query.includes("solaire") || query.includes("panneau") || query.includes("energie")) {
-      setLocation("/solaire");
+      setLocation(`/solaire?q=${q}`);
     } else if (query.includes("tracteur") || query.includes("agri") || query.includes("ferme")) {
-      setLocation("/agricole");
+      setLocation(`/agricole?q=${q}`);
     } else {
-      // Default fallback search (could be improved with a dedicated search page)
-      setLocation("/minipelles");
+      // Default fallback search
+      setLocation(`/minipelles?q=${q}`);
     }
   };
 
