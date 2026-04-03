@@ -22,6 +22,7 @@ export default function AdminLogin() {
       return;
     }
 
+    // 1. Authentification
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (authError || !authData.user) {
@@ -30,19 +31,61 @@ export default function AdminLogin() {
       return;
     }
 
-    const { data: profile } = await supabase
+    console.log("[AdminLogin] Auth OK — user:", authData.user.email, "id:", authData.user.id);
+
+    // 2. Lire le profil — capturer l'erreur explicitement
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", authData.user.id)
-      .single();
+      .maybeSingle();
 
-    if (!profile || (profile.role !== "admin" && profile.role !== "collaborateur")) {
+    console.log("[AdminLogin] Profile query result:", { profile, profileError: profileError?.message });
+
+    // 3. Si la requête profiles échoue (RLS, réseau, etc.) : ne PAS refuser l'accès
+    if (profileError) {
+      console.error("[AdminLogin] Erreur lecture profil:", profileError.message, profileError.code);
+      // Fallback : essayer par email (contourne un éventuel problème de RLS sur id)
+      const { data: profileByEmail, error: emailErr } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("email", email)
+        .maybeSingle();
+
+      console.log("[AdminLogin] Fallback par email:", { profileByEmail, emailErr: emailErr?.message });
+
+      if (profileByEmail && (profileByEmail.role === "admin" || profileByEmail.role === "collaborateur")) {
+        setLocation("/admin/dashboard");
+        return;
+      }
+
+      // Si même le fallback échoue, montrer l'erreur technique
       await supabase.auth.signOut();
-      setError("Accès refusé. Seuls les administrateurs et collaborateurs peuvent accéder à cette section.");
+      setError(`Erreur de lecture du profil : ${profileError.message}. Vérifier les policies RLS sur la table profiles dans Supabase.`);
       setLoading(false);
       return;
     }
 
+    // 4. Profil null (pas d'erreur mais pas de ligne = profil inexistant)
+    if (!profile) {
+      console.warn("[AdminLogin] Profil introuvable pour user id:", authData.user.id);
+      await supabase.auth.signOut();
+      setError("Aucun profil trouvé pour cet utilisateur. Contacter l'administrateur.");
+      setLoading(false);
+      return;
+    }
+
+    // 5. Vérification du rôle
+    console.log("[AdminLogin] Rôle trouvé:", profile.role);
+    if (profile.role !== "admin" && profile.role !== "collaborateur") {
+      await supabase.auth.signOut();
+      setError(`Accès refusé — votre rôle est "${profile.role}". Seuls admin et collaborateur sont autorisés.`);
+      setLoading(false);
+      return;
+    }
+
+    // 6. Succès → redirection
+    console.log("[AdminLogin] Accès autorisé — redirection vers /admin/dashboard");
     setLocation("/admin/dashboard");
   };
 

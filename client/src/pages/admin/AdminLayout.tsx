@@ -95,8 +95,15 @@ export default function AdminLayout() {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       if (session?.user) {
-        const { data } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
-        setProfile(data);
+        const { data, error } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
+        if (error) {
+          console.error("[AdminLayout] Profile read error:", error.message);
+          // Fallback par email si RLS bloque sur id
+          const { data: fallback } = await supabase.from("profiles").select("role, email").eq("email", session.user.email).maybeSingle();
+          setProfile(fallback);
+        } else {
+          setProfile(data);
+        }
       }
     });
 
@@ -104,8 +111,14 @@ export default function AdminLayout() {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       if (session?.user) {
-        const { data } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
-        setProfile(data);
+        const { data, error } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
+        if (error) {
+          console.error("[AdminLayout] Profile read error (auth change):", error.message);
+          const { data: fallback } = await supabase.from("profiles").select("role, email").eq("email", session.user.email).maybeSingle();
+          setProfile(fallback);
+        } else {
+          setProfile(data);
+        }
       } else {
         setProfile(null);
       }
