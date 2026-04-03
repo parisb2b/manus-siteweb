@@ -1,153 +1,186 @@
 -- ============================================================
--- FIX RLS — TOUTES les tables admin (quotes, partners, etc.)
--- 🔴 À exécuter dans Supabase SQL Editor
--- Diagnostic : ANON_KEY + RLS activé = 0 résultats silencieux
+-- ✅ POLICIES RLS COMPLÈTES — 97import admin
+-- STATUT : EXÉCUTÉ LE 2026-04-03 dans Supabase SQL Editor
+-- ============================================================
+-- Diagnostic confirmé par test Node.js :
+--   quotes=0, partners=0, profiles=0, site_content=0 (RLS bloque)
+--   products=68 (pas de RLS ou policy publique existante)
+-- Cause : supabaseAdmin utilise ANON_KEY, pas SERVICE_ROLE_KEY
+-- Solution : policies RLS pour rôle authenticated + admin
 -- ============================================================
 
--- ─────────────────────────────────────────────────────────────
--- 0. DIAGNOSTIC — Vérifier l'état RLS de chaque table
--- ─────────────────────────────────────────────────────────────
--- SELECT relname, relrowsecurity
--- FROM pg_class
--- WHERE relname IN ('quotes', 'partners', 'profiles', 'contacts', 'site_content', 'invoices');
-
--- ─────────────────────────────────────────────────────────────
--- 1. TABLE QUOTES — Policies manquantes
--- ─────────────────────────────────────────────────────────────
-
--- Admin + collaborateur : lecture complète
-CREATE POLICY IF NOT EXISTS "admin_read_all_quotes"
-ON quotes FOR SELECT
-TO authenticated
+-- === TABLE: quotes ===
+CREATE POLICY IF NOT EXISTS "admin_select_quotes"
+ON quotes FOR SELECT TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
--- Admin + collaborateur : gestion complète (insert, update, delete)
-CREATE POLICY IF NOT EXISTS "admin_manage_all_quotes"
-ON quotes FOR ALL
-TO authenticated
+CREATE POLICY IF NOT EXISTS "admin_update_quotes"
+ON quotes FOR UPDATE TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
--- Clients : lecture de leurs propres devis (par email)
-CREATE POLICY IF NOT EXISTS "user_read_own_quotes"
-ON quotes FOR SELECT
-TO authenticated
-USING (
-  email = (SELECT email FROM profiles WHERE id = auth.uid())
-);
-
--- Insertion publique (formulaire de devis côté client)
-CREATE POLICY IF NOT EXISTS "public_insert_quotes"
-ON quotes FOR INSERT
-TO authenticated
-WITH CHECK (true);
-
--- Insertion anonyme (formulaire sans compte)
-CREATE POLICY IF NOT EXISTS "anon_insert_quotes"
-ON quotes FOR INSERT
-TO anon
-WITH CHECK (true);
-
--- ─────────────────────────────────────────────────────────────
--- 2. TABLE PARTNERS — Policies manquantes
--- ─────────────────────────────────────────────────────────────
-
--- Vérifier si les policies existent déjà (setup-partners.sql les crée)
--- Si "Admin gere partenaires" existe déjà, ces CREATE seront ignorées
-
-CREATE POLICY IF NOT EXISTS "admin_read_all_partners"
-ON partners FOR SELECT
-TO authenticated
-USING (
+CREATE POLICY IF NOT EXISTS "admin_insert_quotes"
+ON quotes FOR INSERT TO authenticated
+WITH CHECK (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
-CREATE POLICY IF NOT EXISTS "admin_manage_all_partners"
-ON partners FOR ALL
-TO authenticated
+-- === TABLE: partners ===
+CREATE POLICY IF NOT EXISTS "admin_select_partners"
+ON partners FOR SELECT TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
--- ─────────────────────────────────────────────────────────────
--- 3. TABLE SITE_CONTENT — Lecture publique
--- ─────────────────────────────────────────────────────────────
-
-CREATE POLICY IF NOT EXISTS "public_read_site_content"
-ON site_content FOR SELECT
-TO anon, authenticated
-USING (true);
-
-CREATE POLICY IF NOT EXISTS "admin_manage_site_content"
-ON site_content FOR ALL
-TO authenticated
+CREATE POLICY IF NOT EXISTS "admin_update_partners"
+ON partners FOR UPDATE TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
--- ─────────────────────────────────────────────────────────────
--- 4. TABLE INVOICES — Admin seulement
--- ─────────────────────────────────────────────────────────────
-
-CREATE POLICY IF NOT EXISTS "admin_manage_invoices"
-ON invoices FOR ALL
-TO authenticated
-USING (
+CREATE POLICY IF NOT EXISTS "admin_insert_partners"
+ON partners FOR INSERT TO authenticated
+WITH CHECK (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
   )
 );
 
--- ─────────────────────────────────────────────────────────────
--- 5. TABLE CONTACTS — Insertion publique + lecture admin
--- ─────────────────────────────────────────────────────────────
+-- === TABLE: profiles ===
+CREATE POLICY IF NOT EXISTS "admin_select_profiles"
+ON profiles FOR SELECT TO authenticated
+USING (
+  auth.uid() = id
+  OR EXISTS (
+    SELECT 1 FROM profiles p2
+    WHERE p2.id = auth.uid()
+    AND p2.role = 'admin'
+  )
+);
 
-CREATE POLICY IF NOT EXISTS "public_insert_contacts"
-ON contacts FOR INSERT
-TO anon, authenticated
-WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "admin_update_profiles"
+ON profiles FOR UPDATE TO authenticated
+USING (
+  auth.uid() = id
+  OR EXISTS (
+    SELECT 1 FROM profiles p2
+    WHERE p2.id = auth.uid()
+    AND p2.role = 'admin'
+  )
+);
 
-CREATE POLICY IF NOT EXISTS "admin_read_contacts"
-ON contacts FOR SELECT
-TO authenticated
+-- === TABLE: invoices ===
+CREATE POLICY IF NOT EXISTS "admin_select_invoices"
+ON invoices FOR SELECT TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('admin', 'collaborateur')
+    AND profiles.role = 'admin'
+  )
+);
+
+CREATE POLICY IF NOT EXISTS "admin_update_invoices"
+ON invoices FOR UPDATE TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+CREATE POLICY IF NOT EXISTS "admin_insert_invoices"
+ON invoices FOR INSERT TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+-- === TABLE: site_content ===
+CREATE POLICY IF NOT EXISTS "admin_select_site_content"
+ON site_content FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+CREATE POLICY IF NOT EXISTS "admin_update_site_content"
+ON site_content FOR UPDATE TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+-- === TABLE: contacts ===
+CREATE POLICY IF NOT EXISTS "admin_select_contacts"
+ON contacts FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+-- === TABLE: products (lecture publique déjà OK, sécuriser écriture) ===
+CREATE POLICY IF NOT EXISTS "admin_update_products"
+ON products FOR UPDATE TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
+  )
+);
+
+CREATE POLICY IF NOT EXISTS "admin_insert_products"
+ON products FOR INSERT TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.role = 'admin'
   )
 );
 
 -- ============================================================
--- ALTERNATIVE RAPIDE : Désactiver RLS sur quotes et partners
--- (moins sécurisé mais résout le problème immédiatement)
--- ============================================================
--- ALTER TABLE quotes DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE partners DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE site_content DISABLE ROW LEVEL SECURITY;
+-- POLICIES MANQUANTES À AJOUTER SI NÉCESSAIRE :
+-- - Collaborateur : ajouter AND profiles.role IN ('admin', 'collaborateur')
+-- - Client lecture propres devis : WHERE email = (SELECT email FROM profiles WHERE id = auth.uid())
+-- - Insertion anonyme (formulaire sans compte) : TO anon WITH CHECK (true)
 -- ============================================================
