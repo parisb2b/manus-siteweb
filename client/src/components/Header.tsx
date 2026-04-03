@@ -68,7 +68,12 @@ export default function Header() {
               return true;
             }).map((item) => (
               <Link key={item.path} href={item.path}>
-                <span className={`nav-link ${isActive(item.path) ? 'text-[#4A90D9]' : ''}`}>{item.label}</span>
+                <span className={`nav-link ${isActive(item.path) ? 'text-[#4A90D9]' : ''}`}>
+                  {item.label}
+                  {item.path === "/agricole" && (
+                    <span style={{ fontSize: '10px', background: '#e5e7eb', color: '#6b7280', padding: '2px 6px', borderRadius: '10px', marginLeft: '6px', fontWeight: 500 }}>Bientôt</span>
+                  )}
+                </span>
               </Link>
             ))}
           </nav>
@@ -156,7 +161,12 @@ export default function Header() {
               return true;
             }).map((item) => (
             <Link key={item.path} href={item.path} onClick={() => setIsMenuOpen(false)}>
-              <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">{item.label}</span>
+              <span className="block py-2 text-sm font-bold uppercase text-gray-800 hover:text-[#4A90D9]">
+                {item.label}
+                {item.path === "/agricole" && (
+                  <span style={{ fontSize: '10px', background: '#e5e7eb', color: '#6b7280', padding: '2px 6px', borderRadius: '10px', marginLeft: '6px', fontWeight: 500 }}>Bientôt</span>
+                )}
+              </span>
             </Link>
           ))}
 

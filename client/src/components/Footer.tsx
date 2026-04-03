@@ -67,7 +67,7 @@ export default function Footer() {
               <li><Link href="/accessoires" className="hover:text-white transition-colors">Accessoires</Link></li>
               <li><Link href="/maisons" className="hover:text-white transition-colors">Maisons Modulaires</Link></li>
               <li><Link href="/solaire" className="hover:text-white transition-colors">Panneaux Solaires</Link></li>
-              <li><Link href="/agricole" className="hover:text-white transition-colors">Machines Agricoles</Link></li>
+              <li><Link href="/agricole" className="hover:text-white transition-colors">Machines Agricoles <span style={{ fontSize: '9px', background: '#374151', color: '#9CA3AF', padding: '1px 5px', borderRadius: '8px', marginLeft: '4px' }}>Bientôt</span></Link></li>
               <li><Link href="/services" className="hover:text-white transition-colors">SAV & Contact</Link></li>
             </ul>
           </div>
