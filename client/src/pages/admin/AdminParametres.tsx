@@ -173,6 +173,7 @@ function RibCard({
 
 export default function AdminParametres() {
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
@@ -197,26 +198,40 @@ export default function AdminParametres() {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase.from("admin_params").select("*").then(({ data }) => {
-      const params = (data as AdminParam[]) ?? [];
-      for (const p of params) {
-        if (p.key === "emetteur" || p.key === "emetteur_pro") setEmetteurPro(p.value ?? {});
-        if (p.key === "emetteur_perso") setEmetteurPerso(p.value ?? {});
-        if (p.key === "rib" || p.key === "rib_pro") {
-          setRibPro(p.value ?? {});
-          if (p.value?.pdf_url) setRibProPdfUrl(p.value.pdf_url);
+    let timeout: ReturnType<typeof setTimeout>;
+    const loadParams = async () => {
+      try {
+        timeout = setTimeout(() => {
+          setLoadError("Chargement trop long (timeout 8s)");
+          setLoading(false);
+        }, 8000);
+        const { data, error } = await supabase.from("admin_params").select("*");
+        if (error) throw error;
+        const params = (data as AdminParam[]) ?? [];
+        for (const p of params) {
+          if (p.key === "emetteur" || p.key === "emetteur_pro") setEmetteurPro(p.value ?? {});
+          if (p.key === "emetteur_perso") setEmetteurPerso(p.value ?? {});
+          if (p.key === "rib" || p.key === "rib_pro") {
+            setRibPro(p.value ?? {});
+            if (p.value?.pdf_url) setRibProPdfUrl(p.value.pdf_url);
+          }
+          if (p.key === "rib_perso") {
+            setRibPerso(p.value ?? {});
+            if (p.value?.pdf_url) setRibPersoPdfUrl(p.value.pdf_url);
+          }
+          if (p.key === "acompte_defaut") {
+            setAcompteMontant(p.value?.pourcentage ?? 30);
+            setAcompteMaxNb(p.value?.max_nb ?? 3);
+          }
         }
-        if (p.key === "rib_perso") {
-          setRibPerso(p.value ?? {});
-          if (p.value?.pdf_url) setRibPersoPdfUrl(p.value.pdf_url);
-        }
-        if (p.key === "acompte_defaut") {
-          setAcompteMontant(p.value?.pourcentage ?? 30);
-          setAcompteMaxNb(p.value?.max_nb ?? 3);
-        }
+      } catch (err: any) {
+        setLoadError(err.message ?? "Erreur de chargement des paramètres");
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+    loadParams();
   }, []);
 
   const handleSave = async () => {
@@ -258,6 +273,14 @@ export default function AdminParametres() {
     return (
       <AdminCard style={{ padding: '48px', textAlign: 'center' }}>
         <Loader2 style={{ width: 32, height: 32, color: ADMIN_COLORS.navyAccent, margin: '0 auto', animation: 'spin 1s linear infinite' }} />
+      </AdminCard>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AdminCard style={{ padding: '48px', textAlign: 'center' }}>
+        <p style={{ color: ADMIN_COLORS.redText, fontSize: '14px', fontWeight: 500 }}>{loadError}</p>
       </AdminCard>
     );
   }

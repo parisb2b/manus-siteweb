@@ -8,24 +8,31 @@ export default function AdminShipping() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load site-content on mount
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site_content")
-      .single()
-      .then(({ data }) => {
+    const timer = setTimeout(() => { setLoading(false); setLoadError('Délai dépassé (8s)'); }, 8000);
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "site_content")
+          .single();
+        if (error) throw error;
         if (data?.value) {
           setSiteContent(data.value);
         }
-        setLoading(false);
-      }, () => {
+      } catch (err: any) {
+        setLoadError(err?.message ?? 'Erreur');
         setMessage({ type: "error", text: "Erreur lors du chargement des donnees." });
+      } finally {
+        clearTimeout(timer);
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   const showMessage = (type: "success" | "error", text: string) => {
@@ -132,6 +139,7 @@ export default function AdminShipping() {
       <div className="font-sans">
         <div className="bg-red-50 text-red-700 border border-red-200 rounded-xl px-4 py-3 text-sm">
           Impossible de charger les donnees de livraison.
+          {loadError && <span className="block mt-1 text-xs text-red-500">{loadError}</span>}
         </div>
       </div>
     );

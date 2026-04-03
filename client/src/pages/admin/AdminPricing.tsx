@@ -23,17 +23,26 @@ export default function AdminPricing() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     if (!supabase) { setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "house_prices")
-      .single();
-    if (data?.value) setPrices(data.value);
-    setLoading(false);
+    setLoadError(null);
+    const timeout = setTimeout(() => { setLoading(false); setLoadError("Chargement trop long (timeout 8s)"); }, 8000);
+    try {
+      const { data } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "house_prices")
+        .single();
+      if (data?.value) setPrices(data.value);
+    } catch (err: any) {
+      setLoadError(err?.message || "Erreur inconnue lors du chargement");
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -121,6 +130,12 @@ export default function AdminPricing() {
       {saveMessage && (
         <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMessage.includes("Erreur") ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
           {saveMessage}
+        </div>
+      )}
+
+      {loadError && (
+        <div className="mb-4 px-4 py-3 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+          {loadError}
         </div>
       )}
 

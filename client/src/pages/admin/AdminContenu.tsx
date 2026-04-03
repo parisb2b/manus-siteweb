@@ -13,52 +13,61 @@ export default function AdminContenu() {
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
     (async () => {
-      const { data, error } = await supabase
-        .from("site_content")
-        .select("*");
-
-      if (error) {
-        console.error('Erreur chargement contenu:', error);
-        setContent(null);
-        setLoadError('Impossible de charger : ' + error.message);
+      const timeout = setTimeout(() => {
+        setLoadError('Chargement trop long (timeout 8s)');
         setLoading(false);
-        return;
-      }
+      }, 8000);
+      try {
+        const { data, error } = await supabase
+          .from("site_content")
+          .select("*");
 
-      if (data && data.length > 0) {
-        // Try single-row format first (key="site_content")
-        const singleRow = data.find((r: any) => r.key === "site_content");
-        if (singleRow?.value && typeof singleRow.value === "object") {
-          setContent(singleRow.value);
-        } else {
-          // Multi-row format: each key is a section
-          const assembled: any = { siteSettings: {}, shippingContent: {} };
-          for (const row of data) {
-            if (row.key === "banniere") assembled.siteSettings.topBanner = row.value?.texte || "";
-            if (row.key === "contact") {
-              assembled.siteSettings.contactEmail = row.value?.email || "";
-              assembled.siteSettings.contactPhone = row.value?.telephone || "";
-              assembled.siteSettings.whatsappNumber = row.value?.whatsapp || "";
-              assembled.siteSettings.contactAddress = row.value?.adresse || "";
-            }
-            if (row.key === "footer") {
-              assembled.siteSettings.footerText = row.value?.mentions || "";
-              assembled.siteSettings.footerDescription = row.value?.description || "";
-              assembled.siteSettings.tiktokUrl = row.value?.tiktok || "";
-              assembled.siteSettings.youtubeUrl = row.value?.youtube || "";
-            }
-            if (row.key === "livraison" || row.key === "shipping") {
-              assembled.shippingContent = row.value || {};
-            }
-          }
-          setContent(assembled);
+        if (error) {
+          console.error('Erreur chargement contenu:', error);
+          setContent(null);
+          setLoadError('Impossible de charger : ' + error.message);
+          return;
         }
-      } else {
-        // No data at all — initialize with empty content so form shows
-        setContent({ siteSettings: {}, shippingContent: {} });
-      }
 
-      setLoading(false);
+        if (data && data.length > 0) {
+          // Try single-row format first (key="site_content")
+          const singleRow = data.find((r: any) => r.key === "site_content");
+          if (singleRow?.value && typeof singleRow.value === "object") {
+            setContent(singleRow.value);
+          } else {
+            // Multi-row format: each key is a section
+            const assembled: any = { siteSettings: {}, shippingContent: {} };
+            for (const row of data) {
+              if (row.key === "banniere") assembled.siteSettings.topBanner = row.value?.texte || "";
+              if (row.key === "contact") {
+                assembled.siteSettings.contactEmail = row.value?.email || "";
+                assembled.siteSettings.contactPhone = row.value?.telephone || "";
+                assembled.siteSettings.whatsappNumber = row.value?.whatsapp || "";
+                assembled.siteSettings.contactAddress = row.value?.adresse || "";
+              }
+              if (row.key === "footer") {
+                assembled.siteSettings.footerText = row.value?.mentions || "";
+                assembled.siteSettings.footerDescription = row.value?.description || "";
+                assembled.siteSettings.tiktokUrl = row.value?.tiktok || "";
+                assembled.siteSettings.youtubeUrl = row.value?.youtube || "";
+              }
+              if (row.key === "livraison" || row.key === "shipping") {
+                assembled.shippingContent = row.value || {};
+              }
+            }
+            setContent(assembled);
+          }
+        } else {
+          // No data at all — initialize with empty content so form shows
+          setContent({ siteSettings: {}, shippingContent: {} });
+        }
+      } catch (err: any) {
+        console.error('Erreur chargement contenu:', err);
+        setLoadError(err.message || 'Erreur inconnue lors du chargement');
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
+      }
     })();
   }, []);
 

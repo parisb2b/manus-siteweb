@@ -17,6 +17,7 @@ export default function AdminHeaderFooter() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"header" | "footer">("header");
   const [uploadingHeader, setUploadingHeader] = useState(false);
   const [uploadingFooter, setUploadingFooter] = useState(false);
@@ -25,21 +26,36 @@ export default function AdminHeaderFooter() {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site_content")
-      .single()
-      .then(({ data }) => {
-        if (data?.value) {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setLoadError("Délai de chargement dépassé (8s)");
+        setLoading(false);
+      }
+    }, 8000);
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "site_content")
+          .single();
+        if (error) throw error;
+        if (!cancelled && data?.value) {
           const d = data.value;
           if (!d.siteSettings) d.siteSettings = {};
           if (!d.navigation) d.navigation = { menuItems: [], footerLinks: [] };
           if (!d.navigation.footerLinks) d.navigation.footerLinks = [];
           setSiteContent(d);
         }
-        setLoading(false);
-      }, () => setLoading(false));
+      } catch (err: any) {
+        if (!cancelled) setLoadError(err.message ?? "Erreur inconnue");
+      } finally {
+        clearTimeout(timeout);
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
 
   const handleSave = async () => {

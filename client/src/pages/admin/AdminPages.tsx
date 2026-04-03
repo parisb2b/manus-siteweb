@@ -30,18 +30,28 @@ const INFO_PAGES = ["services", "delivery", "contact", "about"];
 export default function AdminPages() {
   const [siteContent, setSiteContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [selectedPage, setSelectedPage] = useState("home");
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site_content")
-      .single()
-      .then(({ data }) => {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setLoadError("Délai de chargement dépassé (8s)");
+        setLoading(false);
+      }
+    }, 8000);
+    const load = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", "site_content")
+          .single();
+        if (error) throw error;
         if (data?.value) {
           const d = data.value;
           if (!d.pagesConfig) {
@@ -49,8 +59,15 @@ export default function AdminPages() {
           }
           setSiteContent(d);
         }
-        setLoading(false);
-      }, () => setLoading(false));
+      } catch (err: any) {
+        setLoadError(err?.message || "Erreur de chargement");
+      } finally {
+        clearTimeout(timeout);
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
 
   const handleSave = async () => {
@@ -147,6 +164,20 @@ export default function AdminPages() {
       };
     });
   };
+
+  if (loadError) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center font-sans">
+        <p className="text-red-600 font-medium">Erreur : {loadError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-[#4A90D9] text-white rounded-xl hover:bg-[#357ABD] transition-colors"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   if (loading || !siteContent) {
     return (

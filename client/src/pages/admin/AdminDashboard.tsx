@@ -67,20 +67,31 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!supabase) { setSupabaseLoading(false); return; }
-    Promise.all([
-      supabase.from("quotes").select("statut").then(({ data }) => {
+    const timer = setTimeout(() => setSupabaseLoading(false), 8000);
+    (async () => {
+      try {
+        const [qStatut, pRole, qLast, pLast] = await Promise.all([
+          supabase.from("quotes").select("statut"),
+          supabase.from("profiles").select("role"),
+          supabase.from("quotes").select("id,nom,email,statut,created_at,prix_total_calcule").order("created_at", { ascending: false }).limit(5),
+          supabase.from("profiles").select("id,first_name,last_name,email,role,created_at").order("created_at", { ascending: false }).limit(5),
+        ]);
         const counts: Record<string, number> = {};
-        (data ?? []).forEach((q: any) => { counts[q.statut] = (counts[q.statut] ?? 0) + 1; });
+        (qStatut.data ?? []).forEach((q: any) => { counts[q.statut] = (counts[q.statut] ?? 0) + 1; });
         setQuotesByStatut(counts);
-      }),
-      supabase.from("profiles").select("role").then(({ data }) => {
-        const counts: Record<string, number> = {};
-        (data ?? []).forEach((u: any) => { counts[u.role] = (counts[u.role] ?? 0) + 1; });
-        setUsersByRole(counts);
-      }),
-      supabase.from("quotes").select("id,nom,email,statut,created_at,prix_total_calcule").order("created_at", { ascending: false }).limit(5).then(({ data }) => setLastQuotes((data as QuoteRow[]) ?? [])),
-      supabase.from("profiles").select("id,first_name,last_name,email,role,created_at").order("created_at", { ascending: false }).limit(5).then(({ data }) => setLastUsers((data as UserRow[]) ?? [])),
-    ]).catch((err) => console.error("[AdminDashboard] load error:", err)).finally(() => setSupabaseLoading(false));
+        const uCounts: Record<string, number> = {};
+        (pRole.data ?? []).forEach((u: any) => { uCounts[u.role] = (uCounts[u.role] ?? 0) + 1; });
+        setUsersByRole(uCounts);
+        setLastQuotes((qLast.data as QuoteRow[]) ?? []);
+        setLastUsers((pLast.data as UserRow[]) ?? []);
+      } catch (err) {
+        console.error("[AdminDashboard] load error:", err);
+      } finally {
+        clearTimeout(timer);
+        setSupabaseLoading(false);
+      }
+    })();
+    return () => clearTimeout(timer);
   }, []);
 
   const totalQuotes = Object.values(quotesByStatut).reduce((a, b) => a + b, 0);

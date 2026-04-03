@@ -34,62 +34,71 @@ export default function AdminAnalytics() {
   const [newUsersThisMonth, setNewUsersThisMonth] = useState(0);
   const [newQuotesThisMonth, setNewQuotesThisMonth] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchData = async () => {
     if (!supabase) { setLoading(false); return; }
     setLoading(true);
+    setLoadError(null);
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const isoThirty = thirtyDaysAgo.toISOString();
+    const timeout = setTimeout(() => { setLoading(false); setLoadError("Chargement trop long (timeout 8s)"); }, 8000);
 
-    const firstOfMonth = new Date();
-    firstOfMonth.setDate(1);
-    firstOfMonth.setHours(0, 0, 0, 0);
-    const isoMonth = firstOfMonth.toISOString();
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const isoThirty = thirtyDaysAgo.toISOString();
 
-    const [quotesRes, profilesRes, quotesMonthRes, usersMonthRes] = await Promise.all([
-      supabase.from("quotes").select("created_at, statut").gte("created_at", isoThirty),
-      supabase.from("profiles").select("created_at").gte("created_at", isoThirty),
-      supabase.from("quotes").select("id").gte("created_at", isoMonth),
-      supabase.from("profiles").select("id").gte("created_at", isoMonth),
-    ]);
+      const firstOfMonth = new Date();
+      firstOfMonth.setDate(1);
+      firstOfMonth.setHours(0, 0, 0, 0);
+      const isoMonth = firstOfMonth.toISOString();
 
-    const [allQuotes, allUsers] = await Promise.all([
-      supabase.from("quotes").select("statut"),
-      supabase.from("profiles").select("id"),
-    ]);
+      const [quotesRes, profilesRes, quotesMonthRes, usersMonthRes] = await Promise.all([
+        supabase.from("quotes").select("created_at, statut").gte("created_at", isoThirty),
+        supabase.from("profiles").select("created_at").gte("created_at", isoThirty),
+        supabase.from("quotes").select("id").gte("created_at", isoMonth),
+        supabase.from("profiles").select("id").gte("created_at", isoMonth),
+      ]);
 
-    // Build chart data by day
-    const dayMap: Record<string, DayPoint> = {};
-    const last30: string[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = toDay(d.toISOString());
-      dayMap[key] = { date: key.slice(5), devis: 0, inscriptions: 0 };
-      last30.push(key);
+      const [allQuotes, allUsers] = await Promise.all([
+        supabase.from("quotes").select("statut"),
+        supabase.from("profiles").select("id"),
+      ]);
+
+      // Build chart data by day
+      const dayMap: Record<string, DayPoint> = {};
+      const last30: string[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = toDay(d.toISOString());
+        dayMap[key] = { date: key.slice(5), devis: 0, inscriptions: 0 };
+        last30.push(key);
+      }
+      (quotesRes.data ?? []).forEach((q: any) => {
+        const k = toDay(q.created_at);
+        if (dayMap[k]) dayMap[k].devis++;
+      });
+      (profilesRes.data ?? []).forEach((u: any) => {
+        const k = toDay(u.created_at);
+        if (dayMap[k]) dayMap[k].inscriptions++;
+      });
+      setChartData(last30.map((k) => dayMap[k]));
+
+      // Statut counts
+      const sc: Record<string, number> = {};
+      (allQuotes.data ?? []).forEach((q: any) => { sc[q.statut] = (sc[q.statut] ?? 0) + 1; });
+      setStatutCounts(Object.entries(sc).map(([statut, count]) => ({ statut, count })));
+      setTotalQuotes(allQuotes.data?.length ?? 0);
+      setTotalUsers(allUsers.data?.length ?? 0);
+      setNewQuotesThisMonth(quotesMonthRes.data?.length ?? 0);
+      setNewUsersThisMonth(usersMonthRes.data?.length ?? 0);
+    } catch (err: any) {
+      setLoadError(err.message ?? "Erreur inconnue lors du chargement des analytics");
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
     }
-    (quotesRes.data ?? []).forEach((q: any) => {
-      const k = toDay(q.created_at);
-      if (dayMap[k]) dayMap[k].devis++;
-    });
-    (profilesRes.data ?? []).forEach((u: any) => {
-      const k = toDay(u.created_at);
-      if (dayMap[k]) dayMap[k].inscriptions++;
-    });
-    setChartData(last30.map((k) => dayMap[k]));
-
-    // Statut counts
-    const sc: Record<string, number> = {};
-    (allQuotes.data ?? []).forEach((q: any) => { sc[q.statut] = (sc[q.statut] ?? 0) + 1; });
-    setStatutCounts(Object.entries(sc).map(([statut, count]) => ({ statut, count })));
-    setTotalQuotes(allQuotes.data?.length ?? 0);
-    setTotalUsers(allUsers.data?.length ?? 0);
-    setNewQuotesThisMonth(quotesMonthRes.data?.length ?? 0);
-    setNewUsersThisMonth(usersMonthRes.data?.length ?? 0);
-
-    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -106,6 +115,12 @@ export default function AdminAnalytics() {
           Rafraîchir
         </button>
       </div>
+
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+          {loadError}
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">

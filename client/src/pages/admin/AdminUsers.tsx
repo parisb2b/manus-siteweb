@@ -50,29 +50,35 @@ export default function AdminUsers() {
     }
     setLoading(true);
     setLoadError(null);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      setLoadError(`Erreur de chargement : ${error.message} (code ${error.code})`);
-      setUsers([]);
-    } else if (!data || data.length === 0) {
-      setLoadError("Aucun profil trouvé. Vérifiez que la table profiles est accessible et que les RLS policies autorisent la lecture admin.");
-      setUsers([]);
-    } else {
-      // If direct query returns 0 or 1 result, try RPC fallback
-      if (!data || data.length <= 1) {
-        const { data: rpcData } = await supabase.rpc('get_all_profiles');
-        if (rpcData && rpcData.length > (data?.length ?? 0)) {
-          setUsers(rpcData as UserRecord[]);
-          setLoading(false);
-          return;
+    const timer = setTimeout(() => { setLoading(false); setLoadError('Délai dépassé (8s)'); }, 8000);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        setLoadError(`Erreur de chargement : ${error.message} (code ${error.code})`);
+        setUsers([]);
+      } else if (!data || data.length === 0) {
+        setLoadError("Aucun profil trouvé. Vérifiez que la table profiles est accessible et que les RLS policies autorisent la lecture admin.");
+        setUsers([]);
+      } else {
+        // If direct query returns 0 or 1 result, try RPC fallback
+        if (!data || data.length <= 1) {
+          const { data: rpcData } = await supabase.rpc('get_all_profiles');
+          if (rpcData && rpcData.length > (data?.length ?? 0)) {
+            setUsers(rpcData as UserRecord[]);
+            return;
+          }
         }
+        setUsers(data as UserRecord[]);
       }
-      setUsers(data as UserRecord[]);
+    } catch (err: any) {
+      setLoadError(err?.message ?? 'Erreur de chargement');
+    } finally {
+      clearTimeout(timer);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
@@ -230,6 +236,11 @@ export default function AdminUsers() {
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
           <Loader2 style={{ width: 32, height: 32, color: ADMIN_COLORS.navyAccent, animation: 'spin 1s linear infinite' }} />
+        </div>
+      ) : loadError ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#DC2626', fontSize: '12px' }}>
+          <p>Erreur : {loadError}</p>
+          <button onClick={() => { load(); }} style={{ marginTop: '8px', color: '#4A90D9', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Réessayer</button>
         </div>
       ) : (
         <AdminCard>

@@ -42,25 +42,39 @@ const TYPE_LABELS: Record<string, string> = {
 export default function AdminInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadInvoices = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("invoices")
-      .select("*, quotes(numero_devis, nom, email)")
-      .order("created_at", { ascending: false });
+    setLoadError(null);
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setLoadError("Chargement trop long (timeout 8s)");
+    }, 8000);
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*, quotes(numero_devis, nom, email)")
+        .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setInvoices(
-        data.map((inv: any) => ({
-          ...inv,
-          quote_numero: inv.quotes?.numero_devis,
-          client_nom: inv.quotes?.nom,
-          client_email: inv.quotes?.email,
-        }))
-      );
+      if (error) throw new Error(error.message);
+
+      if (data) {
+        setInvoices(
+          data.map((inv: any) => ({
+            ...inv,
+            quote_numero: inv.quotes?.numero_devis,
+            client_nom: inv.quotes?.nom,
+            client_email: inv.quotes?.email,
+          }))
+        );
+      }
+    } catch (err: any) {
+      setLoadError(err?.message || "Erreur inconnue lors du chargement");
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -84,6 +98,11 @@ export default function AdminInvoices() {
 
   return (
     <div className="space-y-6">
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          {loadError}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">
           Factures ({invoices.length})
