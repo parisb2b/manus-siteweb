@@ -20,7 +20,7 @@ import {
 
 const ADMIN_PARTNER_ID = "00000000-0000-0000-0000-000000000001";
 
-type Statut = "nouveau" | "en_cours" | "negociation" | "accepte" | "refuse";
+type Statut = "nouveau" | "en_cours" | "negociation" | "accepte" | "refuse" | "non_conforme";
 
 const STATUT_LABELS: Record<Statut, string> = {
   nouveau: "Nouveau",
@@ -28,6 +28,7 @@ const STATUT_LABELS: Record<Statut, string> = {
   negociation: "Négociation",
   accepte: "Accepté",
   refuse: "Refusé",
+  non_conforme: "Non conforme",
 };
 
 interface Partner {
@@ -465,7 +466,7 @@ export default function AdminQuotes() {
 
       {/* Filtres statut */}
       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '14px' }}>
-        {(["tous", "nouveau", "en_cours", "negociation", "accepte", "refuse"] as const).map((s) => (
+        {(["tous", "nouveau", "en_cours", "negociation", "accepte", "refuse", "non_conforme"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setFilterStatut(s)}
@@ -567,6 +568,19 @@ export default function AdminQuotes() {
                         }}>
                           Facturé
                         </span>
+                      )}
+                      {statut !== "non_conforme" && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); (async () => { if (!supabase) return; await supabase.from("quotes").update({ statut: "non_conforme" }).eq("id", q.id); await load(); })(); }}
+                          title="Marquer Non Conforme"
+                          style={{
+                            background: '#991B1B', color: '#fff', border: 'none', borderRadius: '4px',
+                            fontSize: '9px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600,
+                            fontFamily: ADMIN_COLORS.font,
+                          }}
+                        >
+                          NC
+                        </button>
                       )}
                       <span style={{ color: ADMIN_COLORS.grayText, fontSize: '16px', fontFamily: ADMIN_COLORS.font }}>›</span>
                     </div>

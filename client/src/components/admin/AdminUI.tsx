@@ -92,6 +92,7 @@ export const BadgeStatut = ({ statut }: BadgeProps) => {
     negociation:  { bg: '#7C3AED', color: '#fff', label: 'Négociation' },
     accepte:      { bg: '#16A34A', color: '#fff', label: 'Accepté' },
     refuse:       { bg: '#DC2626', color: '#fff', label: 'Refusé' },
+    non_conforme: { bg: '#991B1B', color: '#fff', label: 'Non conforme' },
     vip:          { bg: '#7C3AED', color: '#fff', label: 'VIP' },
     facture:      { bg: '#16A34A', color: '#fff', label: 'Facturé' },
   }
