@@ -116,7 +116,7 @@ export default function ModularStandard() {
 
     const selectedOptionNames = selectedOptions.map(optId => {
       const opt = OPTIONS.find(o => o.id === optId);
-      return opt?.name || optId;
+      return opt?.name ?? "Option non disponible";
     });
 
     const displayPrice = calculerPrix(totalPrixAchat, "user").prixAffiche ?? totalPrixAchat;

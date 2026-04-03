@@ -110,7 +110,7 @@ export default function ModularPremium() {
   const handleAddToCart = () => {
     if (!user) { setShowAuthModal(true); return; }
     const selectedOptionNames = selectedOptions.map(
-      (optId) => OPTIONS.find((o) => o.id === optId)?.name || optId
+      (optId) => OPTIONS.find((o) => o.id === optId)?.name ?? "Option non disponible"
     );
     const displayPrice = calculerPrix(totalPrixAchat, "user").prixAffiche ?? totalPrixAchat;
     addToCart({
