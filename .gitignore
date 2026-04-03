@@ -100,6 +100,12 @@ jspm_packages/
 tmp/
 temp/
 
+# Manus logs
+.manus-logs/
+
+# Gemini export
+GEMINI-EXPORT/
+
 # Database
 *.db
 *.sqlite

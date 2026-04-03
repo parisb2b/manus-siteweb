@@ -45,6 +45,11 @@ export default function AdminInvoices() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadInvoices = async () => {
+    if (!supabase) {
+      setLoadError("Supabase non configuré");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setLoadError(null);
     const timeout = setTimeout(() => {
@@ -82,6 +87,7 @@ export default function AdminInvoices() {
   }, []);
 
   const updateStatut = async (id: string, statut: string) => {
+    if (!supabase) return;
     await supabase.from("invoices").update({ statut }).eq("id", id);
     setInvoices((prev) =>
       prev.map((inv) => (inv.id === id ? { ...inv, statut } : inv))

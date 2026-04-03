@@ -7,9 +7,9 @@
   "shippingPrices": {
     "martinique": { "20ft": 5500, "40ft": 9500 },
     "guadeloupe": { "20ft": 5000, "40ft": 8500 },
-    "guyane": { "20ft": null, "40ft": null },
-    "reunion": { "20ft": null, "40ft": null },
-    "mayotte": { "20ft": null, "40ft": null }
+    "guyane": { "20ft": 6500, "40ft": 11000 },
+    "reunion": { "20ft": 7000, "40ft": 12000 },
+    "mayotte": { "20ft": 7500, "40ft": 12500 }
   },
   "pricePerM3": 250,
   "housePricing": {

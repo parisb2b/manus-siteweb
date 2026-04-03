@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Users, Mail, Phone, MessageSquare, Calendar, Archive, RefreshCw, ExternalLink } from "lucide-react";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { Users, Mail, Phone, MessageSquare, Calendar, Archive, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -17,39 +18,40 @@ interface Lead {
 export default function AdminLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread" | "archived">("all");
-  const [supabaseConfigured, setSupabaseConfigured] = useState(false);
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  useEffect(() => {
-    if (supabaseUrl && supabaseKey) {
-      setSupabaseConfigured(true);
-      loadLeads();
-    } else {
-      setLoading(false);
-    }
-  }, []);
 
   const loadLeads = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/contacts?order=created_at.desc`, {
-        headers: {
-          "apikey": supabaseKey,
-          "Authorization": `Bearer ${supabaseKey}`,
-        },
-      });
-      if (!res.ok) throw new Error("Erreur de chargement");
-      const data = await res.json();
-      setLeads(data);
-    } catch (e: any) {
-      setError(e.message);
+    if (!supabase) {
+      setLoadError("Supabase non configuré");
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    setLoading(true);
+    setLoadError(null);
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setLoadError("Chargement trop long (timeout 8s)");
+    }, 8000);
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw new Error(error.message);
+      setLeads(data || []);
+    } catch (e: any) {
+      setLoadError(e?.message || "Erreur inconnue");
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadLeads();
+  }, []);
 
   const filteredLeads = leads.filter(l => {
     if (filter === "unread") return !l.read && !l.archived;
@@ -59,7 +61,7 @@ export default function AdminLeads() {
 
   const unreadCount = leads.filter(l => !l.read && !l.archived).length;
 
-  if (!supabaseConfigured) {
+  if (!supabase) {
     return (
       <div className="font-sans">
         <div className="flex items-center gap-3 mb-6">
@@ -108,6 +110,12 @@ export default function AdminLeads() {
         </button>
       </div>
 
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+          {loadError}
+        </div>
+      )}
+
       {/* Filtres */}
       <div className="flex gap-2 mb-6">
         {(["all", "unread", "archived"] as const).map((f) => (
@@ -124,9 +132,9 @@ export default function AdminLeads() {
       </div>
 
       {loading ? (
-        <div className="bg-white rounded-xl p-12 text-center text-gray-500">Chargement...</div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-sm">{error}</div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#4A90D9]" />
+        </div>
       ) : filteredLeads.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-3" />
