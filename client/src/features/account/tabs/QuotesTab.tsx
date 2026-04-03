@@ -6,6 +6,7 @@ import { formatEur } from "@/utils/calculPrix";
 import { supabase } from "@/lib/supabase";
 import { uploadPdfBlob } from "@/lib/storage";
 import { sendEmail } from "@/lib/notifications";
+import { logError } from "@/lib/logger";
 import type { User } from "@supabase/supabase-js";
 
 interface Props {
@@ -234,9 +235,16 @@ export default function QuotesTab({ user, profile, role }: Props) {
           <p style="margin-top:16px;color:#6B7280;font-size:13px;">Le client déclare avoir effectué le virement. Veuillez vérifier la réception sur le compte bancaire.</p>
         `,
       });
-    } catch {
+    } catch (emailErr: any) {
       // Silencieux — ne pas bloquer le flux client
       console.warn("[QuotesTab] Échec envoi notification admin acompte");
+      logError({
+        type: "email_error",
+        message: emailErr?.message || "Échec notification acompte",
+        context: "quotes_tab_acompte",
+        user_email: user.email || "",
+        stack_trace: emailErr?.stack,
+      });
     }
 
     setAcompteSaving(false);

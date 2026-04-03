@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { sendEmail } from "@/lib/notifications";
+import { logError } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, FileText, Download } from "lucide-react";
 import { formatEur, calculerPrix } from "@/utils/calculPrix";
@@ -274,6 +275,13 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       onSuccess?.();
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue. Réessayez.");
+      logError({
+        type: "api_error",
+        message: err?.message || "Échec création devis",
+        context: "devis_form_submit",
+        user_email: form.email,
+        stack_trace: err?.stack,
+      });
     } finally {
       setLoading(false);
     }
@@ -319,7 +327,16 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
             <tr><td style="padding:4px 12px;font-weight:bold;">Type</td><td style="padding:4px 12px;">${compteType === "pro" ? "Professionnel" : "Personnel"}</td></tr>
           </table>`,
       });
-    } catch { console.warn("[DevisForm] Email notification failed"); }
+    } catch (emailErr: any) {
+      console.warn("[DevisForm] Email notification failed");
+      logError({
+        type: "email_error",
+        message: emailErr?.message || "Échec notification admin virement",
+        context: "devis_form_acompte",
+        user_email: form.email,
+        stack_trace: emailErr?.stack,
+      });
+    }
 
     setAcompteSaving(false);
     setShowAcompteModal(false);

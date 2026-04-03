@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03 (v6.2)
+Dernière mise à jour : 2026-04-03 (v6.3)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,22 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v6.3-logs-email-fix
+TYPE : feat + fix
+DESCRIPTION : Journal erreurs admin + emails non-bloquants + logger global
+
+CREES :
+  lib/logger.ts — logError/logInfo avec insert error_logs Supabase
+  pages/admin/AdminLogs.tsx — 3 KPIs + filtres + tableau + export CSV + auto-refresh 30s
+  scripts/create-error-logs.sql — table + RLS + index
+
+MODIFIES :
+  AdminLayout — section Systeme + badge rouge erreurs non resolues
+  DevisForm — logError sur echec email + echec creation devis
+  QuotesTab — logError sur echec notification acompte
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03

@@ -19,6 +19,7 @@ import {
   ShoppingCart,
   Globe,
   BarChart3,
+  Bug,
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -31,6 +32,7 @@ import AdminSuiviAchats from "./AdminSuiviAchats";
 import AdminParametres from "./AdminParametres";
 import AdminContenu from "./AdminContenu";
 import AdminAnalytics from "./AdminAnalytics";
+import AdminLogs from "./AdminLogs";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -60,6 +62,8 @@ const navItems: NavItem[] = [
   { label: "Médias", icon: ImageIcon, path: "/admin/medias", component: AdminMedia, section: "Catalogue" },
   // ── Analyse ──
   { label: "Analytics", icon: BarChart3, path: "/admin/analytics", component: AdminAnalytics, section: "Analyse" },
+  // ── Système ──
+  { label: "Journal erreurs", icon: Bug, path: "/admin/logs", component: AdminLogs, adminOnly: true, section: "Système" },
   // ── Configuration ──
   { label: "Paramètres", icon: Settings, path: "/admin/parametres", component: AdminParametres, adminOnly: true, section: "Configuration" },
   { label: "Contenu Site", icon: Globe, path: "/admin/contenu", component: AdminContenu, adminOnly: true, section: "Configuration" },
@@ -88,6 +92,7 @@ export default function AdminLayout() {
   const [hasChanges, setHasChanges] = useState(false);
   const [publishState, setPublishState] = useState<"idle" | "confirm" | "publishing" | "success" | "error">("idle");
   const [publishError, setPublishError] = useState("");
+  const [nbErreurs, setNbErreurs] = useState(0);
 
   // Admin auth — reads from supabaseAdmin (storageKey 97import-admin-auth)
   useEffect(() => {
@@ -158,6 +163,22 @@ export default function AdminLayout() {
     const interval = setInterval(checkPublishStatus, 10000);
     return () => clearInterval(interval);
   }, [checkPublishStatus]);
+
+  // Error logs badge count
+  useEffect(() => {
+    if (!supabase) return;
+    const fetchCount = () => {
+      supabase
+        .from("error_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("resolved", false)
+        .then(({ count }) => setNbErreurs(count || 0))
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Show loading while auth resolves
   if (authLoading || !user) {
@@ -283,6 +304,11 @@ export default function AdminLayout() {
                     >
                       <Icon className="w-4.5 h-4.5 flex-shrink-0" />
                       <span className="text-sm">{item.label}</span>
+                      {item.path === "/admin/logs" && nbErreurs > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                          {nbErreurs}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
