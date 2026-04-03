@@ -1,7 +1,7 @@
 ================================================================
 MAJALL.TXT — Projet 97import.com
 Référence maître ultra-détaillée — Journal technique + Cahier des charges
-Dernière mise à jour : 2026-04-03
+Dernière mise à jour : 2026-04-03 (v5.13)
 Dépôt : https://github.com/parisb2b/manus-siteweb
 Déploiement : Vercel SPA — React 19 + Vite 7 + TypeScript + Supabase + wouter
 ================================================================
@@ -91,6 +91,26 @@ Rôles :
 ================================================================
 HISTORIQUE DES COMMITS — DÉTAIL TECHNIQUE
 ================================================================
+
+────────────────────────────────────────────────────────────────
+DATE : 2026-04-03
+TAG : v5.13-systeme-acompte-complet
+TYPE : feat + fix
+DESCRIPTION : Système acompte amélioré — badges, toast, statuts harmonisés
+
+MODIFICATIONS :
+  - AdminQuotes : badge acompte jaune/vert sur chaque ligne fermée du devis
+  - AdminQuotes : interface Quote typée avec acomptes, total_encaisse, solde_restant
+  - QuotesTab : toast descriptif "Votre virement de X€ a bien été déclaré" (8s)
+  - QuotesTab : harmonisation statuts encaisse/valide avec icônes ✓ et ⏳
+  - Diagnostic complet confirmé : système acompte JSON déjà fonctionnel
+    (acomptes array, total_encaisse, solde_restant, facture cumulative)
+  - PDF facture avec section acomptes déjà opérationnel (invoice-pdf.ts)
+  - Chargement infini déjà fixé (v5.12), isolation auth déjà fixée (v5.11)
+
+FICHIERS :
+  client/src/pages/admin/AdminQuotes.tsx (badge acompte ligne fermée, interface Quote)
+  client/src/features/account/tabs/QuotesTab.tsx (toast amélioré, statuts harmonisés)
 
 ────────────────────────────────────────────────────────────────
 DATE : 2026-04-03
