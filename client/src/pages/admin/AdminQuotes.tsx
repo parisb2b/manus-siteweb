@@ -202,21 +202,37 @@ export default function AdminQuotes() {
     if (!supabase) return;
     setLoading(true);
     setLoadError(null);
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setLoadError("Délai dépassé (8 s) — vérifier la connexion Supabase ou les politiques RLS sur la table quotes");
+    }, 8000);
     try {
+      // 1. Charger quotes séparément pour isoler les erreurs
       const q = supabase.from("quotes").select("*").order("created_at", { ascending: false });
       if (filterStatut !== "tous") q.eq("statut", filterStatut);
-      const [qRes, pRes] = await Promise.all([
-        q,
-        supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom"),
-      ]);
+      const qRes = await q;
       if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
-      if (pRes.error) throw new Error(`partners: ${pRes.error.message}`);
+      console.log("[AdminQuotes] quotes chargés:", qRes.data?.length ?? 0);
+
+      // 2. Charger partners séparément
+      const pRes = await supabase.from("partners").select("id, nom, email, telephone").eq("actif", true).order("nom");
+      if (pRes.error) {
+        console.error("[AdminQuotes] partners error (non bloquant):", pRes.error.message);
+        // Partners non bloquant — on continue avec un tableau vide
+      }
+
       setQuotes((qRes.data as Quote[]) ?? []);
       setPartners((pRes.data as Partner[]) ?? []);
+
+      // 3. Warning si 0 devis malgré succès (possible RLS)
+      if (qRes.data?.length === 0 && !qRes.error) {
+        console.warn("[AdminQuotes] 0 devis retournés — si des devis existent en base, vérifier RLS sur la table quotes");
+      }
     } catch (err: any) {
       console.error("[AdminQuotes] load error:", err);
       setLoadError(err?.message ?? "Erreur de chargement");
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -494,9 +510,21 @@ export default function AdminQuotes() {
           <Loader2 style={{ width: 28, height: 28, animation: 'spin 1s linear infinite', color: ADMIN_COLORS.navyAccent }} />
         </div>
       ) : loadError ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#DC2626', fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
-          ⚠ Erreur : {loadError}
-          <br /><button onClick={load} style={{ marginTop: '8px', color: ADMIN_COLORS.navyAccent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Réessayer</button>
+        <div style={{ textAlign: 'center', padding: '48px 0', fontFamily: ADMIN_COLORS.font }}>
+          <div style={{ color: '#DC2626', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+            Erreur de chargement
+          </div>
+          <div style={{ color: '#991B1B', fontSize: '11px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '10px 16px', display: 'inline-block', maxWidth: '500px', textAlign: 'left' }}>
+            {loadError}
+          </div>
+          <div style={{ marginTop: '12px' }}>
+            <button onClick={load} style={{ color: '#fff', background: ADMIN_COLORS.navyAccent, border: 'none', borderRadius: '4px', padding: '6px 16px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+              Réessayer
+            </button>
+          </div>
+          <div style={{ marginTop: '10px', fontSize: '10px', color: ADMIN_COLORS.grayText }}>
+            Si le problème persiste, vérifier les politiques RLS sur la table <code>quotes</code> dans Supabase.
+          </div>
         </div>
       ) : quotes.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', color: ADMIN_COLORS.grayText, fontSize: '12px', fontFamily: ADMIN_COLORS.font }}>
