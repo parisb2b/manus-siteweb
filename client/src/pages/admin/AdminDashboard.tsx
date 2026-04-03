@@ -5,6 +5,7 @@ import { adminQuery } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminBadge from "@/components/admin/AdminBadge";
 import { formatEur } from "@/utils/calculPrix";
+import { getProduitPrincipal, getAcompteStatut } from "@/lib/quoteHelpers";
 
 // ── KPI Card ───────────────────────────────────────────────
 function KpiCard({
@@ -60,11 +61,13 @@ export default function AdminDashboard() {
     });
     if (q1.error) errors.devisEnCours = true;
 
-    // KPI 2 — Acomptes déclarés
-    const q2 = await adminQuery("quotes", {
-      select: "id",
-      eq: { acompte_statut: "declare" },
+    // KPI 2 — Acomptes déclarés (on filtre côté client depuis le JSON acomptes)
+    const q2 = await adminQuery<{ acomptes: any }>("quotes", {
+      select: "id, acomptes",
     });
+    const acompteDeclares = q2.error ? 0 : q2.data.filter(
+      (q) => getAcompteStatut(q.acomptes) === "declare" || getAcompteStatut(q.acomptes) === "en_attente"
+    ).length;
     if (q2.error) errors.acompteDeclares = true;
 
     // KPI 3 — Clients actifs
@@ -75,16 +78,16 @@ export default function AdminDashboard() {
     if (q3.error) errors.clientsActifs = true;
 
     // KPI 4 — CA total (devis acceptés)
-    const q4 = await adminQuery<{ total: number }>("quotes", {
-      select: "total",
+    const q4 = await adminQuery<{ prix_total_calcule: number }>("quotes", {
+      select: "prix_total_calcule",
       eq: { statut: "accepte" },
     });
     if (q4.error) errors.caTotal = true;
-    const ca = q4.data.reduce((sum, q) => sum + (q.total || 0), 0);
+    const ca = q4.data.reduce((sum, q) => sum + (q.prix_total_calcule || 0), 0);
 
     setKpis({
       devisEnCours: q1.count,
-      acompteDeclares: q2.count,
+      acompteDeclares,
       clientsActifs: q3.count,
       caTotal: formatEur(ca),
     });
@@ -92,7 +95,7 @@ export default function AdminDashboard() {
 
     // Derniers devis
     const recent = await adminQuery("quotes", {
-      select: "id, numero_devis, nom, email, produit, total, statut, created_at",
+      select: "id, numero_devis, nom, email, produits, prix_total_calcule, statut, created_at",
       order: { column: "created_at", ascending: false },
       limit: 5,
     });
@@ -193,10 +196,10 @@ export default function AdminDashboard() {
                       <div className="text-xs text-gray-400">{q.email}</div>
                     </td>
                     <td className="px-5 py-3 text-gray-600 truncate max-w-[200px]">
-                      {q.produit || "—"}
+                      {getProduitPrincipal(q.produits)}
                     </td>
                     <td className="px-5 py-3 text-right font-semibold">
-                      {q.total ? formatEur(q.total) : "—"}
+                      {q.prix_total_calcule ? formatEur(q.prix_total_calcule) : "—"}
                     </td>
                     <td className="px-5 py-3">
                       <AdminBadge status={q.statut || "nouveau"} />

@@ -2,39 +2,45 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import {
   ArrowLeft, FileText, Download, CheckCircle2, XCircle,
-  Mail, DollarSign, Plus, Loader2, AlertCircle
+  Mail, Plus, Loader2, AlertCircle
 } from "lucide-react";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminBadge from "@/components/admin/AdminBadge";
 import { formatEur } from "@/utils/calculPrix";
+import {
+  getProduitPrincipal, getProduitsList, getAcompteList,
+  getAcompteMontant, getAcompteStatut
+} from "@/lib/quoteHelpers";
 
+// ── Type — colonnes réelles de la table quotes ─────────────
 interface QuoteDetail {
   id: string;
   numero_devis: string;
   nom: string;
   email: string;
   telephone?: string;
-  ile?: string;
-  code_postal?: string;
-  adresse?: string;
-  produit?: string;
-  taille?: string;
-  options?: any;
-  total?: number;
-  total_ht?: number;
-  tva?: number;
-  statut: string;
-  acompte_statut?: string;
-  acompte_montant?: number;
-  acompte_encaisse_at?: string;
-  acomptes?: any[];
-  partenaire_code?: string;
+  message?: string;
+  produits?: any;              // JSON array
+  prix_total_calcule?: number;
+  prix_negocie?: number;
   role_client?: string;
-  numero_interne?: string;
+  statut: string;
+  notes_admin?: string;
+  adresse_client?: string;
+  ville_client?: string;
+  pays_client?: string;
+  partenaire_code?: string;
+  partenaire_id?: string;
+  partner_id?: string;
+  acomptes?: any;              // JSON array
+  total_encaisse?: number;
+  solde_restant?: number;
   facture_url?: string;
+  pdf_url?: string;
+  invoice_number?: string;
+  commission_montant?: number;
   created_at: string;
-  items?: any[];
+  updated_at?: string;
 }
 
 export default function AdminQuoteDetail() {
@@ -77,17 +83,25 @@ export default function AdminQuoteDetail() {
     setSaving(false);
   };
 
-  const handleEncaisser = async () => {
+  const handleEncaisserAcompte = async (index: number) => {
     if (!quote) return;
     setSaving(true);
+    const list = getAcompteListParsed(quote.acomptes);
+    if (list[index]) {
+      list[index] = { ...list[index], statut: "encaisse", date_encaissement: new Date().toISOString() };
+    }
+    const totalEncaisse = list
+      .filter((a: any) => a.statut === "encaisse" || a.statut === "valide")
+      .reduce((s: number, a: any) => s + (a.montant || 0), 0);
+    const soldeRestant = (quote.prix_total_calcule || 0) - totalEncaisse;
+
     await adminUpdate("quotes", quote.id, {
-      acompte_statut: "encaisse",
-      acompte_encaisse_at: new Date().toISOString(),
+      acomptes: list,
+      total_encaisse: totalEncaisse,
+      solde_restant: soldeRestant,
     });
     setQuote((prev) =>
-      prev
-        ? { ...prev, acompte_statut: "encaisse", acompte_encaisse_at: new Date().toISOString() }
-        : prev
+      prev ? { ...prev, acomptes: list, total_encaisse: totalEncaisse, solde_restant: soldeRestant } : prev
     );
     setSaving(false);
   };
@@ -98,26 +112,23 @@ export default function AdminQuoteDetail() {
     if (isNaN(montant) || montant <= 0) return;
 
     setSaving(true);
-    const acomptes = Array.isArray(quote.acomptes) ? [...quote.acomptes] : [];
-    acomptes.push({
+    const list = getAcompteListParsed(quote.acomptes);
+    list.push({
       montant,
       statut: "en_attente",
       date_declaration: new Date().toISOString(),
     });
+    const totalEncaisse = list
+      .filter((a: any) => a.statut === "encaisse" || a.statut === "valide")
+      .reduce((s: number, a: any) => s + (a.montant || 0), 0);
+
     await adminUpdate("quotes", quote.id, {
-      acomptes,
-      acompte_montant: (quote.acompte_montant || 0) + montant,
-      acompte_statut: "declare",
+      acomptes: list,
+      total_encaisse: totalEncaisse,
+      solde_restant: (quote.prix_total_calcule || 0) - totalEncaisse,
     });
     setQuote((prev) =>
-      prev
-        ? {
-            ...prev,
-            acomptes,
-            acompte_montant: (prev.acompte_montant || 0) + montant,
-            acompte_statut: "declare",
-          }
-        : prev
+      prev ? { ...prev, acomptes: list, total_encaisse: totalEncaisse } : prev
     );
     setNewAcompteMontant("");
     setSaving(false);
@@ -144,20 +155,15 @@ export default function AdminQuoteDetail() {
     );
   }
 
-  const totalTTC = quote.total || 0;
-  const totalHT = quote.total_ht || totalTTC / 1.2;
-  const tva = quote.tva || totalTTC - totalHT;
-  const acompteVerse = quote.acompte_montant || 0;
-  const resteAPayer = totalTTC - acompteVerse;
-  const acomptes = Array.isArray(quote.acomptes) ? quote.acomptes : [];
-
-  // Parse items/options
-  let items: { ref?: string; nom: string; qte: number; pu: number; total: number }[] = [];
-  if (Array.isArray(quote.items)) {
-    items = quote.items;
-  } else if (quote.produit) {
-    items = [{ ref: quote.numero_interne || "—", nom: quote.produit, qte: 1, pu: totalHT, total: totalHT }];
-  }
+  // Données calculées depuis les colonnes réelles
+  const totalTTC = quote.prix_total_calcule || 0;
+  const prixNegocie = quote.prix_negocie || null;
+  const totalEncaisse = quote.total_encaisse || getAcompteMontant(quote.acomptes);
+  const soldeRestant = quote.solde_restant ?? (totalTTC - totalEncaisse);
+  const acompteList = getAcompteList(quote.acomptes);
+  const produits = getProduitsList(quote.produits);
+  const acompteStatut = getAcompteStatut(quote.acomptes);
+  const partenaireRef = quote.partenaire_code || quote.partenaire_id || quote.partner_id;
 
   return (
     <div className="space-y-6">
@@ -184,7 +190,9 @@ export default function AdminQuoteDetail() {
           <p className="font-semibold text-gray-800">{quote.nom || "—"}</p>
           <p className="text-sm text-gray-500">{quote.email}</p>
           {quote.telephone && <p className="text-sm text-gray-500">{quote.telephone}</p>}
-          <p className="text-sm text-gray-500">{quote.ile || "—"} {quote.code_postal || ""}</p>
+          <p className="text-sm text-gray-500">
+            {[quote.adresse_client, quote.ville_client, quote.pays_client].filter(Boolean).join(", ") || "—"}
+          </p>
           {quote.role_client && <AdminBadge status={quote.role_client} />}
         </div>
 
@@ -195,49 +203,53 @@ export default function AdminQuoteDetail() {
           <p className="text-sm text-gray-500">
             Créé le {new Date(quote.created_at).toLocaleDateString("fr-FR")}
           </p>
-          {quote.partenaire_code && (
-            <p className="text-sm text-gray-500">Partenaire : <strong>{quote.partenaire_code}</strong></p>
+          {partenaireRef && (
+            <p className="text-sm text-gray-500">Partenaire : <strong>{partenaireRef}</strong></p>
           )}
-          {quote.numero_interne && (
-            <p className="text-sm text-gray-500">Réf. : {quote.numero_interne}</p>
+          {quote.invoice_number && (
+            <p className="text-sm text-gray-500">Facture : {quote.invoice_number}</p>
           )}
         </div>
 
         {/* Montants */}
         <div className="bg-white rounded-2xl shadow-sm p-5 space-y-2">
           <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Montants</h3>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Sous-total HT</span>
-            <span className="font-semibold">{formatEur(totalHT)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">TVA</span>
-            <span>{formatEur(tva)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold border-t border-gray-100 pt-2">
-            <span>Total TTC</span>
+          <div className="flex justify-between text-sm font-bold">
+            <span>Total</span>
             <span>{formatEur(totalTTC)}</span>
           </div>
-          {acompteVerse > 0 && (
-            <div className="flex justify-between text-sm text-orange-600">
-              <span>Acompte versé</span>
-              <span>-{formatEur(acompteVerse)}</span>
+          {prixNegocie && prixNegocie !== totalTTC && (
+            <div className="flex justify-between text-sm text-blue-600">
+              <span>Prix négocié</span>
+              <span>{formatEur(prixNegocie)}</span>
             </div>
           )}
-          {resteAPayer > 0 && resteAPayer < totalTTC && (
-            <div className="flex justify-between text-sm font-bold text-red-600">
+          {totalEncaisse > 0 && (
+            <div className="flex justify-between text-sm text-orange-600">
+              <span>Total encaissé</span>
+              <span>-{formatEur(totalEncaisse)}</span>
+            </div>
+          )}
+          {soldeRestant > 0 && soldeRestant < totalTTC && (
+            <div className="flex justify-between text-sm font-bold text-red-600 border-t border-gray-100 pt-2">
               <span>Reste à payer</span>
-              <span>{formatEur(resteAPayer)}</span>
+              <span>{formatEur(soldeRestant)}</span>
+            </div>
+          )}
+          {soldeRestant <= 0 && totalEncaisse > 0 && (
+            <div className="flex justify-between text-sm font-bold text-emerald-600 border-t border-gray-100 pt-2">
+              <span>Statut</span>
+              <span>Soldé</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Tableau produits */}
-      {items.length > 0 && (
+      {produits.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-800">Produits</h3>
+            <h3 className="font-semibold text-gray-800">Produits ({produits.length})</h3>
           </div>
           <table className="w-full text-sm">
             <thead>
@@ -245,18 +257,18 @@ export default function AdminQuoteDetail() {
                 <th className="px-5 py-2.5">Réf.</th>
                 <th className="px-5 py-2.5">Produit</th>
                 <th className="px-5 py-2.5 text-center">Qté</th>
-                <th className="px-5 py-2.5 text-right">P.U. HT</th>
-                <th className="px-5 py-2.5 text-right">Total HT</th>
+                <th className="px-5 py-2.5 text-right">P.U.</th>
+                <th className="px-5 py-2.5 text-right">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {items.map((item, i) => (
+              {produits.map((item, i) => (
                 <tr key={i}>
                   <td className="px-5 py-3 font-mono text-gray-500">{item.ref || "—"}</td>
                   <td className="px-5 py-3 font-medium">{item.nom}</td>
-                  <td className="px-5 py-3 text-center">{item.qte}</td>
-                  <td className="px-5 py-3 text-right">{formatEur(item.pu)}</td>
-                  <td className="px-5 py-3 text-right font-semibold">{formatEur(item.total)}</td>
+                  <td className="px-5 py-3 text-center">{item.quantite}</td>
+                  <td className="px-5 py-3 text-right">{formatEur(item.prix_unitaire)}</td>
+                  <td className="px-5 py-3 text-right font-semibold">{formatEur(item.prix_total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -264,15 +276,23 @@ export default function AdminQuoteDetail() {
         </div>
       )}
 
+      {/* Message client */}
+      {quote.message && (
+        <div className="bg-white rounded-2xl shadow-sm p-5">
+          <h3 className="font-semibold text-gray-800 mb-2">Message du client</h3>
+          <p className="text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">{quote.message}</p>
+        </div>
+      )}
+
       {/* Suivi paiements */}
       <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
         <h3 className="font-semibold text-gray-800">Suivi des paiements</h3>
 
-        {acomptes.length === 0 && (
+        {acompteList.length === 0 && (
           <p className="text-sm text-gray-400">Aucun paiement enregistré</p>
         )}
 
-        {acomptes.map((ac: any, i: number) => (
+        {acompteList.map((ac, i) => (
           <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
             <div>
               <span className="font-semibold">{formatEur(ac.montant)}</span>
@@ -286,10 +306,10 @@ export default function AdminQuoteDetail() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <AdminBadge status={ac.statut || "en_attente"} />
-              {ac.statut === "en_attente" && (
+              <AdminBadge status={ac.statut} />
+              {(ac.statut === "en_attente" || ac.statut === "declare") && (
                 <button
-                  onClick={handleEncaisser}
+                  onClick={() => handleEncaisserAcompte(i)}
                   disabled={saving}
                   className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
@@ -323,32 +343,41 @@ export default function AdminQuoteDetail() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <DocCard
           title="Devis PDF"
-          description="Télécharger le devis"
+          description={quote.pdf_url ? "Télécharger" : "Générer"}
           icon={FileText}
           active
-          onClick={() => {/* TODO: generate PDF */}}
+          href={quote.pdf_url || undefined}
         />
         <DocCard
           title="Facture acompte"
-          description={quote.acompte_statut === "encaisse" ? "Générer + Envoyer" : "Après encaissement"}
+          description={acompteStatut === "encaisse" || acompteStatut === "valide" ? "Générer + Envoyer" : "Après encaissement"}
           icon={Download}
-          active={quote.acompte_statut === "encaisse"}
+          active={acompteStatut === "encaisse" || acompteStatut === "valide"}
+          href={quote.facture_url || undefined}
         />
         <DocCard
           title="Facture solde"
-          description={resteAPayer <= 0 ? "Générer" : `Reste : ${formatEur(resteAPayer)}`}
+          description={soldeRestant <= 0 && totalEncaisse > 0 ? "Générer" : `Reste : ${formatEur(soldeRestant)}`}
           icon={Download}
-          active={resteAPayer <= 0}
+          active={soldeRestant <= 0 && totalEncaisse > 0}
         />
         <DocCard
           title="Note commission"
-          description={quote.partenaire_code ? "Générer" : "Pas de partenaire"}
+          description={partenaireRef ? `Partenaire : ${partenaireRef}` : "Pas de partenaire"}
           icon={FileText}
-          active={!!quote.partenaire_code}
+          active={!!partenaireRef}
         />
       </div>
 
-      {/* Actions bas de page */}
+      {/* Notes admin */}
+      {quote.notes_admin && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <h3 className="font-semibold text-amber-800 text-sm mb-1">Notes internes</h3>
+          <p className="text-sm text-amber-700">{quote.notes_admin}</p>
+        </div>
+      )}
+
+      {/* Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <div className="flex items-center gap-2">
           {quote.statut !== "non_conforme" && (
@@ -387,23 +416,42 @@ export default function AdminQuoteDetail() {
   );
 }
 
-// ── Doc Card helper ────────────────────────────────────────
+// ── Helpers internes ───────────────────────────────────────
+function getAcompteListParsed(acomptes: any): any[] {
+  try {
+    const arr = typeof acomptes === 'string' ? JSON.parse(acomptes) : acomptes;
+    return Array.isArray(arr) ? [...arr] : [];
+  } catch {
+    return [];
+  }
+}
+
 function DocCard({
   title,
   description,
   icon: Icon,
   active,
+  href,
   onClick,
 }: {
   title: string;
   description: string;
   icon: React.ElementType;
   active: boolean;
+  href?: string;
   onClick?: () => void;
 }) {
+  const handleClick = () => {
+    if (href) {
+      window.open(href, "_blank");
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <div
-      onClick={active ? onClick : undefined}
+      onClick={active ? handleClick : undefined}
       className={`rounded-2xl p-5 border transition-colors ${
         active
           ? "bg-white border-gray-200 hover:border-[#4A90D9] cursor-pointer shadow-sm"

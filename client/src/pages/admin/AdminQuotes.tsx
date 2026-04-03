@@ -1,25 +1,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { FileText, Download, RefreshCw, Search, CheckCircle2, XCircle, RotateCcw, FileDown } from "lucide-react";
+import { Download, Search, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import AdminTable, { type Column } from "@/components/admin/AdminTable";
 import AdminBadge from "@/components/admin/AdminBadge";
 import { formatEur } from "@/utils/calculPrix";
+import { getProduitPrincipal, getAcompteStatut, getAcompteMontant } from "@/lib/quoteHelpers";
 
-// ── Types ──────────────────────────────────────────────────
+// ── Types (colonnes réelles de la table quotes) ────────────
 interface Quote {
   id: string;
   numero_devis: string;
   nom: string;
   email: string;
   telephone?: string;
-  ile?: string;
-  produit?: string;
-  total?: number;
+  produits?: any;            // JSON array
+  prix_total_calcule?: number;
+  prix_negocie?: number;
+  role_client?: string;
   statut: string;
-  acompte_statut?: string;
-  acompte_montant?: number;
+  acomptes?: any;            // JSON array
+  total_encaisse?: number;
+  solde_restant?: number;
   partenaire_code?: string;
   created_at: string;
 }
@@ -49,7 +52,7 @@ export default function AdminQuotes() {
     setError(null);
 
     const opts: any = {
-      select: "id, numero_devis, nom, email, telephone, ile, produit, total, statut, acompte_statut, acompte_montant, partenaire_code, created_at",
+      select: "id, numero_devis, nom, email, telephone, produits, prix_total_calcule, prix_negocie, role_client, statut, acomptes, total_encaisse, solde_restant, partenaire_code, created_at",
       order: { column: "created_at", ascending: false },
     };
     if (filter !== "all") {
@@ -63,7 +66,7 @@ export default function AdminQuotes() {
     setQuotes(result.data);
     setLoading(false);
 
-    // Charger les counts par statut (en parallèle, sans bloquer)
+    // Charger les counts par statut
     const countPromises = STATUT_FILTERS.filter((f) => f.key !== "all").map(async (f) => {
       const r = await adminQuery("quotes", { select: "id", eq: { statut: f.key } });
       return { key: f.key, count: r.count };
@@ -91,37 +94,45 @@ export default function AdminQuotes() {
       )
     : quotes;
 
-  // Actions sur un devis
-  const handleEncaisser = async (id: string) => {
-    const { error } = await adminUpdate("quotes", id, {
-      acompte_statut: "encaisse",
-      acompte_encaisse_at: new Date().toISOString(),
+  // Actions — mise à jour acomptes via JSON
+  const handleEncaisser = async (id: string, quote: Quote) => {
+    // Mettre à jour le dernier acompte en_attente → encaisse dans le JSON
+    const acompteList = getAcompteListRaw(quote.acomptes);
+    const updated = acompteList.map((a: any) =>
+      a.statut === "en_attente" || a.statut === "declare"
+        ? { ...a, statut: "encaisse", date_encaissement: new Date().toISOString() }
+        : a
+    );
+    const totalEncaisse = updated.reduce((s: number, a: any) => s + (a.montant || 0), 0);
+    await adminUpdate("quotes", id, {
+      acomptes: updated,
+      total_encaisse: totalEncaisse,
+      solde_restant: (quote.prix_total_calcule || 0) - totalEncaisse,
     });
-    if (!error) loadQuotes();
+    loadQuotes();
   };
 
   const handleNC = async (id: string) => {
-    const { error } = await adminUpdate("quotes", id, { statut: "non_conforme" });
-    if (!error) loadQuotes();
+    await adminUpdate("quotes", id, { statut: "non_conforme" });
+    loadQuotes();
   };
 
   const handleReouvrir = async (id: string) => {
-    const { error } = await adminUpdate("quotes", id, { statut: "en_cours" });
-    if (!error) loadQuotes();
+    await adminUpdate("quotes", id, { statut: "en_cours" });
+    loadQuotes();
   };
 
-  // Export CSV basique
+  // Export CSV
   const handleExport = () => {
-    const headers = ["N°", "Client", "Email", "Île", "Produit", "Montant", "Statut", "Paiement", "Date"];
+    const headers = ["N°", "Client", "Email", "Produit", "Montant", "Statut", "Acompte", "Date"];
     const rows = quotes.map((q) => [
       q.numero_devis,
       q.nom,
       q.email,
-      q.ile || "",
-      q.produit || "",
-      q.total || 0,
+      getProduitPrincipal(q.produits),
+      q.prix_total_calcule || 0,
       q.statut,
-      q.acompte_statut || "",
+      getAcompteStatut(q.acomptes),
       new Date(q.created_at).toLocaleDateString("fr-FR"),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
@@ -134,7 +145,7 @@ export default function AdminQuotes() {
     URL.revokeObjectURL(url);
   };
 
-  // Colonnes du tableau
+  // Colonnes
   const columns: Column<Quote>[] = [
     {
       key: "numero_devis",
@@ -155,32 +166,33 @@ export default function AdminQuotes() {
       ),
     },
     {
-      key: "ile",
-      label: "Île",
-      render: (q) => <span className="text-gray-600">{q.ile || "—"}</span>,
-    },
-    {
-      key: "produit",
+      key: "produits",
       label: "Produit",
       render: (q) => (
-        <span className="text-gray-600 truncate block max-w-[150px]">{q.produit || "—"}</span>
+        <span className="text-gray-600 truncate block max-w-[150px]">
+          {getProduitPrincipal(q.produits)}
+        </span>
       ),
     },
     {
-      key: "total",
+      key: "prix_total_calcule",
       label: "Montant",
       className: "text-right",
       render: (q) => (
-        <span className="font-semibold">{q.total ? formatEur(q.total) : "—"}</span>
+        <span className="font-semibold">
+          {q.prix_total_calcule ? formatEur(q.prix_total_calcule) : "—"}
+        </span>
       ),
     },
     {
       key: "acompte",
       label: "Acompte",
       render: (q) => {
-        if (!q.acompte_statut || q.acompte_statut === "en_attente") return null;
-        const montant = q.acompte_montant ? formatEur(q.acompte_montant) : "";
-        return <AdminBadge status={q.acompte_statut} label={`${montant} ${q.acompte_statut === "declare" ? "déclaré" : "encaissé"}`} size="sm" />;
+        const statut = getAcompteStatut(q.acomptes);
+        if (statut === "aucun") return null;
+        const montant = getAcompteMontant(q.acomptes);
+        const label = montant > 0 ? `${formatEur(montant)} ${statut === "declare" || statut === "en_attente" ? "déclaré" : "encaissé"}` : statut;
+        return <AdminBadge status={statut === "declare" || statut === "en_attente" ? "acompte_declare" : "acompte_encaisse"} label={label} size="sm" />;
       },
     },
     {
@@ -189,49 +201,42 @@ export default function AdminQuotes() {
       render: (q) => <AdminBadge status={q.statut} />,
     },
     {
-      key: "paiement",
-      label: "Paiement",
-      render: (q) =>
-        q.acompte_statut && q.acompte_statut !== "en_attente" ? (
-          <AdminBadge status={q.acompte_statut} />
-        ) : (
-          <span className="text-xs text-gray-400">—</span>
-        ),
-    },
-    {
       key: "actions",
       label: "Actions",
-      render: (q) => (
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          {q.acompte_statut === "declare" && (
-            <button
-              onClick={() => handleEncaisser(q.id)}
-              title="Encaisser"
-              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-            </button>
-          )}
-          {q.statut !== "non_conforme" && (
-            <button
-              onClick={() => handleNC(q.id)}
-              title="Marquer NC"
-              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <XCircle className="w-4 h-4" />
-            </button>
-          )}
-          {q.statut === "non_conforme" && (
-            <button
-              onClick={() => handleReouvrir(q.id)}
-              title="Réouvrir"
-              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      ),
+      render: (q) => {
+        const acompteStatut = getAcompteStatut(q.acomptes);
+        return (
+          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            {(acompteStatut === "declare" || acompteStatut === "en_attente") && acompteStatut !== "aucun" && (
+              <button
+                onClick={() => handleEncaisser(q.id, q)}
+                title="Encaisser"
+                className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+              </button>
+            )}
+            {q.statut !== "non_conforme" && (
+              <button
+                onClick={() => handleNC(q.id)}
+                title="Marquer NC"
+                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+            {q.statut === "non_conforme" && (
+              <button
+                onClick={() => handleReouvrir(q.id)}
+                title="Réouvrir"
+                className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -300,4 +305,14 @@ export default function AdminQuotes() {
       />
     </AdminPageLayout>
   );
+}
+
+// Helper interne pour extraire la liste brute des acomptes
+function getAcompteListRaw(acomptes: any): any[] {
+  try {
+    const arr = typeof acomptes === 'string' ? JSON.parse(acomptes) : acomptes;
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
 }
