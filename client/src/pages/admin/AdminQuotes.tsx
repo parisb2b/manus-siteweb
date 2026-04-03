@@ -60,6 +60,9 @@ interface Quote {
   commission_montant?: number;
   commission_payee?: boolean;
   commission_pdf_url?: string;
+  acomptes?: any[];
+  total_encaisse?: number;
+  solde_restant?: number;
 }
 
 // ── Helpers ──────────────────────────────────
@@ -554,6 +557,37 @@ export default function AdminQuotes() {
                           VIP
                         </span>
                       )}
+                      {/* Badge acompte sur ligne fermée */}
+                      {(() => {
+                        const acomptes: any[] = Array.isArray(q.acomptes) ? q.acomptes : [];
+                        const enAttente = acomptes.filter((a: any) => a.statut === "en_attente");
+                        const encaisses = acomptes.filter((a: any) => a.statut === "encaisse" || a.statut === "valide");
+                        if (enAttente.length > 0) {
+                          const totalEnAttente = enAttente.reduce((s: number, a: any) => s + (a.montant ?? 0), 0);
+                          return (
+                            <span style={{
+                              background: '#FEF3C7', color: '#92400E', border: '0.5px solid #FDE68A',
+                              fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600,
+                              fontFamily: ADMIN_COLORS.font,
+                            }}>
+                              Acompte déclaré : {formatEur(totalEnAttente)}
+                            </span>
+                          );
+                        }
+                        if (encaisses.length > 0) {
+                          const totalEnc = encaisses.reduce((s: number, a: any) => s + (a.montant ?? 0), 0);
+                          return (
+                            <span style={{
+                              background: '#D1FAE5', color: '#166534', border: '0.5px solid #86EFAC',
+                              fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600,
+                              fontFamily: ADMIN_COLORS.font,
+                            }}>
+                              Encaissé : {formatEur(totalEnc)}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     {/* Right: price + facturé badge + chevron */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -795,7 +829,7 @@ export default function AdminQuotes() {
                         <div>
                           <SectionLabel>Suivi paiements</SectionLabel>
                           {(() => {
-                            const acomptes: any[] = Array.isArray((q as any).acomptes) ? (q as any).acomptes : [];
+                            const acomptes: any[] = Array.isArray(q.acomptes) ? q.acomptes : [];
                             const totalEncaisse = acomptes
                               .filter((a: any) => a.statut === "encaisse" || a.statut === "valide")
                               .reduce((s: number, a: any) => s + Number(a.montant || 0), 0);

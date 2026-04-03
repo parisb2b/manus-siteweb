@@ -241,8 +241,8 @@ export default function QuotesTab({ user, profile, role }: Props) {
 
     setAcompteSaving(false);
     setAcompteQuote(null);
-    setActionMsg("Votre demande a bien été enregistrée. Nous vous confirmerons dès réception du virement.");
-    setTimeout(() => setActionMsg(null), 6000);
+    setActionMsg(`Votre virement de ${acompteMontant.toLocaleString("fr-FR")} € a bien été déclaré. Nous confirmerons la réception sous 24-48h.`);
+    setTimeout(() => setActionMsg(null), 8000);
     fetchDevis();
   };
 
@@ -433,21 +433,25 @@ export default function QuotesTab({ user, profile, role }: Props) {
                         <p style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
                           Suivi paiements
                         </p>
-                        {acomptes.map((a: any, i: number) => (
-                          <div key={i} style={{
-                            display: "flex", justifyContent: "space-between", alignItems: "center",
-                            background: a.statut === "valide" ? "#F0FDF4" : "#FFFBEB",
-                            border: `0.5px solid ${a.statut === "valide" ? "#86EFAC" : "#FDE68A"}`,
-                            borderRadius: "6px", padding: "6px 10px", marginBottom: "3px", fontSize: "11px",
-                          }}>
-                            <span style={{ color: a.statut === "valide" ? "#166534" : "#92400E" }}>
-                              Acompte {a.numero} {a.statut === "valide" ? "versé" : a.statut === "en_attente" ? "en attente" : ""} le {new Date(a.date).toLocaleDateString("fr-FR")}
-                            </span>
-                            <span style={{ fontWeight: 600, color: a.statut === "valide" ? "#166534" : "#92400E" }}>
-                              {formatEur(a.montant)}
-                            </span>
-                          </div>
-                        ))}
+                        {acomptes.map((a: any, i: number) => {
+                          const isEncaisse = a.statut === "valide" || a.statut === "encaisse";
+                          const dateStr = a.date_encaissement || a.date;
+                          return (
+                            <div key={i} style={{
+                              display: "flex", justifyContent: "space-between", alignItems: "center",
+                              background: isEncaisse ? "#F0FDF4" : "#FFFBEB",
+                              border: `0.5px solid ${isEncaisse ? "#86EFAC" : "#FDE68A"}`,
+                              borderRadius: "6px", padding: "6px 10px", marginBottom: "3px", fontSize: "11px",
+                            }}>
+                              <span style={{ color: isEncaisse ? "#166534" : "#92400E" }}>
+                                {isEncaisse ? "✓" : "⏳"} Acompte {a.numero} — {isEncaisse ? "Encaissé" : "En attente de confirmation"} le {new Date(dateStr).toLocaleDateString("fr-FR")}
+                              </span>
+                              <span style={{ fontWeight: 600, color: isEncaisse ? "#166534" : "#92400E" }}>
+                                {formatEur(a.montant)}
+                              </span>
+                            </div>
+                          );
+                        })}
                         {solde > 0 && (
                           <div style={{
                             display: "flex", justifyContent: "space-between", alignItems: "center",
