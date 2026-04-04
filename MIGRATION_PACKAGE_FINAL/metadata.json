@@ -1,0 +1,1822 @@
+[
+  {
+    "path": "build/assets/html2canvas.esm-B0tyYwQk.js",
+    "filename": "html2canvas.esm-B0tyYwQk.js",
+    "size": "197.62 Ko",
+    "size_bytes": 202363,
+    "sha256": "c2bd1bddd0796f58fde6e213c061b2721256d46366bcee00c8530819e5fbc573",
+    "last_modified": "2026-04-04T19:41:35.226953",
+    "category": "build/vite",
+    "extension": ".js"
+  },
+  {
+    "path": "build/assets/index-Cq1t86gk.css",
+    "filename": "index-Cq1t86gk.css",
+    "size": "144.65 Ko",
+    "size_bytes": 148125,
+    "sha256": "8a03267487c776e98df88adc5579c56b46dfa5be690028d8c0429dcca829ce3a",
+    "last_modified": "2026-04-04T19:41:35.226429",
+    "category": "build/vite",
+    "extension": ".css"
+  },
+  {
+    "path": "build/assets/index-Dwg-9PEm.js",
+    "filename": "index-Dwg-9PEm.js",
+    "size": "1.66 Mo",
+    "size_bytes": 1743435,
+    "sha256": "f677f4638d86a5cf23cc612d7844d07bf0ee465b32fc957144ed642770a5cd37",
+    "last_modified": "2026-04-04T19:41:35.228431",
+    "category": "build/vite",
+    "extension": ".js"
+  },
+  {
+    "path": "build/assets/index.es-DBRrNYGg.js",
+    "filename": "index.es-DBRrNYGg.js",
+    "size": "155.86 Ko",
+    "size_bytes": 159598,
+    "sha256": "d771b659c4c9df31304f79238e57a11ec8189d47d849b69c2a36c169a8e7a16d",
+    "last_modified": "2026-04-04T19:41:35.228984",
+    "category": "build/vite",
+    "extension": ".js"
+  },
+  {
+    "path": "build/assets/purify.es-BgtpMKW3.js",
+    "filename": "purify.es-BgtpMKW3.js",
+    "size": "22.24 Ko",
+    "size_bytes": 22769,
+    "sha256": "151e60f0f273dceb16e4cd7bcab1b8206f446b6d0200d80fd868d31a091c74bd",
+    "last_modified": "2026-04-04T19:41:35.229422",
+    "category": "build/vite",
+    "extension": ".js"
+  },
+  {
+    "path": "build/assets/site-content-BILJux3o.js",
+    "filename": "site-content-BILJux3o.js",
+    "size": "6.07 Ko",
+    "size_bytes": 6219,
+    "sha256": "322d464575a6f35eb57386409ab1a143f942e5f82828bd0a8f1be0f922146b52",
+    "last_modified": "2026-04-04T19:41:35.231412",
+    "category": "build/vite",
+    "extension": ".js"
+  },
+  {
+    "path": "build/index.html",
+    "filename": "index.html",
+    "size": "1.43 Ko",
+    "size_bytes": 1466,
+    "sha256": "ca5cba6fd9462ca3e80178978b4034cb3cf1f95dacc0839d5ef62d2552fc7eac",
+    "last_modified": "2026-04-04T19:41:35.223290",
+    "category": "build/vite",
+    "extension": ".html"
+  },
+  {
+    "path": "data/add-address-columns.sql",
+    "filename": "add-address-columns.sql",
+    "size": "1.02 Ko",
+    "size_bytes": 1045,
+    "sha256": "084e375d8e06f50c5a9909a2da41827f527822b9b74d0bc2c87d94788dde6f2a",
+    "last_modified": "2026-04-03T21:21:21.245877",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/analytics.json",
+    "filename": "analytics.json",
+    "size": "44.20 Ko",
+    "size_bytes": 45257,
+    "sha256": "cfbfc07814d094dccbbb754d1379c9f753f7765dbd4fb06b8c7de0d71fecb9d5",
+    "last_modified": "2026-04-04T19:40:52.759402",
+    "category": "data",
+    "extension": ".json"
+  },
+  {
+    "path": "data/auto-create-profile-trigger.sql",
+    "filename": "auto-create-profile-trigger.sql",
+    "size": "2.06 Ko",
+    "size_bytes": 2105,
+    "sha256": "3ebbf66953b3b8fddaf25fc9389ee6fbe41f3f3ad8c4db75cb6f0896a069a217",
+    "last_modified": "2026-04-03T21:21:21.246272",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/create-error-logs.sql",
+    "filename": "create-error-logs.sql",
+    "size": "1.12 Ko",
+    "size_bytes": 1148,
+    "sha256": "627c49cdfc1cd7b6d4f02f75b10d805f337d22fbbdf53293861aaec0e5369999",
+    "last_modified": "2026-04-03T21:21:21.246632",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/fix-rls-final.sql",
+    "filename": "fix-rls-final.sql",
+    "size": "11.14 Ko",
+    "size_bytes": 11404,
+    "sha256": "7153038d6fee2808ff001fbe8f1b318e8e8a5b047c1f3f6f2088e77a711fe6c1",
+    "last_modified": "2026-04-03T21:21:21.247016",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/fix-rls-quotes.sql",
+    "filename": "fix-rls-quotes.sql",
+    "size": "4.62 Ko",
+    "size_bytes": 4728,
+    "sha256": "41ad74c61fe8111b65635335a5417619ccb3fcdeef4693ff53d94703efd7ff3c",
+    "last_modified": "2026-04-03T21:21:21.247359",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/fix-rls-v2.sql",
+    "filename": "fix-rls-v2.sql",
+    "size": "12.08 Ko",
+    "size_bytes": 12369,
+    "sha256": "e3cd4daa1c98b79129589ebc50859133a26556347f97a85010d3a6cc5b11cb3b",
+    "last_modified": "2026-04-03T21:21:21.247709",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/pricing.ts",
+    "filename": "pricing.ts",
+    "size": "2.01 Ko",
+    "size_bytes": 2058,
+    "sha256": "4574a77aa0a3cde9c4adf48e2ea6a55d85dab6d472cea379fb1da24b45a6cec7",
+    "last_modified": "2026-04-03T21:21:14.664200",
+    "category": "data",
+    "extension": ".ts"
+  },
+  {
+    "path": "data/settings.json",
+    "filename": "settings.json",
+    "size": "0.67 Ko",
+    "size_bytes": 687,
+    "sha256": "d26689787d5073c6a3ed61355735fa6991cfc06054b631469868ce4b1f122697",
+    "last_modified": "2026-04-03T21:21:14.668243",
+    "category": "data",
+    "extension": ".json"
+  },
+  {
+    "path": "data/setup-partners.sql",
+    "filename": "setup-partners.sql",
+    "size": "3.17 Ko",
+    "size_bytes": 3241,
+    "sha256": "1e75be2ca48a9eb0bbb12e7d5c781ab37f47f099d34692e794048d7e41b960ee",
+    "last_modified": "2026-04-03T21:21:21.248036",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/site-content.json",
+    "filename": "site-content.json",
+    "size": "8.78 Ko",
+    "size_bytes": 8992,
+    "sha256": "a91ffdabe32e0f12388997d96c63ae6491a363c9f2037fb68a19af0a7145665a",
+    "last_modified": "2026-04-03T21:21:14.665924",
+    "category": "data",
+    "extension": ".json"
+  },
+  {
+    "path": "data/sync-profiles.sql",
+    "filename": "sync-profiles.sql",
+    "size": "0.92 Ko",
+    "size_bytes": 947,
+    "sha256": "3828de8f78a3c25e0acb1c45e7d40b0bbf60251a2c7568bdba4e4e77b8300e97",
+    "last_modified": "2026-04-03T21:21:21.248325",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/translations.json",
+    "filename": "translations.json",
+    "size": "16.48 Ko",
+    "size_bytes": 16876,
+    "sha256": "7cb2c940effdc42689db765a8cd2bb998ce40d8727d09d5e1558d66de84815e4",
+    "last_modified": "2026-04-04T19:40:52.759792",
+    "category": "data",
+    "extension": ".json"
+  },
+  {
+    "path": "data/v5-setup.sql",
+    "filename": "v5-setup.sql",
+    "size": "11.62 Ko",
+    "size_bytes": 11897,
+    "sha256": "2968d66ba9d5020720fb6341ecf5564e521574337d99ce13c8689f9c709a5028",
+    "last_modified": "2026-04-03T21:21:21.248678",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/v53-fixes.sql",
+    "filename": "v53-fixes.sql",
+    "size": "0.41 Ko",
+    "size_bytes": 419,
+    "sha256": "101d37ea1e585146c983f4d118509c1c0431639008b3c069b18137c013839331",
+    "last_modified": "2026-04-03T21:21:21.249062",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "data/v58-fixes.sql",
+    "filename": "v58-fixes.sql",
+    "size": "8.93 Ko",
+    "size_bytes": 9144,
+    "sha256": "bca39b8995ea8a77521481afb4f7e3038e9dade65b434d36577b8fbd2ee84c14",
+    "last_modified": "2026-04-03T21:21:21.249490",
+    "category": "data",
+    "extension": ".sql"
+  },
+  {
+    "path": "media/documents/fiche_technique_maison_modulaire.pdf",
+    "filename": "fiche_technique_maison_modulaire.pdf",
+    "size": "5.46 Ko",
+    "size_bytes": 5586,
+    "sha256": "3057f6354b0ccf2ea5d08b0c0acd97613ce946b716868e8fb5d7be4b07496a1f",
+    "last_modified": "2026-04-03T21:18:51.566355",
+    "category": "documents/pdf",
+    "extension": ".pdf"
+  },
+  {
+    "path": "media/documents/r18_pro_fiche_technique.pdf",
+    "filename": "r18_pro_fiche_technique.pdf",
+    "size": "307.94 Ko",
+    "size_bytes": 315334,
+    "sha256": "a8f34aac5ec86af64b818247037138b1792035f94beaed80132a34c40d939e2f",
+    "last_modified": "2026-04-03T21:18:51.566876",
+    "category": "documents/pdf",
+    "extension": ".pdf"
+  },
+  {
+    "path": "media/documents/r22_pro_fiche_technique.pdf",
+    "filename": "r22_pro_fiche_technique.pdf",
+    "size": "311.00 Ko",
+    "size_bytes": 318461,
+    "sha256": "ececb19dd6f29afdff3de942c889953558d3ce31766d68e9611ec5addf377569",
+    "last_modified": "2026-04-03T21:18:51.567200",
+    "category": "documents/pdf",
+    "extension": ".pdf"
+  },
+  {
+    "path": "media/documents/r32_pro_fiche_technique.pdf",
+    "filename": "r32_pro_fiche_technique.pdf",
+    "size": "318.11 Ko",
+    "size_bytes": 325745,
+    "sha256": "c4354c7743b4ce441bcdb5fc75391b040a7ca4dd722df3cbed2bd5f56b57d1e0",
+    "last_modified": "2026-04-03T21:18:51.567510",
+    "category": "documents/pdf",
+    "extension": ".pdf"
+  },
+  {
+    "path": "media/documents/r57_pro_fiche_technique.pdf",
+    "filename": "r57_pro_fiche_technique.pdf",
+    "size": "27.27 Ko",
+    "size_bytes": 27922,
+    "sha256": "94b9bafd813e9f2bbb546b14c7d32531ce1140db9fe249186e5bd93c8dacb04d",
+    "last_modified": "2026-04-03T21:18:51.567965",
+    "category": "documents/pdf",
+    "extension": ".pdf"
+  },
+  {
+    "path": "media/accessories/auger_r18.jpeg",
+    "filename": "auger_r18.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.352893",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/auger_r18.webp",
+    "filename": "auger_r18.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.353152",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/flat_bucket_r18.jpeg",
+    "filename": "flat_bucket_r18.jpeg",
+    "size": "12.34 Ko",
+    "size_bytes": 12636,
+    "sha256": "76eacda31a894cf15314286f0a2a4044fb3ba15fe2e1022cbd87d2ec365d32d0",
+    "last_modified": "2026-04-03T21:18:48.353375",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/flat_bucket_r18.webp",
+    "filename": "flat_bucket_r18.webp",
+    "size": "34.72 Ko",
+    "size_bytes": 35552,
+    "sha256": "153ec5630ac80e414d56d101833dbc88dcb710f07c6bfa17525e2ee524c76dff",
+    "last_modified": "2026-04-03T21:18:48.353571",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/fourche.jpeg",
+    "filename": "fourche.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.353780",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/fourche.webp",
+    "filename": "fourche.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.353971",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/godet_cribleur.png",
+    "filename": "godet_cribleur.png",
+    "size": "19.25 Ko",
+    "size_bytes": 19712,
+    "sha256": "945adb5807a9daf78ef5550cf43f833cd030a6b1eea6bc01702c0144048e11f7",
+    "last_modified": "2026-04-03T21:18:48.354198",
+    "category": "images/accessories",
+    "extension": ".png"
+  },
+  {
+    "path": "media/accessories/godet_cribleur.webp",
+    "filename": "godet_cribleur.webp",
+    "size": "11.57 Ko",
+    "size_bytes": 11848,
+    "sha256": "ec02a1d1b276550484f116666f13c495ff9bb1c6e9102351e514c9692b23bf79",
+    "last_modified": "2026-04-03T21:18:48.354422",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/godet_dents.png",
+    "filename": "godet_dents.png",
+    "size": "22.07 Ko",
+    "size_bytes": 22602,
+    "sha256": "1d12d66a3e7ff3035095ee8ff42bcca91ba46b3826374daa65e62fc2d9a6fb79",
+    "last_modified": "2026-04-03T21:18:48.354613",
+    "category": "images/accessories",
+    "extension": ".png"
+  },
+  {
+    "path": "media/accessories/godet_dents.webp",
+    "filename": "godet_dents.webp",
+    "size": "13.25 Ko",
+    "size_bytes": 13568,
+    "sha256": "068daf89ba57b58c4beacdbe81176b6043ad578719a0e25d45a928dda0e07940",
+    "last_modified": "2026-04-03T21:18:48.354967",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/godet_inclinable.jpeg",
+    "filename": "godet_inclinable.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.355609",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/godet_inclinable.webp",
+    "filename": "godet_inclinable.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.357859",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/godet_lisse.jpeg",
+    "filename": "godet_lisse.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.358142",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/godet_lisse.webp",
+    "filename": "godet_lisse.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.358414",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/grappin.jpeg",
+    "filename": "grappin.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.358745",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/grappin.webp",
+    "filename": "grappin.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.359058",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/grapple_r18.jpeg",
+    "filename": "grapple_r18.jpeg",
+    "size": "14.42 Ko",
+    "size_bytes": 14770,
+    "sha256": "42f8b028faec4e5bcaac8f377dbc60ce7e31ffba71c59b06ed124c1eb2706663",
+    "last_modified": "2026-04-03T21:18:48.359784",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/grapple_r18.webp",
+    "filename": "grapple_r18.webp",
+    "size": "43.15 Ko",
+    "size_bytes": 44190,
+    "sha256": "04490c5d3fc1e0cc1bb5bc5cc49fe175f06486751bee029824aeba8a5355f773",
+    "last_modified": "2026-04-03T21:18:48.360367",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/hydraulic_hammer_r18.jpeg",
+    "filename": "hydraulic_hammer_r18.jpeg",
+    "size": "14.74 Ko",
+    "size_bytes": 15095,
+    "sha256": "cf73b34976dfb3b3dab77cc77afca758036297322392a1a7a4d66a7824036088",
+    "last_modified": "2026-04-03T21:18:48.361377",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/hydraulic_hammer_r18.webp",
+    "filename": "hydraulic_hammer_r18.webp",
+    "size": "37.93 Ko",
+    "size_bytes": 38840,
+    "sha256": "adb396a6dc27146659b14ab799f7608c1bcd69803ee1d1ae2dc05d9066df1b2a",
+    "last_modified": "2026-04-03T21:18:48.363654",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/marteau_hydraulique.png",
+    "filename": "marteau_hydraulique.png",
+    "size": "19.03 Ko",
+    "size_bytes": 19491,
+    "sha256": "bc3449db4922a499afa76318856ce8d6bd932bd096918c3e7ab485f52f839398",
+    "last_modified": "2026-04-03T21:18:48.363904",
+    "category": "images/accessories",
+    "extension": ".png"
+  },
+  {
+    "path": "media/accessories/marteau_hydraulique.webp",
+    "filename": "marteau_hydraulique.webp",
+    "size": "11.43 Ko",
+    "size_bytes": 11700,
+    "sha256": "6ec2923a83f5405e5eefbde7a3b7d55004a0b10f5cacbeedb5a88e3934959c31",
+    "last_modified": "2026-04-03T21:18:48.364143",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/rake_r18.jpeg",
+    "filename": "rake_r18.jpeg",
+    "size": "15.23 Ko",
+    "size_bytes": 15593,
+    "sha256": "4c5fd4ddedd4e8a8204a5be07a2a6a156700c035ac5e9f0a1a037a4d908b8242",
+    "last_modified": "2026-04-03T21:18:48.364361",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/rake_r18.webp",
+    "filename": "rake_r18.webp",
+    "size": "39.40 Ko",
+    "size_bytes": 40346,
+    "sha256": "1d9097c96c86e040cede6bfe966da32d0e0f7db7105beba2901d2b6c5a571ff2",
+    "last_modified": "2026-04-03T21:18:48.364552",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/ripper_r18.jpeg",
+    "filename": "ripper_r18.jpeg",
+    "size": "9.24 Ko",
+    "size_bytes": 9464,
+    "sha256": "c4bd5b8a87483c8ddb604391d34a15992241eab7385280a5eb0fa64a735e6c5f",
+    "last_modified": "2026-04-03T21:18:48.364790",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/ripper_r18.webp",
+    "filename": "ripper_r18.webp",
+    "size": "23.43 Ko",
+    "size_bytes": 23990,
+    "sha256": "1f0f1de08c2f9cecb514844e0de832ea4dc7cad2396bfd7a596a6870788f83d4",
+    "last_modified": "2026-04-03T21:18:48.364990",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/tariere.jpeg",
+    "filename": "tariere.jpeg",
+    "size": "14.85 Ko",
+    "size_bytes": 15210,
+    "sha256": "4a111c4309aa67366eba2e2105a71a87d91a87af9d11daf17c5ab511e0d98f53",
+    "last_modified": "2026-04-03T21:18:48.365191",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/tariere.webp",
+    "filename": "tariere.webp",
+    "size": "38.27 Ko",
+    "size_bytes": 39188,
+    "sha256": "c9dc6c1e1c3db90a8945a0d189817e56dbee944e68005031c88896dc17a18ef7",
+    "last_modified": "2026-04-03T21:18:48.365386",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/tilt_bucket_r18.jpeg",
+    "filename": "tilt_bucket_r18.jpeg",
+    "size": "14.91 Ko",
+    "size_bytes": 15268,
+    "sha256": "d0d150bb4977712d7150b416f4f24700e7b020e609868b81c8deff93f00ac6ed",
+    "last_modified": "2026-04-03T21:18:48.365594",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/tilt_bucket_r18.webp",
+    "filename": "tilt_bucket_r18.webp",
+    "size": "45.63 Ko",
+    "size_bytes": 46726,
+    "sha256": "0f42aee0445ac9d7cfc9029715a2b377bdc32347115692e9c0655692d7c13ce8",
+    "last_modified": "2026-04-03T21:18:48.365787",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/accessories/tooth_bucket_r18.jpeg",
+    "filename": "tooth_bucket_r18.jpeg",
+    "size": "13.29 Ko",
+    "size_bytes": 13604,
+    "sha256": "db4beeba1648fb62f9c844f3b0ca4da5c4fc553cc52cb891d65f5c1e8db18416",
+    "last_modified": "2026-04-03T21:18:48.366067",
+    "category": "images/accessories",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/accessories/tooth_bucket_r18.webp",
+    "filename": "tooth_bucket_r18.webp",
+    "size": "37.34 Ko",
+    "size_bytes": 38234,
+    "sha256": "279fe3271feff284dd74684525b3970fce0a272df557acdf29a46eb13bbdc8be",
+    "last_modified": "2026-04-03T21:18:48.366665",
+    "category": "images/accessories",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/houses/camping_car/bathroom.jpg",
+    "filename": "bathroom.jpg",
+    "size": "165.11 Ko",
+    "size_bytes": 169068,
+    "sha256": "0bc84c83eac7d9306cd99f4fbc91e84b8202f30c0ac2bba96b69c44494bdb28b",
+    "last_modified": "2026-04-03T21:18:50.719051",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/bedroom.jpg",
+    "filename": "bedroom.jpg",
+    "size": "275.54 Ko",
+    "size_bytes": 282151,
+    "sha256": "52d3abdcfa4533426fba079cd59e0a4160aead2ce7649cfc7628c9a18241573e",
+    "last_modified": "2026-04-03T21:18:50.707836",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/dining_area.jpg",
+    "filename": "dining_area.jpg",
+    "size": "290.20 Ko",
+    "size_bytes": 297165,
+    "sha256": "0fb180005aaba3c1fedeabe664bdbc449e7e862bc6912dedcebd24fc2f4a025d",
+    "last_modified": "2026-04-03T21:18:50.717866",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/exterior_back.jpg",
+    "filename": "exterior_back.jpg",
+    "size": "259.99 Ko",
+    "size_bytes": 266225,
+    "sha256": "dcfa77fa0ae8d0c6c248787bef84259fb1f12f3419b19aadd4147853471ce0d5",
+    "last_modified": "2026-04-03T21:18:50.718489",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/exterior_front_side.jpg",
+    "filename": "exterior_front_side.jpg",
+    "size": "264.54 Ko",
+    "size_bytes": 270887,
+    "sha256": "c9be1e95a5095693cda5c15ff99ce3a575f97dfd70cd8662cbc3d408e0b8e66e",
+    "last_modified": "2026-04-03T21:18:50.719620",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/exterior_main.webp",
+    "filename": "exterior_main.webp",
+    "size": "23.25 Ko",
+    "size_bytes": 23808,
+    "sha256": "e88097af0f46f80c29a70bcd18586fca74e5c8507cb7a1a5e4436fe27607dccc",
+    "last_modified": "2026-04-03T21:18:50.720816",
+    "category": "images/houses",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/houses/camping_car/exterior_side.jpg",
+    "filename": "exterior_side.jpg",
+    "size": "198.85 Ko",
+    "size_bytes": 203618,
+    "sha256": "06f0be8a4912e5b683d0f74077339685ee73717d9892b3a0c51725bea970c16e",
+    "last_modified": "2026-04-03T21:18:50.721698",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/interior_living.jpg",
+    "filename": "interior_living.jpg",
+    "size": "244.32 Ko",
+    "size_bytes": 250186,
+    "sha256": "7f2a96deb1d630dbc09b286c760a04dc38a11b430527cba7ffc4e7a60afcc77b",
+    "last_modified": "2026-04-03T21:18:50.708966",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/interior_overview.jpg",
+    "filename": "interior_overview.jpg",
+    "size": "283.28 Ko",
+    "size_bytes": 290082,
+    "sha256": "056c8feed7fc038c4d35797b6b0ece6c7d7fc91d286691ab4e3ff17d3ab29e10",
+    "last_modified": "2026-04-03T21:18:50.708499",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/kitchen.jpg",
+    "filename": "kitchen.jpg",
+    "size": "246.68 Ko",
+    "size_bytes": 252603,
+    "sha256": "6bc3e3631412538b0314d5513d1498c49a3d3f2e0ff6aca87c4c1e876cf3fbd6",
+    "last_modified": "2026-04-03T21:18:50.721299",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/laundry.jpg",
+    "filename": "laundry.jpg",
+    "size": "238.44 Ko",
+    "size_bytes": 244161,
+    "sha256": "aac04b84de26de03423313126df16d62f0e38c38424abb9a0e93807a16f00ce1",
+    "last_modified": "2026-04-03T21:18:50.720605",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/camping_car/video_tour.mp4",
+    "filename": "video_tour.mp4",
+    "size": "13.17 Mo",
+    "size_bytes": 13812784,
+    "sha256": "ac60cb360552096801e5be42c789b2f1fd581049e7d28d139154c65b3e02ee9c",
+    "last_modified": "2026-04-03T21:18:50.716430",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/houses/modular_premium/exterior_1.jpg",
+    "filename": "exterior_1.jpg",
+    "size": "243.76 Ko",
+    "size_bytes": 249609,
+    "sha256": "69b5621d981bb7bf32551dc338abedf422941ac2dec42745aaba21a53e6e762a",
+    "last_modified": "2026-04-03T21:18:50.724865",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/modular_premium/exterior_2.jpg",
+    "filename": "exterior_2.jpg",
+    "size": "191.57 Ko",
+    "size_bytes": 196171,
+    "sha256": "449b46013137623060fbf51602ae60a34b9f9d5f089187566aedb8facfc4b07c",
+    "last_modified": "2026-04-03T21:18:50.722235",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/modular_premium/exterior_3.jpg",
+    "filename": "exterior_3.jpg",
+    "size": "2.58 Mo",
+    "size_bytes": 2706041,
+    "sha256": "eb5ba9613008460877c3577c9808e93669144dd0c420a24232a025ab3e613992",
+    "last_modified": "2026-04-03T21:18:50.724310",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/modular_premium/exterior_4.jpg",
+    "filename": "exterior_4.jpg",
+    "size": "303.25 Ko",
+    "size_bytes": 310526,
+    "sha256": "75c464e9eeb3870dddd380ab06f79aff7bf6f3afa8f615224d0eb2076b49443a",
+    "last_modified": "2026-04-03T21:18:50.725396",
+    "category": "images/houses",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/houses/modular_premium/video_1.mp4",
+    "filename": "video_1.mp4",
+    "size": "10.43 Mo",
+    "size_bytes": 10938624,
+    "sha256": "ef24b2febe47db3e06b64a2c0c88af5028b380148acf55588ec0d34e1d6e36b3",
+    "last_modified": "2026-04-03T21:18:50.750829",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/houses/modular_premium/video_2.mp4",
+    "filename": "video_2.mp4",
+    "size": "28.96 Mo",
+    "size_bytes": 30366314,
+    "sha256": "332ad1c674f37880f95d8b969594a574a1e8bdd3ce0a014cea4d7c7dae9ae520",
+    "last_modified": "2026-04-03T21:18:50.742779",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_1.jpeg",
+    "filename": "exterior_1.jpeg",
+    "size": "110.46 Ko",
+    "size_bytes": 113114,
+    "sha256": "354fb5481ebf61b9ddd67d7bcb5ee61d72196255e7c6c2cbfae18db11c70f5f6",
+    "last_modified": "2026-04-03T21:18:50.751369",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_2.jpeg",
+    "filename": "exterior_2.jpeg",
+    "size": "93.63 Ko",
+    "size_bytes": 95878,
+    "sha256": "ba54254f660c0d4e566cce567043a4d66e6a07eb98e49925b8332e5872b4b9be",
+    "last_modified": "2026-04-03T21:18:50.763172",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_3.jpeg",
+    "filename": "exterior_3.jpeg",
+    "size": "216.65 Ko",
+    "size_bytes": 221845,
+    "sha256": "98906e7c50e518c92b5a1c7b3f0c92551887c061fa3d66e820f1fee448822c29",
+    "last_modified": "2026-04-03T21:18:50.753406",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_4.jpeg",
+    "filename": "exterior_4.jpeg",
+    "size": "75.22 Ko",
+    "size_bytes": 77030,
+    "sha256": "9826a6e5cf9e8dcd88105020ab61b08efa43aacfa526b1d99e3d9c70b4202413",
+    "last_modified": "2026-04-03T21:18:50.752951",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_5.jpeg",
+    "filename": "exterior_5.jpeg",
+    "size": "195.21 Ko",
+    "size_bytes": 199894,
+    "sha256": "18f09685f1fdbca911075c51bfad357d6a054dbc439fd1b044f23daf9d839d70",
+    "last_modified": "2026-04-03T21:18:50.752534",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_6.jpeg",
+    "filename": "exterior_6.jpeg",
+    "size": "186.61 Ko",
+    "size_bytes": 191090,
+    "sha256": "fa845eed970daa04b45da2c591cf6d245240cfdb10a1d1ad51276f16dbced7df",
+    "last_modified": "2026-04-03T21:18:50.751822",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/exterior_7.jpeg",
+    "filename": "exterior_7.jpeg",
+    "size": "189.26 Ko",
+    "size_bytes": 193806,
+    "sha256": "692d8d783999e8be81c32997307156c7a00390501878cb70844794321a777661",
+    "last_modified": "2026-04-03T21:18:50.751595",
+    "category": "images/houses",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/houses/modular_standard/video_1.mp4",
+    "filename": "video_1.mp4",
+    "size": "3.53 Mo",
+    "size_bytes": 3699264,
+    "sha256": "2ddfab59c5038440782e3490fe15ec3de8372c9069d68ae43a788c4ff06e398f",
+    "last_modified": "2026-04-03T21:18:50.774409",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/houses/modular_standard/video_2.mp4",
+    "filename": "video_2.mp4",
+    "size": "15.17 Mo",
+    "size_bytes": 15909716,
+    "sha256": "35bd9676baf77c2f907aa499652166626acb69f0036b5c09fa0567bec22f9819",
+    "last_modified": "2026-04-03T21:18:50.762243",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/houses/modular_standard/video_3.mp4",
+    "filename": "video_3.mp4",
+    "size": "13.37 Mo",
+    "size_bytes": 14016412,
+    "sha256": "c14a49ab3680243872aac0bc7ec2b3b00c4e73726b45c93bd91f5c3845dbca60",
+    "last_modified": "2026-04-03T21:18:50.771605",
+    "category": "images/houses",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/portal/agri_tractor.jpeg",
+    "filename": "agri_tractor.jpeg",
+    "size": "189.26 Ko",
+    "size_bytes": 193806,
+    "sha256": "692d8d783999e8be81c32997307156c7a00390501878cb70844794321a777661",
+    "last_modified": "2026-04-03T21:18:48.370012",
+    "category": "images/portal",
+    "extension": ".jpeg"
+  },
+  {
+    "path": "media/portal/agri_tractor.jpg",
+    "filename": "agri_tractor.jpg",
+    "size": "53.28 Ko",
+    "size_bytes": 54560,
+    "sha256": "53577e0da9b1128123b2e7929e708baf09122f96720946824e6cfc0f935f2ba4",
+    "last_modified": "2026-04-03T21:18:48.370304",
+    "category": "images/portal",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/portal/camping_car.jpg",
+    "filename": "camping_car.jpg",
+    "size": "303.87 Ko",
+    "size_bytes": 311159,
+    "sha256": "bbddf8b05d112d5e74aac0aca6ee5003dcc51da35a706954d0b7a0e9501b2367",
+    "last_modified": "2026-04-03T21:18:48.370812",
+    "category": "images/portal",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/portal/camping_car.png",
+    "filename": "camping_car.png",
+    "size": "640.17 Ko",
+    "size_bytes": 655538,
+    "sha256": "1c6a2907dc320c0c2e19a9f4c7f04f0ad201e8e0e9de311a258a61cd43283da1",
+    "last_modified": "2026-04-03T21:18:48.372000",
+    "category": "images/portal",
+    "extension": ".png"
+  },
+  {
+    "path": "media/portal/hero_ship.png",
+    "filename": "hero_ship.png",
+    "size": "1.04 Mo",
+    "size_bytes": 1087282,
+    "sha256": "ea6ebb21c8309f222e7b6f6675295de3bd2eec87aebc4657cfa7e36600a8e2c3",
+    "last_modified": "2026-04-03T21:18:48.373251",
+    "category": "images/portal",
+    "extension": ".png"
+  },
+  {
+    "path": "media/portal/modular_home.png",
+    "filename": "modular_home.png",
+    "size": "1.36 Mo",
+    "size_bytes": 1429445,
+    "sha256": "8db4bf23f0315540f0974c75dd56cb02efc242de253effd80e20ade829883b5b",
+    "last_modified": "2026-04-03T21:18:48.374759",
+    "category": "images/portal",
+    "extension": ".png"
+  },
+  {
+    "path": "media/portal/modular_home.webp",
+    "filename": "modular_home.webp",
+    "size": "307.55 Ko",
+    "size_bytes": 314936,
+    "sha256": "fdd0647b6c03974c80aa1eff9ce36089622d64d321811b77eeaa68b833bb99df",
+    "last_modified": "2026-04-03T21:18:48.375329",
+    "category": "images/portal",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/portal/solar_panel.jpg",
+    "filename": "solar_panel.jpg",
+    "size": "401.73 Ko",
+    "size_bytes": 411370,
+    "sha256": "8410ea191e559eb63b98f6476973e56f2269919b8b11d47ca395e86b54e47797",
+    "last_modified": "2026-04-03T21:18:48.375891",
+    "category": "images/portal",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/portal/solar_panel_jinko.png",
+    "filename": "solar_panel_jinko.png",
+    "size": "328.94 Ko",
+    "size_bytes": 336832,
+    "sha256": "b9424637e36c364773add067a631e7e0b6bebb126b8081a1ada0d052dcc6277a",
+    "last_modified": "2026-04-03T21:18:48.376461",
+    "category": "images/portal",
+    "extension": ".png"
+  },
+  {
+    "path": "media/portal/solar_roof.jpg",
+    "filename": "solar_roof.jpg",
+    "size": "126.79 Ko",
+    "size_bytes": 129835,
+    "sha256": "a36faf71e84b036be4ebdd9d60d3b7d75a1c89f59af4194a68ae151f27fa19b7",
+    "last_modified": "2026-04-03T21:18:48.376908",
+    "category": "images/portal",
+    "extension": ".jpg"
+  },
+  {
+    "path": "build/assets/products-D-pOyOsA.js",
+    "filename": "products-D-pOyOsA.js",
+    "size": "29.84 Ko",
+    "size_bytes": 30556,
+    "sha256": "6a45731553aa9fe94da96ef1a9aaa4252548827b31ca17ebff68421b0a878ace",
+    "last_modified": "2026-04-04T19:41:35.230247",
+    "category": "images/products",
+    "extension": ".js"
+  },
+  {
+    "path": "data/products.json",
+    "filename": "products.json",
+    "size": "45.49 Ko",
+    "size_bytes": 46584,
+    "sha256": "93f47cfe4a40d0ed6ad515fd5c8466a31353e9f50acc5922107152f083d648c2",
+    "last_modified": "2026-04-03T21:21:14.661874",
+    "category": "images/products",
+    "extension": ".json"
+  },
+  {
+    "path": "media/products/r10_eco_main.png",
+    "filename": "r10_eco_main.png",
+    "size": "494.13 Ko",
+    "size_bytes": 505988,
+    "sha256": "c2b959adbc8b73d016e45538ef83df85fe0b315e65f55a9f03478df1d973341e",
+    "last_modified": "2026-04-03T21:18:47.717303",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r10_eco_main.webp",
+    "filename": "r10_eco_main.webp",
+    "size": "307.98 Ko",
+    "size_bytes": 315370,
+    "sha256": "8d0ca3093a6482526bffcac507275bc9a8fcb4f1b094c822b00420b4deeffa7c",
+    "last_modified": "2026-04-03T21:18:47.718202",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r13_pro.png",
+    "filename": "r13_pro.png",
+    "size": "19.55 Ko",
+    "size_bytes": 20019,
+    "sha256": "b034c010cf72b37f4bccb2febce20416217c6d77a678efc0ef1c0b431e0670b5",
+    "last_modified": "2026-04-03T21:18:47.718471",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r13_pro.webp",
+    "filename": "r13_pro.webp",
+    "size": "11.08 Ko",
+    "size_bytes": 11348,
+    "sha256": "836d5a242e57971e37e7cca59b624dc7ea7bbbc4583880a8f53bfe3ace679b45",
+    "last_modified": "2026-04-03T21:18:47.718703",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r15_eco.png",
+    "filename": "r15_eco.png",
+    "size": "19.55 Ko",
+    "size_bytes": 20019,
+    "sha256": "b034c010cf72b37f4bccb2febce20416217c6d77a678efc0ef1c0b431e0670b5",
+    "last_modified": "2026-04-03T21:18:47.718904",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r15_eco.webp",
+    "filename": "r15_eco.webp",
+    "size": "11.08 Ko",
+    "size_bytes": 11348,
+    "sha256": "836d5a242e57971e37e7cca59b624dc7ea7bbbc4583880a8f53bfe3ace679b45",
+    "last_modified": "2026-04-03T21:18:47.719121",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r18_pro.png",
+    "filename": "r18_pro.png",
+    "size": "148.56 Ko",
+    "size_bytes": 152128,
+    "sha256": "12b38ddcda4860acdd6882172727653a9f172532b741ff8b96c5bb6ec4d2e413",
+    "last_modified": "2026-04-03T21:18:47.719519",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r18_pro.webp",
+    "filename": "r18_pro.webp",
+    "size": "91.86 Ko",
+    "size_bytes": 94064,
+    "sha256": "f5ad1550246d2bf88c9d782933ac48cc614e35e04d8c03574819b4ec0fbec9c9",
+    "last_modified": "2026-04-03T21:18:47.719884",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_cab_view.png",
+    "filename": "r18_pro_cab_view.png",
+    "size": "260.82 Ko",
+    "size_bytes": 267084,
+    "sha256": "6e132958b89edbd2e469a0b60095093428856acb38b655cd01ee6ad2bdfe25b8",
+    "last_modified": "2026-04-03T21:18:47.695626",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_cab_view.webp",
+    "filename": "r18_pro_cab_view.webp",
+    "size": "161.70 Ko",
+    "size_bytes": 165584,
+    "sha256": "8a878d1299b7d857d58e1d778ec78b7e3d8ffa687fbcc6afff3b8ceb9dbaa330",
+    "last_modified": "2026-04-03T21:18:47.691570",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_main_view.png",
+    "filename": "r18_pro_main_view.png",
+    "size": "469.92 Ko",
+    "size_bytes": 481200,
+    "sha256": "c835b58fd93f12c437a9b7231e4aa5e02158413e9ec1b55a369474229b166bf2",
+    "last_modified": "2026-04-03T21:18:47.690977",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_main_view.webp",
+    "filename": "r18_pro_main_view.webp",
+    "size": "289.55 Ko",
+    "size_bytes": 296496,
+    "sha256": "457c329f7fd22f52bf4e798843b89031465bac9e83b0b198fd30ad6e9be14636",
+    "last_modified": "2026-04-03T21:18:47.692849",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_rear_view.png",
+    "filename": "r18_pro_rear_view.png",
+    "size": "1011.69 Ko",
+    "size_bytes": 1035968,
+    "sha256": "d7d6277402d049d966f0234b4ed9b3b2e8d34cfe84866e116ef75bac809f6f1a",
+    "last_modified": "2026-04-03T21:18:47.696651",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_rear_view.webp",
+    "filename": "r18_pro_rear_view.webp",
+    "size": "573.85 Ko",
+    "size_bytes": 587626,
+    "sha256": "ed47c8dea1631c4756346e99ba7535a045ac3871b77f592aec2f6d2f71c0a68d",
+    "last_modified": "2026-04-03T21:18:47.693657",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_side_view.png",
+    "filename": "r18_pro_side_view.png",
+    "size": "1.01 Mo",
+    "size_bytes": 1054352,
+    "sha256": "7611e8b0ff080fcdc02167d69760118c9b4894433cb1a737e7d243121dff54a0",
+    "last_modified": "2026-04-03T21:18:47.694980",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r18_pro/r18_pro_side_view.webp",
+    "filename": "r18_pro_side_view.webp",
+    "size": "581.52 Ko",
+    "size_bytes": 595472,
+    "sha256": "bdef31a4ac1b03086c608f81b88105eee6a1ee740c907c538bf318239c74870c",
+    "last_modified": "2026-04-03T21:18:47.692303",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro.png",
+    "filename": "r22_pro.png",
+    "size": "150.79 Ko",
+    "size_bytes": 154410,
+    "sha256": "d42d51d4c63a63cc8f37dcacc15d9ed0162bbddaa7c69c778bbc38a7f84d4e76",
+    "last_modified": "2026-04-03T21:18:47.720263",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro.webp",
+    "filename": "r22_pro.webp",
+    "size": "93.59 Ko",
+    "size_bytes": 95840,
+    "sha256": "edbd70ebd689eb98613c2a935398e1f6d4e687c601ef497d3d93a76c8b5f808a",
+    "last_modified": "2026-04-03T21:18:47.720472",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_cab_view.png",
+    "filename": "r22_pro_cab_view.png",
+    "size": "236.01 Ko",
+    "size_bytes": 241670,
+    "sha256": "d469db92a27c4c3ca1b2fe9b46a43840a7a7eed1409f77c105dce5ebe8698631",
+    "last_modified": "2026-04-03T21:18:47.702977",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_cab_view.webp",
+    "filename": "r22_pro_cab_view.webp",
+    "size": "147.93 Ko",
+    "size_bytes": 151484,
+    "sha256": "02c3201f4190290da2b78371c84b943d041e3cb189e6058f203fd1a542d26af6",
+    "last_modified": "2026-04-03T21:18:47.701743",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_main_view.png",
+    "filename": "r22_pro_main_view.png",
+    "size": "470.07 Ko",
+    "size_bytes": 481348,
+    "sha256": "21cd0793b182b0784cf8accbe1352902a4fea939ec73044b2c0616282a06f6fb",
+    "last_modified": "2026-04-03T21:18:47.701276",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_main_view.webp",
+    "filename": "r22_pro_main_view.webp",
+    "size": "300.43 Ko",
+    "size_bytes": 307638,
+    "sha256": "8d3ea01ddef0e5c4b89848f49654cf585a79df1e8148024e4ff185db29806157",
+    "last_modified": "2026-04-03T21:18:47.698441",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_rear_view.png",
+    "filename": "r22_pro_rear_view.png",
+    "size": "1023.56 Ko",
+    "size_bytes": 1048122,
+    "sha256": "9074ffd9b465fe34512cbe379e10e366a9979888da8160d6a6247ae5478949e5",
+    "last_modified": "2026-04-03T21:18:47.700598",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_rear_view.webp",
+    "filename": "r22_pro_rear_view.webp",
+    "size": "601.57 Ko",
+    "size_bytes": 616010,
+    "sha256": "0769d138d405f1dd5c4d6754ddb99f716850dd817bb628f56e0a6f07e1f6bb93",
+    "last_modified": "2026-04-03T21:18:47.697489",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_side_view.png",
+    "filename": "r22_pro_side_view.png",
+    "size": "1.01 Mo",
+    "size_bytes": 1059056,
+    "sha256": "8054209ae1ade0b29dd2a177f360490248f21859bb0fecc42b62b343e77c88db",
+    "last_modified": "2026-04-03T21:18:47.699660",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro/r22_pro_side_view.webp",
+    "filename": "r22_pro_side_view.webp",
+    "size": "606.55 Ko",
+    "size_bytes": 621110,
+    "sha256": "965e4ceceb9c8a2844c95ba904bdb9ee881c6c694278c74970f5ac682ca30003",
+    "last_modified": "2026-04-03T21:18:47.702430",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r22_pro_main.png",
+    "filename": "r22_pro_main.png",
+    "size": "470.07 Ko",
+    "size_bytes": 481348,
+    "sha256": "21cd0793b182b0784cf8accbe1352902a4fea939ec73044b2c0616282a06f6fb",
+    "last_modified": "2026-04-03T21:18:47.721104",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r22_pro_main.webp",
+    "filename": "r22_pro_main.webp",
+    "size": "300.43 Ko",
+    "size_bytes": 307638,
+    "sha256": "8d3ea01ddef0e5c4b89848f49654cf585a79df1e8148024e4ff185db29806157",
+    "last_modified": "2026-04-03T21:18:47.721568",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r32_pro.png",
+    "filename": "r32_pro.png",
+    "size": "144.41 Ko",
+    "size_bytes": 147878,
+    "sha256": "458df99ad6e4609c39d4863a9cde5f8c7be08e032cd10db602766d077ab9329e",
+    "last_modified": "2026-04-03T21:18:47.722045",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r32_pro.webp",
+    "filename": "r32_pro.webp",
+    "size": "91.93 Ko",
+    "size_bytes": 94134,
+    "sha256": "fa545ad817ce7282b8ba6969a2f83e452b2c384c7dd51ced56664890a902392f",
+    "last_modified": "2026-04-03T21:18:47.722493",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_cab_view.png",
+    "filename": "r32_pro_cab_view.png",
+    "size": "214.55 Ko",
+    "size_bytes": 219701,
+    "sha256": "d343ae3fab2bbc9f5d127583929469aa2391f204f6e51127e65815fc0a059cd5",
+    "last_modified": "2026-04-03T21:18:47.707436",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_cab_view.webp",
+    "filename": "r32_pro_cab_view.webp",
+    "size": "132.82 Ko",
+    "size_bytes": 136010,
+    "sha256": "d37a9588ce895f7e3d6ea5543a770ce8edfbc25c6f733a3a8d20838b4ed34b2d",
+    "last_modified": "2026-04-03T21:18:47.705070",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_main_view.png",
+    "filename": "r32_pro_main_view.png",
+    "size": "461.95 Ko",
+    "size_bytes": 473034,
+    "sha256": "baf8229700dd110c3ff90dd63a3390ee1c47b9b87fc63eb52286ff21b6425478",
+    "last_modified": "2026-04-03T21:18:47.704847",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_main_view.webp",
+    "filename": "r32_pro_main_view.webp",
+    "size": "303.31 Ko",
+    "size_bytes": 310594,
+    "sha256": "9d52a587e99c2b95529bd7364ededc643155bd23be3379c3efccc7f6197f1880",
+    "last_modified": "2026-04-03T21:18:47.703656",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_rear_view.png",
+    "filename": "r32_pro_rear_view.png",
+    "size": "913.42 Ko",
+    "size_bytes": 935342,
+    "sha256": "350fe003a00b4b8219bfb4b14877df56173df2997387669f2f170eb065cbc078",
+    "last_modified": "2026-04-03T21:18:47.706105",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_rear_view.webp",
+    "filename": "r32_pro_rear_view.webp",
+    "size": "537.85 Ko",
+    "size_bytes": 550754,
+    "sha256": "cddf0ef887300bef162fd5dfef86eee5e7203012f1b52dfec34724810b56f47e",
+    "last_modified": "2026-04-03T21:18:47.704279",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_side_view.png",
+    "filename": "r32_pro_side_view.png",
+    "size": "1022.23 Ko",
+    "size_bytes": 1046764,
+    "sha256": "10e922e5305376b3ee6cbf9d4b58c87aceeeff5b9228d6e76a092c5b2d4aef1a",
+    "last_modified": "2026-04-03T21:18:47.708336",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/products/r32_pro/r32_pro_side_view.webp",
+    "filename": "r32_pro_side_view.webp",
+    "size": "595.05 Ko",
+    "size_bytes": 609336,
+    "sha256": "93d9243b46db66bdf80ce4630ced47dc72e252ac7be9113cb6d7929611559cb0",
+    "last_modified": "2026-04-03T21:18:47.706933",
+    "category": "images/products",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/products/r57_pro/r57_pro_main_view.png",
+    "filename": "r57_pro_main_view.png",
+    "size": "206.79 Ko",
+    "size_bytes": 211748,
+    "sha256": "4ece0a3c00cae0dbdd02beca4933d4bd5fe2ec883d0677ef1b5ac7aec2c0eaae",
+    "last_modified": "2026-04-03T21:18:47.709098",
+    "category": "images/products",
+    "extension": ".png"
+  },
+  {
+    "path": "media/solar/battery_6fm250.webp",
+    "filename": "battery_6fm250.webp",
+    "size": "204.99 Ko",
+    "size_bytes": 209908,
+    "sha256": "0d63bd05f8e25ff4d1380a0b3f763b34a053d26e320caafbfac738bd12f910f1",
+    "last_modified": "2026-04-03T21:18:48.380985",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/deye_inverter.webp",
+    "filename": "deye_inverter.webp",
+    "size": "25.42 Ko",
+    "size_bytes": 26026,
+    "sha256": "a5eb57ffdf8af30a459f0bc9ba0b1560bf252ba7d4f67f7b68c2ca45113073dd",
+    "last_modified": "2026-04-03T21:18:48.381219",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/jinko_600w_tiger_neo.jpg",
+    "filename": "jinko_600w_tiger_neo.jpg",
+    "size": "22.05 Ko",
+    "size_bytes": 22582,
+    "sha256": "925f8b2cdad114aacdf2ee85af37c3bc18de71a3605fdd569c53acb0e0e3d9e1",
+    "last_modified": "2026-04-03T21:18:48.381425",
+    "category": "images/solar",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/solar/jinko_truck_delivery.jpg",
+    "filename": "jinko_truck_delivery.jpg",
+    "size": "110.58 Ko",
+    "size_bytes": 113238,
+    "sha256": "4eb2dca299ad767b480a0677ca8c2d03423865e0e6a102fd13373d127c232dbc",
+    "last_modified": "2026-04-03T21:18:48.381642",
+    "category": "images/solar",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/solar/jinko_warehouse.jpg",
+    "filename": "jinko_warehouse.jpg",
+    "size": "70.07 Ko",
+    "size_bytes": 71756,
+    "sha256": "bf11400af267d495d7da26cbe081893e3638feea96459dbcef875bc6f3632e34",
+    "last_modified": "2026-04-03T21:18:48.381845",
+    "category": "images/solar",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/solar/kit_overview.webp",
+    "filename": "kit_overview.webp",
+    "size": "41.42 Ko",
+    "size_bytes": 42414,
+    "sha256": "44e39fd4f2a5cd374e14194452321a0a49df34cb4f0fdd5d86aee9d139878278",
+    "last_modified": "2026-04-03T21:18:48.382046",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/mounting_structure.webp",
+    "filename": "mounting_structure.webp",
+    "size": "58.00 Ko",
+    "size_bytes": 59394,
+    "sha256": "8bbdd91e6170120c623d0088bb33ab31aad84abe3064172ceafa48d2ac908067",
+    "last_modified": "2026-04-03T21:18:48.382242",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/panel_detail.webp",
+    "filename": "panel_detail.webp",
+    "size": "99.65 Ko",
+    "size_bytes": 102046,
+    "sha256": "a3b713816b1e73b8f53a4897a345fafc6aa0823c2eaa876f4e230ab19ce13385",
+    "last_modified": "2026-04-03T21:18:48.382567",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_cables.webp",
+    "filename": "solar_cables.webp",
+    "size": "299.21 Ko",
+    "size_bytes": 306396,
+    "sha256": "0fe20f19dd01379db17c5d857c16e13b01182b65415800468671e8980e601d10",
+    "last_modified": "2026-04-03T21:18:48.383090",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_installations.jpg",
+    "filename": "solar_installations.jpg",
+    "size": "59.26 Ko",
+    "size_bytes": 60678,
+    "sha256": "3c92ba44a962d33dafa54ed3ac511557f976d995e5b73bab27fa04b4a0e3c548",
+    "last_modified": "2026-04-03T21:18:48.383518",
+    "category": "images/solar",
+    "extension": ".jpg"
+  },
+  {
+    "path": "media/solar/solar_kits/battery_lifepo4.png",
+    "filename": "battery_lifepo4.png",
+    "size": "183.36 Ko",
+    "size_bytes": 187759,
+    "sha256": "e493d1e2770967b5ac5dec235604cde946470b0fa1eb4273ed6a304d87bdb05a",
+    "last_modified": "2026-04-03T21:18:50.782287",
+    "category": "images/solar",
+    "extension": ".png"
+  },
+  {
+    "path": "media/solar/solar_kits/deye_inverter.png",
+    "filename": "deye_inverter.png",
+    "size": "50.79 Ko",
+    "size_bytes": 52007,
+    "sha256": "178a1be19ba8d5dfaf9f7c17632f2fdfc9dbd94a7c4c9cf523acb3cf3b78cdcf",
+    "last_modified": "2026-04-03T21:18:50.782732",
+    "category": "images/solar",
+    "extension": ".png"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_600w_bifacial.webp",
+    "filename": "jinko_600w_bifacial.webp",
+    "size": "22.05 Ko",
+    "size_bytes": 22582,
+    "sha256": "925f8b2cdad114aacdf2ee85af37c3bc18de71a3605fdd569c53acb0e0e3d9e1",
+    "last_modified": "2026-04-03T21:18:50.777584",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_installation_toiture.webp",
+    "filename": "jinko_installation_toiture.webp",
+    "size": "59.26 Ko",
+    "size_bytes": 60678,
+    "sha256": "3c92ba44a962d33dafa54ed3ac511557f976d995e5b73bab27fa04b4a0e3c548",
+    "last_modified": "2026-04-03T21:18:50.780317",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_panel_layers.png",
+    "filename": "jinko_panel_layers.png",
+    "size": "235.27 Ko",
+    "size_bytes": 240921,
+    "sha256": "84f9d125de340f1994b7c9986238fff114546872856735de7b3e71090c46fe07",
+    "last_modified": "2026-04-03T21:18:50.783348",
+    "category": "images/solar",
+    "extension": ".png"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_panels_pair.webp",
+    "filename": "jinko_panels_pair.webp",
+    "size": "19.75 Ko",
+    "size_bytes": 20226,
+    "sha256": "96a5632f6fd775b092a3e938acb88462ab0d60ec2f0bc799185df6901c33fdf4",
+    "last_modified": "2026-04-03T21:18:50.777247",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_tiger_neo_fiche.webp",
+    "filename": "jinko_tiger_neo_fiche.webp",
+    "size": "17.10 Ko",
+    "size_bytes": 17506,
+    "sha256": "c3d5549a4274bb850284464b87267d04d690b9bfb82a798d6d093e8d9759d8b7",
+    "last_modified": "2026-04-03T21:18:50.780987",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_kits/jinko_warehouse_stock.webp",
+    "filename": "jinko_warehouse_stock.webp",
+    "size": "70.07 Ko",
+    "size_bytes": 71756,
+    "sha256": "bf11400af267d495d7da26cbe081893e3638feea96459dbcef875bc6f3632e34",
+    "last_modified": "2026-04-03T21:18:50.784082",
+    "category": "images/solar",
+    "extension": ".webp"
+  },
+  {
+    "path": "media/solar/solar_kits/solar_cables.png",
+    "filename": "solar_cables.png",
+    "size": "489.48 Ko",
+    "size_bytes": 501223,
+    "sha256": "f6a0c366d8e426729b7a532a6a40f2d18a44b08f31c7cc4b359ccf41b1f62709",
+    "last_modified": "2026-04-03T21:18:50.779062",
+    "category": "images/solar",
+    "extension": ".png"
+  },
+  {
+    "path": "media/solar/solar_kits/tiger_neo_585w.avif",
+    "filename": "tiger_neo_585w.avif",
+    "size": "15.79 Ko",
+    "size_bytes": 16164,
+    "sha256": "77bc9911d21148186df1f84c1817ea41f05c71b2325e8022ee621abfb7d6d25e",
+    "last_modified": "2026-04-03T21:18:50.783777",
+    "category": "images/solar",
+    "extension": ".avif"
+  },
+  {
+    "path": "media/logos/direxport_logo_blue.png",
+    "filename": "direxport_logo_blue.png",
+    "size": "1.49 Ko",
+    "size_bytes": 1529,
+    "sha256": "bccc7355ac9c7a5d2dccbf9f6e5db99f42fe9e158f08f330cf622d55041d405c",
+    "last_modified": "2026-04-03T21:18:46.668635",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_import97.png",
+    "filename": "logo_import97.png",
+    "size": "97.75 Ko",
+    "size_bytes": 100101,
+    "sha256": "ec79167df34195386c593d0eb7c4244eae3d5f3188edc1f66e4e056876ad0040",
+    "last_modified": "2026-04-03T21:18:46.665294",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_import97_footer.png",
+    "filename": "logo_import97_footer.png",
+    "size": "82.09 Ko",
+    "size_bytes": 84059,
+    "sha256": "57d7faaf6956f5b88ca853b04e0183d116e95789b2b341b4c1cbb8895498d38c",
+    "last_modified": "2026-04-03T21:18:46.667305",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_import97_footer_transparent.png",
+    "filename": "logo_import97_footer_transparent.png",
+    "size": "119.89 Ko",
+    "size_bytes": 122769,
+    "sha256": "02b86a360d2e74827d87390619d8a1f1c1c0a54b158d9208537d6e1f9134366f",
+    "last_modified": "2026-04-03T21:18:46.666837",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_import97_large.png",
+    "filename": "logo_import97_large.png",
+    "size": "146.68 Ko",
+    "size_bytes": 150200,
+    "sha256": "ee977227b1370a2751abe31d0a7e5f6781d7f3fcd774911091eb2f72c0381fbb",
+    "last_modified": "2026-04-03T21:18:46.665787",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_rippa_domtom_transparent.png",
+    "filename": "logo_rippa_domtom_transparent.png",
+    "size": "18.53 Ko",
+    "size_bytes": 18977,
+    "sha256": "d3b7d50e3e504ecd8c6fd78a63cdac4ac23b3c81453b891bbfaae5c803e2e263",
+    "last_modified": "2026-04-03T21:18:46.667600",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/logo_rippa_new.png",
+    "filename": "logo_rippa_new.png",
+    "size": "104.82 Ko",
+    "size_bytes": 107332,
+    "sha256": "6747d217d6503d2cc5a6e70fe7ca39e422a4a6251cac142b738b2373f67df495",
+    "last_modified": "2026-04-03T21:18:46.668013",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/rippa-dom-tom-white.png",
+    "filename": "rippa-dom-tom-white.png",
+    "size": "113.46 Ko",
+    "size_bytes": 116183,
+    "sha256": "a90e91cbec9969e473afdb1d685834bbf8cb8a6b60100da6cabf9120f73355ca",
+    "last_modified": "2026-04-03T21:18:46.668361",
+    "category": "logos",
+    "extension": ".png"
+  },
+  {
+    "path": "media/logos/rippa_dom_tom.svg",
+    "filename": "rippa_dom_tom.svg",
+    "size": "3.19 Ko",
+    "size_bytes": 3267,
+    "sha256": "15593621337b4596bbcf5fd2179cb6ddfa07206fd3ad476999e338e3e0155a70",
+    "last_modified": "2026-04-03T21:18:46.671759",
+    "category": "logos",
+    "extension": ".svg"
+  },
+  {
+    "path": "media/logos/rippa_logo.webp",
+    "filename": "rippa_logo.webp",
+    "size": "47.35 Ko",
+    "size_bytes": 48490,
+    "sha256": "eac385d822b4fee30e14e12584631475ecb7159ccf4b24af5c5cb28f2735e2dc",
+    "last_modified": "2026-04-03T21:18:46.671052",
+    "category": "logos",
+    "extension": ".webp"
+  },
+  {
+    "path": "scripts/backup_supabase.py",
+    "filename": "backup_supabase.py",
+    "size": "3.14 Ko",
+    "size_bytes": 3219,
+    "sha256": "f37bbc731327350746e569ef4907b7a3cbb2ee78adb92d08b60031ce6e266811",
+    "last_modified": "2026-04-04T19:41:12.539356",
+    "category": "scripts",
+    "extension": ".py"
+  },
+  {
+    "path": "scripts/validate_backup.py",
+    "filename": "validate_backup.py",
+    "size": "2.10 Ko",
+    "size_bytes": 2146,
+    "sha256": "61892eaa2e71e9a5d05ad70696c1cedbbafa8003f51cf1053916de9d1119a122",
+    "last_modified": "2026-04-04T19:41:26.518481",
+    "category": "scripts",
+    "extension": ".py"
+  },
+  {
+    "path": "specs/00-INDEX.txt",
+    "filename": "00-INDEX.txt",
+    "size": "4.02 Ko",
+    "size_bytes": 4121,
+    "sha256": "b81d69438269392929aac63d7b7ab6f8865dc8eb36c2f173d05483f43ef8c7bd",
+    "last_modified": "2026-04-03T21:25:28.781622",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/01-STYLE-GUIDE.txt",
+    "filename": "01-STYLE-GUIDE.txt",
+    "size": "5.56 Ko",
+    "size_bytes": 5694,
+    "sha256": "aaea00a76cb9805ccf6852324a1b49d442b1a0fe9d099404439c12ea12fc7f19",
+    "last_modified": "2026-04-03T21:22:00.185902",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/02-DATABASE-SCHEMA.txt",
+    "filename": "02-DATABASE-SCHEMA.txt",
+    "size": "9.53 Ko",
+    "size_bytes": 9755,
+    "sha256": "9b28f86035daf21681c4eeecb9cd71e639eb3b6687a86ff819de8df58c5e1351",
+    "last_modified": "2026-04-03T21:22:39.671571",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/03-PDF-TEMPLATES.txt",
+    "filename": "03-PDF-TEMPLATES.txt",
+    "size": "5.89 Ko",
+    "size_bytes": 6032,
+    "sha256": "5ab08d57a55b495ded0ab47ceae889851bdddb718ceeb8afde29f6e102b2658e",
+    "last_modified": "2026-04-03T21:23:27.770190",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/04-ROUTES-SEO.txt",
+    "filename": "04-ROUTES-SEO.txt",
+    "size": "5.45 Ko",
+    "size_bytes": 5584,
+    "sha256": "a17dc8bf574dbbf813e2f22cd45254d5c6eb4478da16e8eb63b181ab24a7913d",
+    "last_modified": "2026-04-03T21:23:53.435276",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/05-FORMS-LOGIC.txt",
+    "filename": "05-FORMS-LOGIC.txt",
+    "size": "6.32 Ko",
+    "size_bytes": 6469,
+    "sha256": "0122b6542318fc709ace4b8901499af7e17702e78cab1f5afce27048aec99811",
+    "last_modified": "2026-04-03T21:24:32.814744",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "specs/06-MEDIA-INVENTORY.txt",
+    "filename": "06-MEDIA-INVENTORY.txt",
+    "size": "4.95 Ko",
+    "size_bytes": 5069,
+    "sha256": "5c9b98a54815ae424fd1e17278ef6fb002075a57a3a9e5d79df5147c9bba4af3",
+    "last_modified": "2026-04-03T21:25:01.678795",
+    "category": "specs",
+    "extension": ".txt"
+  },
+  {
+    "path": "media/videos/video_1.mp4",
+    "filename": "video_1.mp4",
+    "size": "10.43 Mo",
+    "size_bytes": 10938624,
+    "sha256": "ef24b2febe47db3e06b64a2c0c88af5028b380148acf55588ec0d34e1d6e36b3",
+    "last_modified": "2026-04-03T21:18:59.196187",
+    "category": "videos",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/videos/video_2.mp4",
+    "filename": "video_2.mp4",
+    "size": "28.96 Mo",
+    "size_bytes": 30366314,
+    "sha256": "332ad1c674f37880f95d8b969594a574a1e8bdd3ce0a014cea4d7c7dae9ae520",
+    "last_modified": "2026-04-03T21:18:59.191608",
+    "category": "videos",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/videos/video_3.mp4",
+    "filename": "video_3.mp4",
+    "size": "13.37 Mo",
+    "size_bytes": 14016412,
+    "sha256": "c14a49ab3680243872aac0bc7ec2b3b00c4e73726b45c93bd91f5c3845dbca60",
+    "last_modified": "2026-04-03T21:18:59.171456",
+    "category": "videos",
+    "extension": ".mp4"
+  },
+  {
+    "path": "media/videos/video_tour.mp4",
+    "filename": "video_tour.mp4",
+    "size": "13.17 Mo",
+    "size_bytes": 13812784,
+    "sha256": "ac60cb360552096801e5be42c789b2f1fd581049e7d28d139154c65b3e02ee9c",
+    "last_modified": "2026-04-03T21:18:59.181012",
+    "category": "videos",
+    "extension": ".mp4"
+  }
+]
