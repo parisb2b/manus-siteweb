@@ -4,11 +4,12 @@ import {
   Plus, Trash2, MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
-import type { User as SupaUser } from "@supabase/supabase-js";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type { AuthUser } from "@/contexts/AuthContext";
 
 interface Props {
-  user: SupaUser;
+  user: AuthUser;
   profile: any;
 }
 
@@ -19,7 +20,6 @@ const PAYS_OPTIONS = [
 ];
 
 export default function ProfileTab({ user, profile }: Props) {
-  // ── Infos personnelles ──
   const [editMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -28,7 +28,6 @@ export default function ProfileTab({ user, profile }: Props) {
   const [infoSuccess, setInfoSuccess] = useState(false);
   const [infoError, setInfoError] = useState<string | null>(null);
 
-  // ── Adresse facturation ──
   const [adresseFactEditing, setAdresseFactEditing] = useState(false);
   const [adresseFact, setAdresseFact] = useState("");
   const [villeFact, setVilleFact] = useState("");
@@ -37,7 +36,6 @@ export default function ProfileTab({ user, profile }: Props) {
   const [adresseFactLoading, setAdresseFactLoading] = useState(false);
   const [adresseFactSuccess, setAdresseFactSuccess] = useState(false);
 
-  // ── Adresse livraison ──
   const [livIdent, setLivIdent] = useState(true);
   const [adresseLivEditing, setAdresseLivEditing] = useState(false);
   const [adresseLiv, setAdresseLiv] = useState("");
@@ -64,17 +62,15 @@ export default function ProfileTab({ user, profile }: Props) {
     }
   }, [profile]);
 
+  const userRef = () => doc(db, "users", user.uid);
+
   const handleSaveInfos = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     setInfoLoading(true);
     setInfoError(null);
     setInfoSuccess(false);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ first_name: firstName, last_name: lastName, phone })
-        .eq("id", user.id);
-      if (error) throw error;
+      await updateDoc(userRef(), { first_name: firstName, last_name: lastName, phone });
       setInfoSuccess(true);
       setEditMode(false);
       setTimeout(() => setInfoSuccess(false), 3000);
@@ -86,14 +82,14 @@ export default function ProfileTab({ user, profile }: Props) {
   };
 
   const handleSaveAdresseFact = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     setAdresseFactLoading(true);
-    await supabase.from("profiles").update({
+    await updateDoc(userRef(), {
       adresse_facturation: adresseFact,
       ville_facturation: villeFact,
       cp_facturation: cpFact,
       pays_facturation: paysFact,
-    }).eq("id", user.id);
+    });
     setAdresseFactLoading(false);
     setAdresseFactSuccess(true);
     setAdresseFactEditing(false);
@@ -101,15 +97,15 @@ export default function ProfileTab({ user, profile }: Props) {
   };
 
   const handleSaveAdresseLiv = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     setAdresseLivLoading(true);
-    await supabase.from("profiles").update({
+    await updateDoc(userRef(), {
       adresse_livraison_identique: livIdent,
       adresse_livraison: livIdent ? adresseFact : adresseLiv,
       ville_livraison: livIdent ? villeFact : villeLiv,
       cp_livraison: livIdent ? cpFact : cpLiv,
       pays_livraison: livIdent ? paysFact : paysLiv,
-    }).eq("id", user.id);
+    });
     setAdresseLivLoading(false);
     setAdresseLivSuccess(true);
     setAdresseLivEditing(false);
@@ -117,13 +113,13 @@ export default function ProfileTab({ user, profile }: Props) {
   };
 
   const handleDeleteAdresseFact = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     if (!window.confirm("Supprimer l'adresse de facturation ?")) return;
     setAdresseFactLoading(true);
-    await supabase.from("profiles").update({
+    await updateDoc(userRef(), {
       adresse_facturation: null, ville_facturation: null,
       cp_facturation: null, pays_facturation: null,
-    }).eq("id", user.id);
+    });
     setAdresseFact(""); setVilleFact(""); setCpFact(""); setPaysFact("France");
     setAdresseFactLoading(false);
     setAdresseFactSuccess(true);
@@ -131,14 +127,14 @@ export default function ProfileTab({ user, profile }: Props) {
   };
 
   const handleDeleteAdresseLiv = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     if (!window.confirm("Supprimer l'adresse de livraison ?")) return;
     setAdresseLivLoading(true);
-    await supabase.from("profiles").update({
+    await updateDoc(userRef(), {
       adresse_livraison: null, ville_livraison: null,
       cp_livraison: null, pays_livraison: null,
       adresse_livraison_identique: true,
-    }).eq("id", user.id);
+    });
     setAdresseLiv(""); setVilleLiv(""); setCpLiv(""); setPaysLiv("France"); setLivIdent(true);
     setAdresseLivLoading(false);
     setAdresseLivSuccess(true);
@@ -177,12 +173,8 @@ export default function ProfileTab({ user, profile }: Props) {
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Prénom</label>
           {editMode ? (
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-            />
+            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900" />
           ) : (
             <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
               <User className="h-4 w-4 text-gray-400" />
@@ -194,12 +186,8 @@ export default function ProfileTab({ user, profile }: Props) {
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Nom</label>
           {editMode ? (
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-            />
+            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900" />
           ) : (
             <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
               <User className="h-4 w-4 text-gray-400" />
@@ -214,21 +202,14 @@ export default function ProfileTab({ user, profile }: Props) {
             <Mail className="h-4 w-4 text-gray-400" />
             <span className="text-gray-900 truncate">{user.email}</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
-            L'email ne peut pas être modifié depuis cet espace.
-          </p>
+          <p className="text-xs text-gray-400 mt-1">L'email ne peut pas être modifié depuis cet espace.</p>
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Téléphone</label>
           {editMode ? (
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+596 6 00 00 00 00"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900"
-            />
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+596 6 00 00 00 00"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4A90D9] focus:ring-2 focus:ring-[#4A90D9]/20 outline-none transition-all text-gray-900" />
           ) : (
             <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
               <Phone className="h-4 w-4 text-gray-400" />
@@ -240,41 +221,20 @@ export default function ProfileTab({ user, profile }: Props) {
 
       {editMode && (
         <div className="flex items-center gap-3 mt-8">
-          <Button
-            onClick={handleSaveInfos}
-            disabled={infoLoading}
-            className="bg-[#4A90D9] hover:bg-[#3a7bc8] text-white font-bold py-5 px-8"
-          >
-            {infoLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sauvegarde…</>
-            ) : (
-              <><Save className="mr-2 h-4 w-4" />Sauvegarder</>
-            )}
+          <Button onClick={handleSaveInfos} disabled={infoLoading} className="bg-[#4A90D9] hover:bg-[#3a7bc8] text-white font-bold py-5 px-8">
+            {infoLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sauvegarde…</> : <><Save className="mr-2 h-4 w-4" />Sauvegarder</>}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setEditMode(false);
-              setInfoError(null);
-              setFirstName(profile?.first_name || "");
-              setLastName(profile?.last_name || "");
-              setPhone(profile?.phone || "");
-            }}
-            disabled={infoLoading}
-            className="border-gray-300 text-gray-700"
-          >
+          <Button variant="outline" onClick={() => { setEditMode(false); setInfoError(null); setFirstName(profile?.first_name || ""); setLastName(profile?.last_name || ""); setPhone(profile?.phone || ""); }} disabled={infoLoading} className="border-gray-300 text-gray-700">
             Annuler
           </Button>
         </div>
       )}
 
-      {/* ── Section Adresses ── */}
       <div className="mt-10">
         <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
           <MapPin className="h-4 w-4" /> Mes adresses
         </h3>
 
-        {/* Adresse de facturation */}
         <div className="border border-gray-100 rounded-xl p-5 mb-4">
           <div className="flex items-center justify-between mb-4">
             <p className="font-semibold text-gray-800 text-sm flex items-center gap-1.5">
@@ -288,9 +248,7 @@ export default function ProfileTab({ user, profile }: Props) {
                   </button>
                 ) : (
                   <>
-                    <button onClick={() => setAdresseFactEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
-                      Modifier
-                    </button>
+                    <button onClick={() => setAdresseFactEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">Modifier</button>
                     <span className="text-gray-300">|</span>
                     <button onClick={handleDeleteAdresseFact} disabled={adresseFactLoading} className="flex items-center gap-1 text-xs text-red-500 font-medium hover:underline disabled:opacity-50">
                       <Trash2 className="h-3 w-3" /> Supprimer
@@ -300,11 +258,7 @@ export default function ProfileTab({ user, profile }: Props) {
               </div>
             )}
           </div>
-          {adresseFactSuccess && (
-            <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3">
-              <CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.
-            </div>
-          )}
+          {adresseFactSuccess && <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3"><CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.</div>}
           {adresseFactEditing ? (
             <div className="space-y-3">
               <input type="text" value={adresseFact} onChange={e => setAdresseFact(e.target.value)} placeholder="Rue et numéro" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#4A90D9] outline-none" />
@@ -333,7 +287,6 @@ export default function ProfileTab({ user, profile }: Props) {
           )}
         </div>
 
-        {/* Adresse de livraison */}
         <div className="border border-gray-100 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="font-semibold text-gray-800 text-sm flex items-center gap-1.5">
@@ -347,9 +300,7 @@ export default function ProfileTab({ user, profile }: Props) {
                   </button>
                 ) : (
                   <>
-                    <button onClick={() => setAdresseLivEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">
-                      Modifier
-                    </button>
+                    <button onClick={() => setAdresseLivEditing(true)} className="text-xs text-[#4A90D9] font-medium hover:underline">Modifier</button>
                     <span className="text-gray-300">|</span>
                     <button onClick={handleDeleteAdresseLiv} disabled={adresseLivLoading} className="flex items-center gap-1 text-xs text-red-500 font-medium hover:underline disabled:opacity-50">
                       <Trash2 className="h-3 w-3" /> Supprimer
@@ -359,11 +310,7 @@ export default function ProfileTab({ user, profile }: Props) {
               </div>
             )}
           </div>
-          {adresseLivSuccess && (
-            <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3">
-              <CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.
-            </div>
-          )}
+          {adresseLivSuccess && <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3"><CheckCircle2 className="h-4 w-4" /> Adresse sauvegardée.</div>}
           {adresseLivEditing ? (
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">

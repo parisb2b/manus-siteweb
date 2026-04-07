@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -38,7 +37,7 @@ const MicrosoftIcon = () => (
 );
 
 export default function Connexion() {
-  const { user, loading: authLoading, signUp, signIn } = useAuth();
+  const { user, loading: authLoading, signUp, signIn, signInWithGoogle } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
@@ -68,17 +67,14 @@ export default function Connexion() {
   }, [authLoading, user, setLocation]);
 
   const handleSocialLogin = async (provider: "google" | "facebook" | "apple" | "azure") => {
-    if (!supabase) {
-      setError("Supabase non configuré. Connexion sociale indisponible.");
-      return;
-    }
     setSocialLoading(provider);
     setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin + "/auth/callback" },
-    });
-    if (error) setError(error.message || "Erreur lors de la connexion sociale.");
+    if (provider === "google") {
+      const { error } = await signInWithGoogle();
+      if (error) setError(error.message || "Erreur lors de la connexion Google.");
+    } else {
+      setError(`Connexion ${provider} non encore disponible.`);
+    }
     setSocialLoading(null);
   };
 

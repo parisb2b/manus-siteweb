@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Loader2, ChevronRight, X, Download } from "lucide-react";
 import { formatEur } from "@/utils/calculPrix";
-import { supabase } from "@/lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { adminQuery } from "@/lib/adminQuery";
+import type { AuthUser } from "@/contexts/AuthContext";
 
 interface Props {
-  user: User;
+  user: AuthUser;
 }
 
 export default function OrdersTab({ user }: Props) {
@@ -14,19 +14,15 @@ export default function OrdersTab({ user }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("quotes")
-      .select("id,created_at,numero_devis,produits,prix_negocie,prix_total_calcule,statut,facture_generee,adresse_client,ville_client")
-      .eq("user_id", user.id)
-      .eq("statut", "accepte")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) setCommandes([]);
-        else setCommandes((data as any[]) || []);
-        setLoading(false);
-      });
-  }, [user.id]);
+    adminQuery("quotes", {
+      eq: { user_id: user.uid, statut: "accepte" },
+      order: { column: "created_at", ascending: false },
+    }).then(({ data, error }) => {
+      if (error) setCommandes([]);
+      else setCommandes(data || []);
+      setLoading(false);
+    });
+  }, [user.uid]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

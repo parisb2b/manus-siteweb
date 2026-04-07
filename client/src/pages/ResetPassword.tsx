@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Lock, Loader2, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ResetPassword() {
   const [, setLocation] = useLocation();
+  const { updateUserPassword } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -15,18 +16,6 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Supabase puts the access_token in the URL hash after the reset link is clicked.
-  // onAuthStateChange with PASSWORD_RECOVERY event fires automatically.
-  useEffect(() => {
-    if (!supabase) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        // Session is now active — user can update their password
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,13 +29,9 @@ export default function ResetPassword() {
       setError("Les mots de passe ne correspondent pas.");
       return;
     }
-    if (!supabase) {
-      setError("Supabase non configuré.");
-      return;
-    }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await updateUserPassword(newPassword);
 
     if (error) {
       setError(error.message || "Erreur lors de la mise à jour du mot de passe.");

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Loader2, Download } from "lucide-react";
 import { formatEur } from "@/utils/calculPrix";
-import { supabase } from "@/lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { adminQuery } from "@/lib/adminQuery";
+import type { AuthUser } from "@/contexts/AuthContext";
 
 interface Props {
-  user: User;
+  user: AuthUser;
 }
 
 export default function CommissionsTab({ user }: Props) {
@@ -13,25 +13,18 @@ export default function CommissionsTab({ user }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
-    supabase
-      .from("partners")
-      .select("id, nom")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data: partner }) => {
+    adminQuery("partners", { eq: { user_id: user.uid }, limit: 1 })
+      .then(async ({ data: partners }) => {
+        const partner = partners[0];
         if (!partner) { setCommissions([]); setLoading(false); return; }
-        supabase!
-          .from("quotes")
-          .select("id,numero_devis,nom,produits,prix_negocie,prix_total_calcule,commission_montant,commission_payee,commission_pdf_url,statut,created_at")
-          .eq("partner_id", partner.id)
-          .order("created_at", { ascending: false })
-          .then(({ data }) => {
-            setCommissions(data ?? []);
-            setLoading(false);
-          });
+        const { data } = await adminQuery("quotes", {
+          eq: { partner_id: partner.id },
+          order: { column: "created_at", ascending: false },
+        });
+        setCommissions(data ?? []);
+        setLoading(false);
       });
-  }, [user.id]);
+  }, [user.uid]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

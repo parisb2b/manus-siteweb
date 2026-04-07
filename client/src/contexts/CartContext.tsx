@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "@/lib/supabase";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export type CartItem = {
   id: string;
@@ -25,27 +26,38 @@ type CartContextType = {
   cartCount: number;
 };
 
+const CART_KEY = "97import_cart_v2";
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load cart from localStorage on mount
+  // Charger le panier depuis localStorage au mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("rippa_cart");
+    const savedCart = localStorage.getItem(CART_KEY);
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
-      } catch (e) {
-        // Failed to parse cart — start fresh
+      } catch {
+        // Panier corrompu — démarrer vide
       }
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Sauvegarder le panier dans localStorage à chaque changement
   useEffect(() => {
-    localStorage.setItem("rippa_cart", JSON.stringify(items));
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);
+
+  // Vider le panier à chaque changement d'utilisateur (connexion / déconnexion)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, () => {
+      setItems([]);
+      localStorage.removeItem(CART_KEY);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const addToCart = (newItem: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {
@@ -79,20 +91,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
-    localStorage.removeItem("rippa_cart");
+    localStorage.removeItem(CART_KEY);
   };
-
-  // Clear cart on auth state change (new login = clean cart)
-  useEffect(() => {
-    if (!supabase) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-        setItems([]);
-        localStorage.removeItem("rippa_cart");
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 

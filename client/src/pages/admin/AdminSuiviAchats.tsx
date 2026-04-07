@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { adminQuery } from "@/lib/adminQuery";
 import { formatEur } from "@/utils/calculPrix";
 import { generateSuiviAchatsExcel, type SuiviAchatRow } from "@/features/excel/suivi-achats";
 import {
@@ -67,16 +67,15 @@ export default function AdminSuiviAchats() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
-    if (!supabase) return;
     setLoading(true);
     setLoadError(null);
     try {
       const [qRes, pRes] = await Promise.all([
-        supabase.from("quotes").select("*").order("created_at", { ascending: false }),
-        supabase.from("partners").select("id, nom, code").eq("actif", true).order("nom"),
+        adminQuery("quotes", { order: { column: "created_at", ascending: false } }),
+        adminQuery("partners", { eq: { actif: true }, order: { column: "nom", ascending: true } }),
       ]);
-      if (qRes.error) throw new Error(`quotes: ${qRes.error.message}`);
-      if (pRes.error) throw new Error(`partners: ${pRes.error.message}`);
+      if (qRes.error) throw new Error(`quotes: ${qRes.error}`);
+      if (pRes.error) throw new Error(`partners: ${pRes.error}`);
       setQuotes((qRes.data as Quote[]) ?? []);
       setPartners((pRes.data as Partner[]) ?? []);
     } catch (err: any) {

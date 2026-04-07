@@ -22,7 +22,7 @@ type FilterType = "all" | "unresolved" | LogType;
 const TYPE_BADGES: Record<string, { bg: string; text: string; label: string }> = {
   email_error: { bg: "bg-orange-100", text: "text-orange-700", label: "Email" },
   api_error: { bg: "bg-red-100", text: "text-red-700", label: "API" },
-  supabase_error: { bg: "bg-red-200", text: "text-red-800", label: "Supabase" },
+  firestore_error: { bg: "bg-red-200", text: "text-red-800", label: "Firestore" },
   pdf_error: { bg: "bg-purple-100", text: "text-purple-700", label: "PDF" },
   auth_error: { bg: "bg-amber-100", text: "text-amber-700", label: "Auth" },
   unknown_error: { bg: "bg-gray-100", text: "text-gray-600", label: "Autre" },

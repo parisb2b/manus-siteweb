@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff, Shield, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SecurityTab() {
+  const { updateUserPassword } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPwd, setShowNewPwd] = useState(false);
@@ -13,7 +14,6 @@ export default function SecurityTab() {
   const [pwdError, setPwdError] = useState<string | null>(null);
 
   const handleUpdatePassword = async () => {
-    if (!supabase) return;
     if (newPassword.length < 6) {
       setPwdError("Le mot de passe doit contenir au moins 6 caractères.");
       return;
@@ -26,7 +26,7 @@ export default function SecurityTab() {
     setPwdError(null);
     setPwdSuccess(false);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await updateUserPassword(newPassword);
       if (error) throw error;
       setPwdSuccess(true);
       setNewPassword("");

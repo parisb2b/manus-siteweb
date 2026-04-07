@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { adminQuery } from "@/lib/adminQuery";
 
 export interface SiteContent {
   siteSettings: {
@@ -45,19 +45,13 @@ async function loadSiteContent(): Promise<SiteContent> {
   if (cachedContent && now - cacheTimestamp < CACHE_TTL) {
     return cachedContent;
   }
-  // 1. Essayer Supabase (production)
+  // 1. Essayer Firestore (production)
   try {
-    if (supabase) {
-      const { data: row } = await supabase
-        .from("site_content")
-        .select("value")
-        .eq("key", "site_content")
-        .maybeSingle();
-      if (row?.value) {
-        cachedContent = row.value as SiteContent;
-        cacheTimestamp = Date.now();
-        return cachedContent;
-      }
+    const { data: rows } = await adminQuery("site_content", { eq: { key: "site_content" }, limit: 1 });
+    if (rows[0]?.value) {
+      cachedContent = rows[0].value as SiteContent;
+      cacheTimestamp = Date.now();
+      return cachedContent;
     }
   } catch {}
   // 2. Fallback JSON local

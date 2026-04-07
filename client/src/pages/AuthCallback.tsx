@@ -1,41 +1,23 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function AuthCallback() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      if (!supabase) {
-        setLocation("/");
-        return;
-      }
-
-      // Récupérer le code PKCE depuis l'URL
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-
-      if (code) {
-        // Échanger le code contre une session
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          setLocation("/");
-          return;
-        }
-      }
-
-      // Vérifier la session résultante
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+    // Firebase gère les callbacks OAuth automatiquement via onAuthStateChanged
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      if (user) {
         setLocation("/mon-compte");
       } else {
         setLocation("/");
       }
-    };
-
-    handleCallback();
+    });
+    return () => unsubscribe();
   }, [setLocation]);
 
   return (

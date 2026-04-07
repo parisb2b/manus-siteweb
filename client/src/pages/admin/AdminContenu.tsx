@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Loader2, Globe } from "lucide-react";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 
 interface SiteContent {
@@ -17,11 +17,6 @@ export default function AdminContenu() {
   const [editingJson, setEditingJson] = useState<Record<string, string>>({});
 
   const load = async () => {
-    if (!supabase) {
-      setError("Supabase non configuré");
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     setError(null);
     const timeout = setTimeout(() => {
@@ -29,14 +24,13 @@ export default function AdminContenu() {
       setError("Chargement trop long (timeout 8s)");
     }, 8000);
     try {
-      const { data, error: err } = await supabase
-        .from("site_content")
-        .select("*")
-        .order("section");
-      if (err) throw new Error(err.message);
-      setSections(data || []);
+      const { data, error: err } = await adminQuery("site_content", {
+        order: { column: "section", ascending: true },
+      });
+      if (err) throw new Error(err);
+      setSections(data as SiteContent[] || []);
       const json: Record<string, string> = {};
-      (data || []).forEach((s: SiteContent) => {
+      (data || []).forEach((s: any) => {
         json[s.id] = JSON.stringify(s.content, null, 2);
       });
       setEditingJson(json);
@@ -48,20 +42,14 @@ export default function AdminContenu() {
     }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const handleSave = async (id: string) => {
-    if (!supabase) return;
     setSaving(true);
     try {
       const parsed = JSON.parse(editingJson[id]);
-      const { error } = await supabase
-        .from("site_content")
-        .update({ content: parsed })
-        .eq("id", id);
-      if (error) throw new Error(error.message);
+      const { error } = await adminUpdate("site_content", id, { content: parsed });
+      if (error) throw new Error(error);
       setSections((prev) =>
         prev.map((s) => (s.id === id ? { ...s, content: parsed } : s))
       );

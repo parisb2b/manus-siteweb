@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 
 // SVG Icons for social providers
 const GoogleIcon = () => (
@@ -37,7 +36,7 @@ const MicrosoftIcon = () => (
 );
 
 export default function AuthModal() {
-  const { showAuthModal, setShowAuthModal, signUp, signIn } = useAuth();
+  const { showAuthModal, setShowAuthModal, signUp, signIn, signInWithGoogle } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("register");
   const [loading, setLoading] = useState(false);
@@ -67,22 +66,14 @@ export default function AuthModal() {
   if (!showAuthModal) return null;
 
   const handleSocialLogin = async (provider: "google" | "facebook" | "apple" | "azure") => {
-    if (!supabase) {
-      setError("Supabase non configuré. Connexion sociale indisponible.");
-      return;
-    }
     setSocialLoading(provider);
     setError(null);
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: window.location.origin + "/auth/callback",
-      },
-    });
-
-    if (error) {
-      setError(error.message || "Erreur lors de la connexion sociale.");
+    if (provider === "google") {
+      const { error } = await signInWithGoogle();
+      if (error) setError(error.message || "Erreur lors de la connexion Google.");
+      else setShowAuthModal(false);
+    } else {
+      setError(`Connexion ${provider} non encore disponible.`);
     }
     setSocialLoading(null);
   };

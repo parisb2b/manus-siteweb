@@ -1,90 +1,85 @@
-import { supabase } from "./supabase";
+/**
+ * storage.ts — Service de stockage fichiers Firebase Storage pour 97import v2
+ * Remplace l'ancien storage Supabase — API compatible
+ */
 
-const BUCKET = "media";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+  listAll,
+} from "firebase/storage";
+import { storage } from "./firebase";
 
 /**
- * Upload a file to Supabase Storage.
- * Returns the public URL on success, null on failure.
- *
- * Bucket "media" must exist in Supabase Storage with public access enabled.
- * SQL: INSERT INTO storage.buckets (id, name, public) VALUES ('media', 'media', true) ON CONFLICT DO NOTHING;
+ * Upload un fichier dans Firebase Storage.
+ * Retourne l'URL publique en succès, null en échec.
  */
 export async function uploadFile(
   file: File,
   folder: string = ""
 ): Promise<string | null> {
-  if (!supabase) return null;
+  try {
+    const ext = file.name.split(".").pop() || "png";
+    const safeName = file.name
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 60);
+    const path = folder
+      ? `${folder}/${safeName}_${Date.now()}.${ext}`
+      : `${safeName}_${Date.now()}.${ext}`;
 
-  const ext = file.name.split(".").pop() || "png";
-  const safeName = file.name
-    .replace(/\.[^.]+$/, "")
-    .replace(/[^a-zA-Z0-9_-]/g, "_")
-    .slice(0, 60);
-  const path = folder
-    ? `${folder}/${safeName}_${Date.now()}.${ext}`
-    : `${safeName}_${Date.now()}.${ext}`;
-
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    cacheControl: "3600",
-    upsert: false,
-  });
-
-  if (error) {
-    // Storage upload failed silently — returns null
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  } catch {
     return null;
   }
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
 }
 
 /**
- * Upload a PDF Blob to Supabase Storage.
- * Used for devis, factures, commissions after jsPDF generation.
- * Returns the public URL on success, null on failure.
+ * Upload un Blob PDF dans Firebase Storage.
+ * Retourne l'URL publique en succès, null en échec.
  */
 export async function uploadPdfBlob(
   blob: Blob,
   folder: string,
   filename: string
 ): Promise<string | null> {
-  if (!supabase) return null;
+  try {
+    const safeName = filename.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80);
+    const path = `${folder}/${safeName}_${Date.now()}.pdf`;
 
-  const safeName = filename.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80);
-  const path = `${folder}/${safeName}_${Date.now()}.pdf`;
-
-  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
-    contentType: "application/pdf",
-    cacheControl: "3600",
-    upsert: false,
-  });
-
-  if (error) {
-    // PDF upload failed silently — returns null
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, blob, { contentType: "application/pdf" });
+    return await getDownloadURL(storageRef);
+  } catch {
     return null;
   }
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
 }
 
 /**
- * Delete a file from Supabase Storage by its path within the bucket.
+ * Supprimer un fichier de Firebase Storage par son chemin.
  */
 export async function deleteFile(path: string): Promise<boolean> {
-  if (!supabase) return false;
-  const { error } = await supabase.storage.from(BUCKET).remove([path]);
-  return !error;
+  try {
+    await deleteObject(ref(storage, path));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
- * List files in a Supabase Storage folder.
+ * Lister les fichiers d'un dossier Firebase Storage.
  */
 export async function listFiles(folder: string = "") {
-  if (!supabase) return [];
-  const { data, error } = await supabase.storage.from(BUCKET).list(folder, {
-    sortBy: { column: "name", order: "asc" },
-  });
-  if (error) return [];
-  return data;
+  try {
+    const listRef = ref(storage, folder);
+    const result = await listAll(listRef);
+    return result.items.map((item) => ({ name: item.name, fullPath: item.fullPath }));
+  } catch {
+    return [];
+  }
 }

@@ -3,14 +3,14 @@ import { FileText, Loader2, ChevronRight, X, Download, Lock, CheckCircle2 } from
 import { generateDevisPDF, type DevisData } from "@/utils/generateDevisPDF";
 import { generateFacturePDF, type FactureData } from "@/utils/generateFacturePDF";
 import { formatEur } from "@/utils/calculPrix";
-import { supabase } from "@/lib/supabase";
+import { adminQuery, adminUpdate } from "@/lib/adminQuery";
 import { uploadPdfBlob } from "@/lib/storage";
 import { sendEmail } from "@/lib/notifications";
 import { logError } from "@/lib/logger";
-import type { User } from "@supabase/supabase-js";
+import type { AuthUser } from "@/contexts/AuthContext";
 
 interface Props {
-  user: User;
+  user: AuthUser;
   profile: any;
   role: string;
 }
@@ -79,34 +79,29 @@ export default function QuotesTab({ user, profile, role }: Props) {
   const [acompteSaving, setAcompteSaving] = useState(false);
 
   const fetchDevis = async () => {
-    if (!supabase) return;
-    const { data } = await supabase
-      .from("quotes")
-      .select("id,created_at,numero_devis,produits,prix_total_calcule,prix_negocie,statut,facture_generee,adresse_client,ville_client,pdf_url,facture_url,acomptes")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    const { data } = await adminQuery("quotes", {
+      eq: { user_id: user.uid },
+      order: { column: "created_at", ascending: false },
+    });
     setDevis((data as Devis[]) || []);
     setLoading(false);
   };
 
-  // Load admin_params for RIB info
   const fetchParams = async () => {
-    if (!supabase) return;
-    const { data } = await supabase.from("admin_params").select("*");
+    const { data } = await adminQuery("admin_params");
     const map: Record<string, any> = {};
     (data || []).forEach((p: any) => { map[p.key] = p.value; });
     setAdminParams(map);
   };
 
-  useEffect(() => { fetchDevis(); fetchParams(); }, [user.id]);
+  useEffect(() => { fetchDevis(); fetchParams(); }, [user.uid]);
 
-  // Load docs for expanded quote
   const loadDocs = async (quoteId: string) => {
-    if (!supabase || docs[quoteId]) return;
+    if (docs[quoteId]) return;
     const [inv, fees, bl] = await Promise.all([
-      supabase.from("invoices").select("*").eq("quote_id", quoteId),
-      supabase.from("fees").select("*").eq("quote_id", quoteId),
-      supabase.from("delivery_notes").select("*").eq("quote_id", quoteId),
+      adminQuery("invoices", { eq: { quote_id: quoteId } }),
+      adminQuery("fees", { eq: { quote_id: quoteId } }),
+      adminQuery("delivery_notes", { eq: { quote_id: quoteId } }),
     ]);
     setDocs(prev => ({
       ...prev,
@@ -150,8 +145,8 @@ export default function QuotesTab({ user, profile, role }: Props) {
     const blob = generateDevisPDF(devisData);
     downloadBlob(blob, `Devis_${numDevis}.pdf`);
     const pdfUrl = await uploadPdfBlob(blob, "devis", `Devis_${numDevis}`);
-    if (pdfUrl && supabase) {
-      await supabase.from("quotes").update({ pdf_url: pdfUrl }).eq("id", d.id);
+    if (pdfUrl) {
+      await adminUpdate("quotes", d.id, { pdf_url: pdfUrl });
       setDevis(prev => prev.map(x => x.id === d.id ? { ...x, pdf_url: pdfUrl } : x));
     }
   };
@@ -179,8 +174,8 @@ export default function QuotesTab({ user, profile, role }: Props) {
     const blob = generateFacturePDF(factureData);
     downloadBlob(blob, `Facture_${factureNum}.pdf`);
     const factureUrl = await uploadPdfBlob(blob, "factures", `Facture_${factureNum}`);
-    if (factureUrl && supabase) {
-      await supabase.from("quotes").update({ facture_url: factureUrl }).eq("id", d.id);
+    if (factureUrl) {
+      await adminUpdate("quotes", d.id, { facture_url: factureUrl });
       setDevis(prev => prev.map(x => x.id === d.id ? { ...x, facture_url: factureUrl } : x));
     }
   };
@@ -202,7 +197,7 @@ export default function QuotesTab({ user, profile, role }: Props) {
   };
 
   const submitAcompte = async () => {
-    if (!supabase || !acompteQuote) return;
+    if (!acompteQuote) return;
     setAcompteSaving(true);
     const acomptes = acompteQuote.acomptes || [];
     const newAcompte = {
@@ -213,7 +208,7 @@ export default function QuotesTab({ user, profile, role }: Props) {
       date: new Date().toISOString(),
     };
     const updated = [...acomptes, newAcompte];
-    await supabase.from("quotes").update({ acomptes: updated }).eq("id", acompteQuote.id);
+    await adminUpdate("quotes", acompteQuote.id, { acomptes: updated });
 
     // Notification email admin
     try {

@@ -33,8 +33,10 @@ import AdminParametres from "./AdminParametres";
 import AdminContenu from "./AdminContenu";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminLogs from "./AdminLogs";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { onAuthStateChanged, signOut as firebaseSignOut, type User as FirebaseUser } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { adminQuery } from "@/lib/adminQuery";
 
 interface NavItem {
   label: string;
@@ -77,15 +79,15 @@ function groupBySection(items: NavItem[]): NavSection[] {
     if (!sectionMap.has(key)) sectionMap.set(key, []);
     sectionMap.get(key)!.push(item);
   }
-  for (const [title, sItems] of sectionMap) {
+  sectionMap.forEach((sItems, title) => {
     sections.push({ title, items: sItems });
-  }
+  });
   return sections;
 }
 
 export default function AdminLayout() {
   const [location, setLocation] = useLocation();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<{ role?: string; email?: string } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -94,47 +96,27 @@ export default function AdminLayout() {
   const [publishError, setPublishError] = useState("");
   const [nbErreurs, setNbErreurs] = useState(0);
 
-  // Admin auth — reads from supabaseAdmin (storageKey 97import-admin-auth)
+  // Admin auth — Firebase onAuthStateChanged
   useEffect(() => {
-    if (!supabase) { setAuthLoading(false); return; }
+    const loadingTimeout = setTimeout(() => setAuthLoading(false), 4000);
 
-    const loadingTimeout = setTimeout(() => setAuthLoading(false), 3000);
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       clearTimeout(loadingTimeout);
-      setUser(session?.user ?? null);
+      setUser(fbUser);
       setAuthLoading(false);
-      if (session?.user) {
-        const { data, error } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
-        if (error) {
-          console.error("[AdminLayout] Profile read error:", error.message);
-          // Fallback par email si RLS bloque sur id
-          const { data: fallback } = await supabase.from("profiles").select("role, email").eq("email", session.user.email).maybeSingle();
-          setProfile(fallback);
-        } else {
-          setProfile(data);
-        }
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-      if (session?.user) {
-        const { data, error } = await supabase.from("profiles").select("role, email").eq("id", session.user.id).maybeSingle();
-        if (error) {
-          console.error("[AdminLayout] Profile read error (auth change):", error.message);
-          const { data: fallback } = await supabase.from("profiles").select("role, email").eq("email", session.user.email).maybeSingle();
-          setProfile(fallback);
-        } else {
-          setProfile(data);
+      if (fbUser) {
+        try {
+          const snap = await getDoc(doc(db, "users", fbUser.uid));
+          setProfile(snap.exists() ? (snap.data() as { role?: string; email?: string }) : null);
+        } catch {
+          setProfile(null);
         }
       } else {
         setProfile(null);
       }
     });
 
-    return () => { clearTimeout(loadingTimeout); subscription.unsubscribe(); };
+    return () => { clearTimeout(loadingTimeout); unsubscribe(); };
   }, []);
 
   // Auth guard — redirect to /admin login if not authenticated
@@ -166,13 +148,9 @@ export default function AdminLayout() {
 
   // Error logs badge count
   useEffect(() => {
-    if (!supabase) return;
     const fetchCount = () => {
-      supabase
-        .from("error_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("resolved", false)
-        .then(({ count }) => setNbErreurs(count || 0))
+      adminQuery("error_logs", { eq: { resolved: false } })
+        .then(({ data }) => setNbErreurs(data?.length || 0))
         .catch(() => {});
     };
     fetchCount();
@@ -201,7 +179,7 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     setUser(null);
     setProfile(null);
-    if (supabase) await supabase.auth.signOut();
+    await firebaseSignOut(auth).catch(() => {});
     setLocation("/admin");
   };
 

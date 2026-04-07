@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -16,77 +18,33 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
 
-    if (!supabase) {
-      setError("Supabase non configuré.");
-      setLoading(false);
-      return;
-    }
+    try {
+      // 1. Authentification Firebase
+      const { user: fbUser } = await signInWithEmailAndPassword(auth, email, password);
 
-    // 1. Authentification
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      // 2. Lire le profil dans Firestore collection 'users'
+      const snap = await getDoc(doc(db, "users", fbUser.uid));
+      const profile = snap.data();
 
-    if (authError || !authData.user) {
-      setError("Email ou mot de passe incorrect.");
-      setLoading(false);
-      return;
-    }
-
-    console.log("[AdminLogin] Auth OK — user:", authData.user.email, "id:", authData.user.id);
-
-    // 2. Lire le profil — capturer l'erreur explicitement
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", authData.user.id)
-      .maybeSingle();
-
-    console.log("[AdminLogin] Profile query result:", { profile, profileError: profileError?.message });
-
-    // 3. Si la requête profiles échoue (RLS, réseau, etc.) : ne PAS refuser l'accès
-    if (profileError) {
-      console.error("[AdminLogin] Erreur lecture profil:", profileError.message, profileError.code);
-      // Fallback : essayer par email (contourne un éventuel problème de RLS sur id)
-      const { data: profileByEmail, error: emailErr } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("email", email)
-        .maybeSingle();
-
-      console.log("[AdminLogin] Fallback par email:", { profileByEmail, emailErr: emailErr?.message });
-
-      if (profileByEmail && (profileByEmail.role === "admin" || profileByEmail.role === "collaborateur")) {
-        setLocation("/admin/dashboard");
+      if (!profile) {
+        await auth.signOut();
+        setError("Aucun profil trouvé pour cet utilisateur.");
+        setLoading(false);
         return;
       }
 
-      // Si même le fallback échoue, montrer l'erreur technique
-      await supabase.auth.signOut();
-      setError(`Erreur de lecture du profil : ${profileError.message}. Vérifier les policies RLS sur la table profiles dans Supabase.`);
-      setLoading(false);
-      return;
-    }
+      if (profile.role !== "admin" && profile.role !== "collaborateur") {
+        await auth.signOut();
+        setError(`Accès refusé — votre rôle est "${profile.role}".`);
+        setLoading(false);
+        return;
+      }
 
-    // 4. Profil null (pas d'erreur mais pas de ligne = profil inexistant)
-    if (!profile) {
-      console.warn("[AdminLogin] Profil introuvable pour user id:", authData.user.id);
-      await supabase.auth.signOut();
-      setError("Aucun profil trouvé pour cet utilisateur. Contacter l'administrateur.");
+      setLocation("/admin/dashboard");
+    } catch (err: any) {
+      setError("Email ou mot de passe incorrect.");
       setLoading(false);
-      return;
     }
-
-    // 5. Vérification du rôle
-    console.log("[AdminLogin] Rôle trouvé:", profile.role);
-    if (profile.role !== "admin" && profile.role !== "collaborateur") {
-      await supabase.auth.signOut();
-      setError(`Accès refusé — votre rôle est "${profile.role}". Seuls admin et collaborateur sont autorisés.`);
-      setLoading(false);
-      return;
-    }
-
-    // 6. Succès → redirection
-    console.log("[AdminLogin] Accès autorisé — redirection vers /admin/dashboard");
-    setLocation("/admin/dashboard");
   };
 
   return (

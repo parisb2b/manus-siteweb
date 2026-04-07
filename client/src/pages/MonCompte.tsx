@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import ProfileTab from "@/features/account/tabs/ProfileTab";
 import OrdersTab from "@/features/account/tabs/OrdersTab";
@@ -44,18 +45,14 @@ export default function MonCompte() {
   // ── Helpers prénom / nom ──
   const getFirstName = (): string => {
     if (profile?.first_name) return profile.first_name;
-    const meta = user?.user_metadata;
-    if (meta?.given_name) return meta.given_name as string;
-    if (meta?.full_name) return (meta.full_name as string).split(" ")[0];
+    if (user?.displayName) return user.displayName.split(" ")[0];
     return user?.email || "";
   };
 
   const getLastName = (): string => {
     if (profile?.last_name) return profile.last_name;
-    const meta = user?.user_metadata;
-    if (meta?.family_name) return meta.family_name as string;
-    if (meta?.full_name) {
-      const parts = (meta.full_name as string).split(" ");
+    if (user?.displayName) {
+      const parts = user.displayName.split(" ");
       return parts.slice(1).join(" ");
     }
     return "";
@@ -80,7 +77,7 @@ export default function MonCompte() {
   }, [isProfileIncomplete]);
 
   const handleSaveModal = async () => {
-    if (!supabase || !user) return;
+    if (!user) return;
     if (!modalFirstName.trim() || !modalLastName.trim()) {
       setModalError("Prénom et nom sont obligatoires.");
       return;
@@ -88,15 +85,14 @@ export default function MonCompte() {
     setModalLoading(true);
     setModalError(null);
     try {
-      const { error } = await supabase.from("profiles").upsert({
-        id: user.id,
+      await setDoc(doc(db, "users", user.uid), {
+        id: user.uid,
         first_name: modalFirstName.trim(),
         last_name: modalLastName.trim(),
         phone: modalPhone.trim(),
         email: user.email,
         role: profile?.role ?? "user",
-      });
-      if (error) throw error;
+      }, { merge: true });
       window.location.reload();
     } catch (err: unknown) {
       setModalError((err as Error).message || "Erreur lors de la sauvegarde.");
@@ -247,10 +243,6 @@ export default function MonCompte() {
                   <span className="text-xs text-gray-400">
                     {user.app_metadata?.provider === "google"
                       ? "Connecté via Google"
-                      : user.app_metadata?.provider === "facebook"
-                      ? "Connecté via Facebook"
-                      : user.app_metadata?.provider === "apple"
-                      ? "Connecté via Apple"
                       : "Connecté par email"}
                   </span>
                 </div>

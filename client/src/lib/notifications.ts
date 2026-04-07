@@ -1,11 +1,10 @@
 /**
  * notifications.ts — Service d'envoi de notifications email
- * Appel fetch DIRECT vers Supabase Edge Function "send-email" (Resend API)
- * Pas de supabase.functions.invoke → évite les problèmes CORS/403
+ * Appel fetch DIRECT vers Firebase Cloud Function "send-email" (Resend API)
+ * Variable d'env : VITE_EMAIL_FUNCTION_URL
  */
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const EMAIL_FUNCTION_URL = import.meta.env.VITE_EMAIL_FUNCTION_URL as string;
 
 export interface EmailPayload {
   to: string;
@@ -50,28 +49,23 @@ function wrapHtmlEmail(contenu: string): string {
  * Retourne true si envoyé, false sinon
  */
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.warn("[notifications] Variables Supabase manquantes");
+  if (!EMAIL_FUNCTION_URL) {
+    console.warn("[notifications] VITE_EMAIL_FUNCTION_URL manquant");
     return false;
   }
 
   try {
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/send-email`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          to: payload.to,
-          subject: payload.subject,
-          html: payload.html,
-        }),
+    const response = await fetch(EMAIL_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+      }),
+    });
 
     const data = await response.json();
     console.log("[notifications] Réponse:", response.status, data);

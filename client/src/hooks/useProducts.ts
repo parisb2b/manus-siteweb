@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { adminQuery } from "@/lib/adminQuery";
 
 // === Full Product Interface ===
 export interface GalleryItem {
@@ -105,35 +105,32 @@ export function useProducts(category?: string) {
 
     (async () => {
       try {
-        // 1. Essayer Supabase products table (production)
-        if (supabase) {
-          const query = supabase.from("products").select("*").eq("actif", true);
-          if (category) query.eq("categorie", category);
-          const { data: rows } = await query;
-          if (rows && rows.length > 0) {
-            // Mapper les champs Supabase vers l'interface Product
-            const mapped: Product[] = rows.map((r: any) => ({
-              id: r.id,
-              name: r.nom,
-              description: r.description || "",
-              price: r.prix_achat ?? 0,
-              priceDisplay: "",
-              category: r.categorie,
-              active: r.actif,
-              reference: r.reference,
-              reference_interne: r.reference_interne || r.numero_interne || undefined,
-              numero_interne: r.numero_interne || r.reference_interne || undefined,
-              ...(r.data || {}),
-            }));
-            cachedProducts = mapped;
-            cacheTimestamp = Date.now();
-            const filtered = category
-              ? mapped.filter((p) => p.category === category && p.active)
-              : mapped.filter((p) => p.active);
-            setProducts(filtered);
-            setLoading(false);
-            return;
-          }
+        // 1. Essayer Firestore products collection (production)
+        const queryOpts: any = { eq: { actif: true } };
+        if (category) queryOpts.eq = { actif: true, categorie: category };
+        const { data: rows } = await adminQuery("products", queryOpts);
+        if (rows && rows.length > 0) {
+          const mapped: Product[] = rows.map((r: any) => ({
+            id: r.id,
+            name: r.nom,
+            description: r.description || "",
+            price: r.prix_achat ?? 0,
+            priceDisplay: "",
+            category: r.categorie,
+            active: r.actif,
+            reference: r.reference,
+            reference_interne: r.reference_interne || r.numero_interne || undefined,
+            numero_interne: r.numero_interne || r.reference_interne || undefined,
+            ...(r.data || {}),
+          }));
+          cachedProducts = mapped;
+          cacheTimestamp = Date.now();
+          const filtered = category
+            ? mapped.filter((p) => p.category === category && p.active)
+            : mapped.filter((p) => p.active);
+          setProducts(filtered);
+          setLoading(false);
+          return;
         }
       } catch {}
       // 2. Fallback JSON local

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { adminQuery, adminInsert, adminUpdate, getNextDevisNumero } from "@/lib/adminQuery";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { sendEmail } from "@/lib/notifications";
 import { logError } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
@@ -41,19 +43,8 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 async function getNextDevisNum(): Promise<string> {
-  if (!supabase) {
-    const year = new Date().getFullYear().toString().slice(-2);
-    return `D${year}00001`;
-  }
-  // Utilise la séquence SQL serveur pour éviter tout doublon concurrent
-  const { data, error } = await supabase.rpc("get_next_devis_numero");
-  if (error || !data) {
-    // Fallback basé sur timestamp si la fonction SQL n'existe pas encore
-    const ts = Date.now().toString().slice(-6);
-    const year = new Date().getFullYear().toString().slice(-2);
-    return `D${year}${ts}`;
-  }
-  return data as string;
+  const num = await getNextDevisNumero();
+  return `D${new Date().getFullYear().toString().slice(-2)}${num}`;
 }
 
 export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: DevisFormProps) {
@@ -63,9 +54,9 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [form, setForm] = useState({
     nom: profile
       ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
-      : (user?.user_metadata?.full_name as string) ?? "",
+      : user?.displayName ?? "",
     email: profile?.email ?? user?.email ?? "",
-    telephone: profile?.phone ?? (user?.user_metadata?.phone as string) ?? "",
+    telephone: profile?.phone ?? "",
     adresse: profile?.adresse_facturation ?? "",
     ville: (profile?.cp_facturation || profile?.ville_facturation)
       ? `${profile.cp_facturation ?? ""} ${profile.ville_facturation ?? ""}`.trim()
@@ -93,19 +84,12 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   const [selectedNewPartner, setSelectedNewPartner] = useState<{ id: string; nom: string } | null>(null);
   const [adminParams, setAdminParams] = useState<Record<string, any>>({});
 
-  // Charger les partenaires actifs pour la sélection (rôle partner ou admin/collaborateur)
   useEffect(() => {
-    if (!supabase) return;
     if (role !== "partner" && role !== "admin" && role !== "collaborateur") return;
-    supabase
-      .from("partners")
-      .select("id, nom")
-      .eq("actif", true)
-      .order("nom")
+    adminQuery("partners", { eq: { actif: true }, order: { column: "nom", ascending: true } })
       .then(({ data }) => {
         const list = (data as PartnerOption[]) ?? [];
         setPartners(list);
-        // Auto-sélectionner si l'utilisateur est partner et lié à un seul partenaire
         if (role === "partner" && list.length === 1) {
           setSelectedPartnerId(list[0].id);
           setSelectedPartnerNom(list[0].nom);
@@ -113,12 +97,10 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       });
   }, [role]);
 
-  // Charger tous les partenaires (pour le pop-up post-devis) et les admin_params
   useEffect(() => {
-    if (!supabase) return;
-    supabase.from("partners").select("id,nom").eq("actif", true).order("nom")
+    adminQuery("partners", { eq: { actif: true }, order: { column: "nom", ascending: true } })
       .then(({ data }) => setAllPartners((data as any[]) || []));
-    supabase.from("admin_params").select("*")
+    adminQuery("admin_params")
       .then(({ data }) => {
         const map: Record<string, any> = {};
         (data || []).forEach((p: any) => { map[p.key] = p.value; });
@@ -203,65 +185,52 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       // Générer PDF
       const blob = generateDevisPDF(devisData);
 
-      // Sauvegarder dans Supabase
-      if (supabase) {
-        const payload = {
-          user_id: user?.id ?? null,
-          email: form.email,
-          nom: form.nom,
-          telephone: form.telephone || null,
-          message: form.message || null,
-          produits: produits,
-          prix_total_calcule: totalHT,
-          role_client: role,
-          statut: "nouveau",
-          numero_devis: numero,
-          adresse_client: form.adresse,
-          ville_client: form.ville,
-          pays_client: form.pays,
-          partner_id: selectedPartnerId || null,
-        };
-        const { error: dbErr } = await supabase.from("quotes").insert(payload);
-        if (dbErr) throw new Error(dbErr.message);
+      // Sauvegarder dans Firestore
+      const payload = {
+        user_id: user?.uid ?? null,
+        email: form.email,
+        nom: form.nom,
+        telephone: form.telephone || null,
+        message: form.message || null,
+        produits: produits,
+        prix_total_calcule: totalHT,
+        role_client: role,
+        statut: "nouveau",
+        numero_devis: numero,
+        adresse_client: form.adresse,
+        ville_client: form.ville,
+        pays_client: form.pays,
+        partner_id: selectedPartnerId || null,
+      };
+      const { data: insertedQuote, error: dbErr } = await adminInsert("quotes", payload);
+      if (dbErr) throw new Error(dbErr);
+      if (insertedQuote) setNewQuoteId((insertedQuote as any).id);
 
-        // Sauvegarder téléphone si manquant
-        if (user?.id && profile && !profile.phone && form.telephone) {
-          await supabase.from("profiles").update({ phone: form.telephone }).eq("id", user.id);
-        }
-        // Sauvegarder adresse facturation si non encore renseignée dans le profil
-        if (user?.id && profile && !profile.adresse_facturation && form.adresse) {
-          const villeParts = form.ville.trim().split(/\s+/);
-          const cp = villeParts.length > 1 && /^\d{5}/.test(villeParts[0]) ? villeParts[0] : "";
-          const villeOnly = cp ? villeParts.slice(1).join(" ") : form.ville;
-          await supabase.from("profiles").update({
-            adresse_facturation: form.adresse,
-            ville_facturation: villeOnly,
-            cp_facturation: cp,
-            pays_facturation: form.pays,
-          }).eq("id", user.id);
-        }
+      // Sauvegarder téléphone si manquant
+      if (user?.uid && profile && !profile.phone && form.telephone) {
+        await updateDoc(doc(db, "users", user.uid), { phone: form.telephone });
+      }
+      // Sauvegarder adresse facturation si non encore renseignée
+      if (user?.uid && profile && !profile.adresse_facturation && form.adresse) {
+        const villeParts = form.ville.trim().split(/\s+/);
+        const cp = villeParts.length > 1 && /^\d{5}/.test(villeParts[0]) ? villeParts[0] : "";
+        const villeOnly = cp ? villeParts.slice(1).join(" ") : form.ville;
+        await updateDoc(doc(db, "users", user.uid), {
+          adresse_facturation: form.adresse,
+          ville_facturation: villeOnly,
+          cp_facturation: cp,
+          pays_facturation: form.pays,
+        });
       }
 
       // Télécharger le PDF
       downloadBlob(blob, `Devis_${numero}.pdf`);
 
-      // Clear cart (clé correcte = rippa_cart)
+      // Clear cart
       try {
-        localStorage.removeItem('rippa_cart');
+        localStorage.removeItem('97import_cart_v2');
         window.dispatchEvent(new Event('storage'));
       } catch {}
-
-      // Get the quote ID from the insert
-      if (supabase) {
-        const { data: insertedQuote } = await supabase
-          .from("quotes")
-          .select("id")
-          .eq("numero_devis", numero)
-          .single();
-        if (insertedQuote) {
-          setNewQuoteId(insertedQuote.id);
-        }
-      }
 
       // Show partenaire modal (skip if already selected via partner role)
       if (selectedPartnerId) {
@@ -306,16 +275,14 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
   };
 
   const handleConfirmPartenaire = async () => {
-    if (!supabase || !newQuoteId || !selectedNewPartner) return;
-    await supabase.from("quotes").update({
-      partner_id: selectedNewPartner.id,
-    }).eq("id", newQuoteId);
+    if (!newQuoteId || !selectedNewPartner) return;
+    await adminUpdate("quotes", newQuoteId, { partner_id: selectedNewPartner.id });
     setShowPartenaireModal(false);
     setShowAcompteModal(true);
   };
 
   const submitPostAcompte = async () => {
-    if (!supabase || !newQuoteId) return;
+    if (!newQuoteId) return;
     setAcompteSaving(true);
     const newAcompte = {
       numero: 1,
@@ -324,7 +291,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
       statut: "en_attente",
       date: new Date().toISOString(),
     };
-    await supabase.from("quotes").update({ acomptes: [newAcompte] }).eq("id", newQuoteId);
+    await adminUpdate("quotes", newQuoteId, { acomptes: [newAcompte] });
 
     // Send admin notification
     try {
@@ -778,7 +745,7 @@ export default function DevisForm({ produits, prixTotalCalcule, onSuccess }: Dev
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => { setSelectedPartnerId(null); setSelectedPartnerCode(""); }}
+              onClick={() => { setSelectedPartnerId(null); setSelectedPartnerNom(""); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 !selectedPartnerId
                   ? "bg-[#4A90D9] text-white"

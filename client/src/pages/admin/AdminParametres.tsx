@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Building2, CreditCard, Percent, Settings, Upload, Loader2 } from "lucide-react";
-import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { adminQuery, adminUpdate } from "@/lib/adminQuery";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { uploadFile } from "@/lib/storage";
 import { PRICE_MULTIPLIERS } from "@/features/pricing/model/pricing";
 import { ADMIN_COLORS, AdminCard, AdminCardHeader, AdminButton } from "@/components/admin/AdminUI";
@@ -197,7 +199,6 @@ export default function AdminParametres() {
   const multipliers = PRICE_MULTIPLIERS;
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
     let timeout: ReturnType<typeof setTimeout>;
     const loadParams = async () => {
       try {
@@ -205,8 +206,8 @@ export default function AdminParametres() {
           setLoadError("Chargement trop long (timeout 8s)");
           setLoading(false);
         }, 8000);
-        const { data, error } = await supabase.from("admin_params").select("*");
-        if (error) throw error;
+        const { data, error } = await adminQuery("admin_params");
+        if (error) throw new Error(error);
         const params = (data as AdminParam[]) ?? [];
         for (const p of params) {
           if (p.key === "emetteur" || p.key === "emetteur_pro") setEmetteurPro(p.value ?? {});
@@ -234,24 +235,28 @@ export default function AdminParametres() {
     loadParams();
   }, []);
 
+  const upsertParam = async (key: string, value: any, label: string) => {
+    await setDoc(doc(db, "admin_params", key), { key, value, label, updated_at: serverTimestamp() }, { merge: true });
+  };
+
   const handleSave = async () => {
-    if (!supabase) return;
     setSaving(true);
     setSaveMessage("");
-    const now = new Date().toISOString();
-    const results = await Promise.all([
-      supabase.from("admin_params").upsert({ key: "emetteur_pro", value: emetteurPro, label: "Émetteur professionnel", updated_at: now }),
-      supabase.from("admin_params").upsert({ key: "emetteur_perso", value: emetteurPerso, label: "Émetteur personnel", updated_at: now }),
-      supabase.from("admin_params").upsert({ key: "rib_pro", value: { ...ribPro, pdf_url: ribProPdfUrl || undefined }, label: "RIB professionnel", updated_at: now }),
-      supabase.from("admin_params").upsert({ key: "rib_perso", value: { ...ribPerso, pdf_url: ribPersoPdfUrl || undefined }, label: "RIB personnel", updated_at: now }),
-      supabase.from("admin_params").upsert({ key: "acompte_defaut", value: { pourcentage: acompteMontant, max_nb: acompteMaxNb }, label: "Config acomptes", updated_at: now }),
-      // Maintenir compatibilité avec l'ancien key "emetteur" et "rib"
-      supabase.from("admin_params").upsert({ key: "emetteur", value: emetteurPro, label: "Émetteur (compat)", updated_at: now }),
-      supabase.from("admin_params").upsert({ key: "rib", value: { ...ribPro, pdf_url: ribProPdfUrl || undefined }, label: "RIB (compat)", updated_at: now }),
-    ]);
-    const hasError = results.some((r) => r.error);
+    try {
+      await Promise.all([
+        upsertParam("emetteur_pro", emetteurPro, "Émetteur professionnel"),
+        upsertParam("emetteur_perso", emetteurPerso, "Émetteur personnel"),
+        upsertParam("rib_pro", { ...ribPro, pdf_url: ribProPdfUrl || undefined }, "RIB professionnel"),
+        upsertParam("rib_perso", { ...ribPerso, pdf_url: ribPersoPdfUrl || undefined }, "RIB personnel"),
+        upsertParam("acompte_defaut", { pourcentage: acompteMontant, max_nb: acompteMaxNb }, "Config acomptes"),
+        upsertParam("emetteur", emetteurPro, "Émetteur (compat)"),
+        upsertParam("rib", { ...ribPro, pdf_url: ribProPdfUrl || undefined }, "RIB (compat)"),
+      ]);
+      setSaveMessage("Paramètres sauvegardés");
+    } catch {
+      setSaveMessage("Erreur lors de la sauvegarde");
+    }
     setSaving(false);
-    setSaveMessage(hasError ? "Erreur lors de la sauvegarde" : "Paramètres sauvegardés");
     setTimeout(() => setSaveMessage(""), 3000);
   };
 

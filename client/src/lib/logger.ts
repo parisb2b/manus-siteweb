@@ -1,15 +1,16 @@
 /**
- * logger.ts — Service de logging global
- * Les erreurs sont loguées en localStorage IMMÉDIATEMENT puis dans Supabase
+ * logger.ts — Service de logging global pour 97import v2
+ * Les erreurs sont loguées en localStorage IMMÉDIATEMENT puis dans Firestore
  * Le logger ne doit JAMAIS faire planter l'application
  */
 
-import { supabase } from "./supabase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
 
 export type LogType =
   | "email_error"
   | "api_error"
-  | "supabase_error"
+  | "firestore_error"
   | "pdf_error"
   | "auth_error"
   | "unknown_error";
@@ -29,7 +30,6 @@ function saveLocal(entry: LogEntry & { timestamp: string }) {
   try {
     const logs = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
     logs.push(entry);
-    // Garder max 50 entrées
     localStorage.setItem(LOCAL_KEY, JSON.stringify(logs.slice(-50)));
   } catch {
     // localStorage plein ou indisponible — ignorer
@@ -39,25 +39,25 @@ function saveLocal(entry: LogEntry & { timestamp: string }) {
 export const logError = async (entry: LogEntry): Promise<void> => {
   const timestamp = new Date().toISOString();
 
-  // 1. Sauvegarder en localStorage IMMÉDIATEMENT (avant Supabase)
+  // 1. Sauvegarder en localStorage IMMÉDIATEMENT (avant Firestore)
   saveLocal({ ...entry, timestamp });
 
   // 2. Console
   console.error(`[${(entry.type || "ERROR").toUpperCase()}]`, entry.message);
 
-  // 3. Tenter Supabase (peut échouer sans crasher)
+  // 3. Tenter Firestore (peut échouer sans crasher)
   try {
-    if (!supabase) return;
-    await supabase.from("error_logs").insert({
+    await addDoc(collection(db, "error_logs"), {
       type: entry.type,
       message: entry.message,
       context: entry.context || "",
       user_email: entry.user_email || "",
       stack_trace: entry.stack_trace || "",
       resolved: false,
+      created_at: serverTimestamp(),
     });
   } catch (e) {
-    console.error("[LOGGER SUPABASE FAILED]", e);
+    console.error("[LOGGER FIRESTORE FAILED]", e);
   }
 };
 

@@ -1,16 +1,15 @@
-// Hook pour la soumission des formulaires de contact
-// Envoie les données vers Supabase quand configuré, sinon log en développement
+// Hook pour la soumission des formulaires de contact — Firebase v2
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { adminInsert } from "@/lib/adminQuery";
 
 export interface ContactFormData {
   name: string;
   email: string;
   phone?: string;
-  subject?: string;    // objet / sujet du message (optionnel)
+  subject?: string;
   message: string;
-  source?: string;     // page d'origine : "contact", "services", "produit"…
-  productId?: string;  // référence produit si applicable
+  source?: string;
+  productId?: string;
 }
 
 interface UseContactFormReturn {
@@ -31,35 +30,17 @@ export function useContactForm(): UseContactFormReturn {
     setSuccess(false);
 
     try {
-      if (supabase) {
-        // Insertion dans la table "contacts" via le client Supabase
-        const { error: sbError } = await supabase.from("contacts").insert({
-          name:       data.name,
-          email:      data.email,
-          phone:      data.phone      ?? null,
-          subject:    data.subject    ?? null,
-          message:    data.message,
-          source:     data.source     ?? "contact",
-          product_id: data.productId  ?? null,  // camelCase → snake_case
-        });
+      const { error: insertError } = await adminInsert("contacts", {
+        name: data.name,
+        email: data.email,
+        phone: data.phone ?? null,
+        subject: data.subject ?? null,
+        message: data.message,
+        source: data.source ?? "contact",
+        product_id: data.productId ?? null,
+      });
 
-        if (sbError) {
-          throw new Error(sbError.message || "Erreur Supabase");
-        }
-      } else {
-        // Mode développement sans .env : log console, simule un délai réseau
-        console.log("[ContactForm - Dev] Données reçues :", {
-          name:       data.name,
-          email:      data.email,
-          phone:      data.phone      ?? null,
-          subject:    data.subject    ?? null,
-          message:    data.message,
-          source:     data.source     ?? "contact",
-          product_id: data.productId  ?? null,
-        });
-        await new Promise((r) => setTimeout(r, 500));
-      }
-
+      if (insertError) throw new Error(insertError);
       setSuccess(true);
     } catch (e: any) {
       setError(e.message || "Une erreur est survenue. Veuillez réessayer.");
